@@ -5,12 +5,13 @@ Type Enumerations
 
 
 class Color:
-	white, black = 0, 1
+	white, black = "white", "black"
 
 
 class Piece:
-	pawn, knight, bishop, rook, queen, king = 0, 1, 2, 3, 4, 5
+	pawn, knight, bishop, rook = ["pawn", 1], ["knight", 3], ["bishop", 3], ["rook", 5]
+	queen, king = ["queen", 9], ["king", float("inf")]
 
 
 class Square:
-	light, dark = 0, 1
+	light, dark = "light", "dark"

@@ -6,4 +6,4 @@ def test_game_class():
 
 
 def test_components():
-	assert Piece([0, 0], enums.Piece.pawn, enums.Color.white), Square([0, 0])
+	assert Piece([0, 0], enums.Piece.pawn, enums.Color.white, None), Square([0, 0])
