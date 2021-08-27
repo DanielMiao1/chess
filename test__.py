@@ -1,9 +1,26 @@
+"""
+test__.py
+Tests File
+"""
 from . import *
 
-
-def test_game_class():
-	assert Game()
+import random
 
 
-def test_components():
-	assert Piece([0, 0], enums.Piece.pawn, enums.Color.white, None), Square([0, 0])
+def test():
+	game = Game() # Call Game class
+	# Test moves
+	# # Test with random float
+	try:
+		game.move(random.random())
+	except errors.MoveNotPossible:
+		pass
+	else:
+		raise Exception
+	# # Test with empty string
+	try:
+		game.move("")
+	except errors.MoveNotPossible:
+		pass
+	else:
+		raise Exception
