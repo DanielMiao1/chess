@@ -5,6 +5,7 @@ Main Python 3 File
 
 from . import enums
 from . import errors
+from . import functions
 
 
 class Square:
@@ -55,16 +56,93 @@ class Square:
 
 class Piece:
 	def __init__(self, position, piece_type, color, board):
-		self.position, self.piece_type, self.color, self.board = position, piece_type, color, board
+		self.position = functions.indexToCoordinate(position)
+		self.piece_type, self.color, self.board = piece_type, color, board
 	
 	def moves(self):
-		return []
+		moves = []
+		if self.piece_type == enums.Piece.pawn: # Pawn moves
+			# Straight pawn moves
+			# # Check if pawn is blocked
+			for i in self.board.pieces:
+				if functions.coordinateToIndex(i.position)[1] == [functions.coordinateToIndex(self.position)[0] - (
+					1 if self.color == enums.Color.white else -1
+				), functions.coordinateToIndex(self.position)[1]]:
+					break
+			else:  # If pawn is not blocked
+				moves.append(
+					functions.indexToCoordinate([functions.coordinateToIndex(self.position)[0] - (
+						1 if self.color == enums.Color.white else -1
+					), functions.coordinateToIndex(self.position)[1]])
+				)  # Append single pawn move
+				# Check if pawn is on home rank
+				if (functions.coordinateToIndex(self.position)[0] == 6 and self.color == enums.Color.white) or \
+					(functions.coordinateToIndex(self.position)[0] == 1 and self.color == enums.Color.black):
+					# Check if pawn double move is blocked
+					for i in self.board.pieces:
+						if functions.coordinateToIndex(i.position)[1] == [functions.coordinateToIndex(self.position)[0] - (2 if self.color == enums.Color.white else -2), functions.coordinateToIndex(self.position)[1]]: break
+					else:  # If pawn double move is not blocked
+						moves.append(functions.indexToCoordinate(
+							[functions.coordinateToIndex(self.position)[0] - (
+								2 if self.color == enums.Color.white else -2
+							), functions.coordinateToIndex(self.position)[1]]
+						))  # Append double pawn move
+			# Pawn captures
+			capture_found = False  # Set default value of the capture_found variable
+			if self.color == enums.Color.white:  # For white pawns
+				# Check for left diagonal captures (e.g. exd5)
+				for i in self.board.pieces:
+					if functions.coordinateToIndex(i.position)[1] == [
+						functions.coordinateToIndex(self.position)[0] - 1, functions.coordinateToIndex(self.position)[1] - 1
+					] and i.color == enums.Color.black:
+						capture_found = True  # Make capture_found True
+						break
+				if capture_found:  # If capture is found
+					moves.append(functions.indexToCoordinate(
+						functions.coordinateToIndex(self.position))[0] + "x" + functions.indexToCoordinate(
+							[functions.coordinateToIndex(self.position)[0] - 1, functions.coordinateToIndex(self.position)[1] - 1]
+						)
+					)  # Append pawn capture move
+				capture_found = False  # Reset capture_found variable
+				# Check for right diagonal captures (e.g. exf5)
+				for i in self.board.pieces:
+					if functions.coordinateToIndex(i.position)[1] == [
+						functions.coordinateToIndex(self.position)[0] - 1, functions.coordinateToIndex(self.position)[1] + 1
+					] and i.color == enums.Color.black:
+						capture_found = True  # Make capture_found True
+						break
+				if capture_found:
+					moves.append(
+						functions.indexToCoordinate(functions.coordinateToIndex(self.position))[0] + "x" + functions.indexToCoordinate(
+							[functions.coordinateToIndex(self.position)[0] - 1, functions.coordinateToIndex(self.position)[1] + 1]
+						)
+					)  # Append pawn capture move
+			else:  # For black pawns
+				for i in self.board.pieces:
+					if functions.coordinateToIndex(i.position)[1] == [
+						functions.coordinateToIndex(self.position)[0] + 1, functions.coordinateToIndex(self.position)[1] - 1
+					] and i.color == enums.Color.white:
+						capture_found = True  # Make capture_found True
+						break
+				if capture_found:
+					moves.append(
+						functions.indexToCoordinate(functions.coordinateToIndex(self.position))[0] + "x" + functions.indexToCoordinate(
+							[functions.coordinateToIndex(self.position)[0] + 1, functions.coordinateToIndex(self.position)[1] - 1]
+						)
+					)
+				capture_found = False  # Reset capture_found variable
+				# Check for right diagonal captures (e.g. exf4)
+				for i in self.board.pieces:
+					if functions.coordinateToIndex(i.position)[1] == [
+						functions.coordinateToIndex(self.position)[0] + 1, functions.coordinateToIndex(self.position)[1] + 1
+					] and i.color == enums.Color.white:
+						capture_found = True  # Make capture_found True
+						break
+				if capture_found: moves.append(index)
+		return moves
 
 	def __str__(self):
-		return self.color.title() + " " + self.piece_type[0] + " from " + str(self.board)
-	
-	def __repr__(self):
-		return self.color.title() + " " + self.piece_type[0] + " from " + str(self.board)
+		return self.color.title() + " " + self.piece_type[0] + " at " + self.position + " from " + repr(self.board)
 	
 	def __lt__(self, other):
 		return self.piece_type[1] < other.piece_type[1]
@@ -107,14 +185,14 @@ class Game:
 				row.append(Square([x, y], self))
 				if x in [0, 7]:
 					if y in [0, 7]:
-						self.pieces.append(Piece([x, y], enums.Piece.pawn, enums.Color.black if x == 0 else enums.Color.white, self))
+						self.pieces.append(Piece([x, y], enums.Piece.rook, enums.Color.black if x == 0 else enums.Color.white, self))
 					elif y in [1, 6]:
 						self.pieces.append(Piece([x, y], enums.Piece.knight, enums.Color.black if x == 0 else enums.Color.white, self))
-					elif y in [1, 6]:
+					elif y in [2, 5]:
 						self.pieces.append(Piece([x, y], enums.Piece.bishop, enums.Color.black if x == 0 else enums.Color.white, self))
 					elif y == 3:
 						self.pieces.append(Piece([x, y], enums.Piece.queen, enums.Color.black if x == 0 else enums.Color.white, self))
-					elif y == 3:
+					elif y == 4:
 						self.pieces.append(Piece([x, y], enums.Piece.king, enums.Color.black if x == 0 else enums.Color.white, self))
 				elif x in [1, 6]:
 					self.pieces.append(Piece([x, y], enums.Piece.pawn, enums.Color.black if x == 1 else enums.Color.white, self))
@@ -133,10 +211,12 @@ class Game:
 	def moves(self):
 		return [i.moves() for i in self.pieces]
 	
-	def __str__(self):
-		return "Chess Game with FEN " + self.FEN()
+	def pieceAt(self, coordinate):
+		"""Returns the piece at coordinate if one exists, otherwise return None"""
+		return self.pieces[[i.position for i in self.pieces].index(coordinate)]\
+			if coordinate in [i.position for i in self.pieces] else None
 	
-	def __repr__(self):
+	def __str__(self):
 		return "Chess Game with FEN " + self.FEN()
 	
 	def __lt__(self, other):
