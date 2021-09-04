@@ -2,13 +2,16 @@
 test__.py
 Tests File
 """
-from . import *
+import os
+import sys
+sys.path.insert(0, os.path.abspath(os.curdir))
+from ChessLibrary.ChessLibrary import *
 
 import random
 
 
 def test():
-	game = Game()  # Call Game class
+	game = Game()  # Create Game
 	# Test moves
 	# # Test with invalid move
 	try:
