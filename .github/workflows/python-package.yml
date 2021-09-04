@@ -25,10 +25,10 @@ jobs:
       uses: actions/setup-python@v2
       with:
         python-version: ${{ matrix.python-version }}
-    - name: Install PyTest
+    - name: Install PyTest and the ChessLibrary module from GitHub
       run: |
         python -m pip install --upgrade pip
-        python -m pip install pytest
+        python -m pip install pytest git+https://github.com/DanielMiao1/ChessLibrary#egg=ChessLibrary
     - name: Test with PyTest
       run: |
         pytest
