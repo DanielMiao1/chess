@@ -65,62 +65,62 @@ class Piece:
 			# Straight pawn moves
 			# # Check if pawn is blocked
 			for i in self.board.pieces:
-				if functions.coordinateToIndex(i.position)[1] == [functions.coordinateToIndex(self.position)[0] - (1 if self.color == enums.Color.white else -1), functions.coordinateToIndex(self.position)[1]]:
+				if functions.coordinateToIndex(i.position) == [functions.coordinateToIndex(self.position)[0] - (1 if self.color == enums.Color.white else -1), functions.coordinateToIndex(self.position)[1]]:
 					break
 			else:  # If pawn is not blocked
 				if show_data:
-					moves.append(enums.Move(name=functions.indexToCoordinate([functions.coordinateToIndex(self.position)[0] - (1 if self.color == enums.Color.white else -1), functions.coordinateToIndex(self.position)[1]]), old_position=self.position, new_position=functions.indexToCoordinate([functions.coordinateToIndex(self.position)[0] - (1 if self.color == enums.Color.white else -1), functions.coordinateToIndex(self.position)[1]])))  # Append single pawn move
+					moves.append(enums.Move(name=functions.indexToCoordinate([functions.coordinateToIndex(self.position)[0] - (1 if self.color == enums.Color.white else -1), functions.coordinateToIndex(self.position)[1]]), old_position=self.position, new_position=functions.indexToCoordinate([functions.coordinateToIndex(self.position)[0] - (1 if self.color == enums.Color.white else -1), functions.coordinateToIndex(self.position)[1]]), piece=self))  # Append single pawn move
 				else:
 					moves.append(functions.indexToCoordinate([functions.coordinateToIndex(self.position)[0] - (1 if self.color == enums.Color.white else -1), functions.coordinateToIndex(self.position)[1]]))  # Append single pawn move
 				# Check if pawn is on home rank
-				if (functions.coordinateToIndex(self.position)[0] == 6 and self.color == enums.Color.white) or (functions.coordinateToIndex(self.position)[0] == 1 and self.color == enums.Color.black):
+				if (int(self.position[1]) == 2 and self.color == enums.Color.white) or (int(self.position[1]) == 7 and self.color == enums.Color.black):
 					# Check if pawn double move is blocked
 					for i in self.board.pieces:
-						if functions.coordinateToIndex(i.position)[1] == [functions.coordinateToIndex(self.position)[0] - (2 if self.color == enums.Color.white else -2), functions.coordinateToIndex(self.position)[1]]:
+						if int(i.position[1]) == int(self.position[1]) + (2 if self.color == enums.Color.white else -2):
 							break
 					else:  # If pawn double move is not blocked
 						if show_data:
-							moves.append(enums.Move(name=functions.indexToCoordinate([functions.coordinateToIndex(self.position)[0] - (2 if self.color == enums.Color.white else -2), functions.coordinateToIndex(self.position)[1]]), old_position=self.position, new_position=functions.indexToCoordinate([functions.coordinateToIndex(self.position)[0] - (2 if self.color == enums.Color.white else -2), functions.coordinateToIndex(self.position)[1]])))  # Append double pawn move
+							moves.append(enums.Move(name=functions.indexToCoordinate([functions.coordinateToIndex(self.position)[0] - (2 if self.color == enums.Color.white else -2), functions.coordinateToIndex(self.position)[1]]), old_position=self.position, new_position=functions.indexToCoordinate([functions.coordinateToIndex(self.position)[0] - (2 if self.color == enums.Color.white else -2), functions.coordinateToIndex(self.position)[1]]), piece=self))  # Append double pawn move
 						else:
 							moves.append(functions.indexToCoordinate([functions.coordinateToIndex(self.position)[0] - (2 if self.color == enums.Color.white else -2), functions.coordinateToIndex(self.position)[1]]))  # Append double pawn move
 			# Pawn captures
 			capture_found = False  # Set default value of the capture_found variable
 			if self.color == enums.Color.white:  # For white pawns
-				# Check for left diagonal captures (e.g. exd5)
+				# Check for left diagonal captures (e.g. e4xd5)
 				for i in self.board.pieces:
-					if functions.coordinateToIndex(i.position)[1] == [functions.coordinateToIndex(self.position)[0] - 1, functions.coordinateToIndex(self.position)[1] - 1] and i.color == enums.Color.black:
+					if functions.coordinateToIndex(i.position) == [i - 1 for i in functions.coordinateToIndex(self.position)] and i.color == enums.Color.black:
 						capture_found = True  # Make capture_found True
 						break
 				if capture_found:  # If capture is found
 					if show_data:
-						moves.append(functions.indexToCoordinate(functions.coordinateToIndex(self.position))[0] + "x" + functions.indexToCoordinate([functions.coordinateToIndex(self.position)[0] - 1, functions.coordinateToIndex(self.position)[1] - 1]))  # Append pawn capture move
+						moves.append(enums.Move(name=functions.indexToCoordinate(functions.coordinateToIndex(self.position))[0] + "x" + functions.indexToCoordinate([functions.coordinateToIndex(self.position)[0] - 1, functions.coordinateToIndex(self.position)[1] - 1]), old_position=self.position, new_position=functions.indexToCoordinate([functions.coordinateToIndex(self.position)[0] - 1, functions.coordinateToIndex(self.position)[1] - 1]), piece=self))  # Append pawn capture move
 					else:
-						moves.append(enums.Move(name=functions.indexToCoordinate(functions.coordinateToIndex(self.position))[0] + "x" + functions.indexToCoordinate([functions.coordinateToIndex(self.position)[0] - 1, functions.coordinateToIndex(self.position)[1] - 1]), old_position=self.position, new_position=functions.indexToCoordinate([functions.coordinateToIndex(self.position)[0] - 1, functions.coordinateToIndex(self.position)[1] - 1])))  # Append pawn capture move
+						moves.append(enums.Move(name=functions.indexToCoordinate(functions.coordinateToIndex(self.position))[0] + "x" + functions.indexToCoordinate([functions.coordinateToIndex(self.position)[0] - 1, functions.coordinateToIndex(self.position)[1] - 1]), old_position=self.position, new_position=functions.indexToCoordinate([functions.coordinateToIndex(self.position)[0] - 1, functions.coordinateToIndex(self.position)[1] - 1]), piece=self))  # Append pawn capture move
 				capture_found = False  # Reset capture_found variable
-				# Check for right diagonal captures (e.g. exf5)
+				# Check for right diagonal captures (e.g. e4xf5)
 				for i in self.board.pieces:
-					if functions.coordinateToIndex(i.position)[1] == [functions.coordinateToIndex(self.position)[0] - 1, functions.coordinateToIndex(self.position)[1] + 1] and i.color == enums.Color.black:
+					if functions.coordinateToIndex(i.position) == [functions.coordinateToIndex(self.position)[0] - 1, functions.coordinateToIndex(self.position)[1] + 1] and i.color == enums.Color.black:
 						capture_found = True  # Make capture_found True
 						break
 				if capture_found:
 					if show_data:
-						moves.append(enums.Move(name=functions.indexToCoordinate(functions.coordinateToIndex(self.position))[0] + "x" + functions.indexToCoordinate([functions.coordinateToIndex(self.position)[0] - 1, functions.coordinateToIndex(self.position)[1] + 1]), old_position=self.position, new_position=functions.indexToCoordinate([functions.coordinateToIndex(self.position)[0] - 1, functions.coordinateToIndex(self.position)[1] + 1])))  # Append pawn capture move
+						moves.append(enums.Move(name=functions.indexToCoordinate(functions.coordinateToIndex(self.position))[0] + "x" + functions.indexToCoordinate([functions.coordinateToIndex(self.position)[0] - 1, functions.coordinateToIndex(self.position)[1] + 1]), old_position=self.position, new_position=functions.indexToCoordinate([functions.coordinateToIndex(self.position)[0] - 1, functions.coordinateToIndex(self.position)[1] + 1]), piece=self))  # Append pawn capture move
 					else:
 						moves.append(functions.indexToCoordinate(functions.coordinateToIndex(self.position))[0] + "x" + functions.indexToCoordinate([functions.coordinateToIndex(self.position)[0] - 1, functions.coordinateToIndex(self.position)[1] + 1]))  # Append pawn capture move
 			else:  # For black pawns
 				for i in self.board.pieces:
-					if functions.coordinateToIndex(i.position)[1] == [functions.coordinateToIndex(self.position)[0] + 1, functions.coordinateToIndex(self.position)[1] - 1] and i.color == enums.Color.white:
+					if functions.coordinateToIndex(i.position) == [functions.coordinateToIndex(self.position)[0] + 1, functions.coordinateToIndex(self.position)[1] - 1] and i.color == enums.Color.white:
 						capture_found = True  # Make capture_found True
 						break
 				if capture_found:
 					if show_data:
-						moves.append(enums.Move(name=functions.indexToCoordinate(functions.coordinateToIndex(self.position))[0] + "x" + functions.indexToCoordinate([functions.coordinateToIndex(self.position)[0] + 1, functions.coordinateToIndex(self.position)[1] - 1]), old_position=self.position, new_position=functions.indexToCoordinate([functions.coordinateToIndex(self.position)[0] + 1, functions.coordinateToIndex(self.position)[1] - 1])))  # Append pawn capture move
+						moves.append(enums.Move(name=functions.indexToCoordinate(functions.coordinateToIndex(self.position))[0] + "x" + functions.indexToCoordinate([functions.coordinateToIndex(self.position)[0] + 1, functions.coordinateToIndex(self.position)[1] - 1]), old_position=self.position, new_position=functions.indexToCoordinate([functions.coordinateToIndex(self.position)[0] + 1, functions.coordinateToIndex(self.position)[1] - 1]), piece=self))  # Append pawn capture move
 					else:
 						moves.append(functions.indexToCoordinate(functions.coordinateToIndex(self.position))[0] + "x" + functions.indexToCoordinate([functions.coordinateToIndex(self.position)[0] + 1, functions.coordinateToIndex(self.position)[1] - 1]))  # Append pawn capture move
 				capture_found = False  # Reset capture_found variable
 				# Check for right diagonal captures (e.g. exf4)
 				for i in self.board.pieces:
-					if functions.coordinateToIndex(i.position)[1] == [functions.coordinateToIndex(self.position)[0] + 1, functions.coordinateToIndex(self.position)[1] + 1] and i.color == enums.Color.white:
+					if functions.coordinateToIndex(i.position) == [i + 1 for i in functions.coordinateToIndex(self.position)] and i.color == enums.Color.white:
 						capture_found = True  # Make capture_found True
 						break
 				if capture_found:
@@ -166,6 +166,7 @@ class Piece:
 
 class Game:
 	def __init__(self, raise_errors=True):
+		"""Initialize"""
 		self.turn = enums.Color.white
 		self.squares, self.pieces = [], []
 		for x in range(8):
@@ -189,20 +190,32 @@ class Game:
 		self.raise_errors = raise_errors
 
 	def FEN(self):
+		"""Returns the FEN of the game"""
 		return "(FEN TEXT)"
 
 	def error(self, error):
+		"""Raises an error if allowed"""
 		if self.raise_errors:
 			raise error
 
 	def move(self, move):
+		"""Moves a piece"""
+		if isinstance(move, enums.Move):
+			move = move.name
 		if not isinstance(move, str):
 			self.error(errors.InvalidMove(move))
 		move = functions.toSAN(move, self)
 		if move not in self.legal_moves():
 			self.error(errors.MoveNotPossible(move))
+		for i in self.legal_moves(True):
+			if i.name == move:
+				if i.is_capture:
+					self.pieces.remove(self.pieceAt(i.new_position))
+				i.piece.position = i.new_position
+		self.turn = (enums.Color.white, enums.Color.black)[self.turn == enums.Color.white]
 
 	def legal_moves(self, show_data=False):
+		"""Returns all legal moves"""
 		return [x for i in self.pieces for x in i.moves(show_data)]
 
 	def pieceAt(self, coordinate):
