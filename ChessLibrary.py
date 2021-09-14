@@ -50,9 +50,6 @@ class Square:
 	def __floor__(self):
 		raise ArithmeticError("Cannot floor")
 
-	def __eq__(self, other):
-		raise ArithmeticError("Cannot compare squares")
-
 
 class Piece:
 	def __init__(self, position, piece_type, color, board):
@@ -221,6 +218,9 @@ class Game:
 	def pieceAt(self, coordinate):
 		"""Returns the piece at coordinate if one exists, otherwise return None"""
 		return self.pieces[[i.position for i in self.pieces].index(coordinate)] if coordinate in [i.position for i in self.pieces] else None
+
+	def visualized(self, use_unicode=True):
+		return ("---------------------------------\n| " if use_unicode else "-----------------------------------------\n| ") + (" |\n---------------------------------\n| " if use_unicode else " |\n-----------------------------------------\n| ").join(" | ".join([y + ((" " if use_unicode else "  ") if y == "" else "") for y in x]) for x in [["".join([(({"whiteking": "♔", "blackking": "♚", "whitequeen": "♕", "blackqueen": "♛", "whiterook": "♖", "blackrook": "♜", "whitebishop": "♗", "blackbishop": "♝", "whiteknight": "♘", "blackknight": "♞", "whitepawn": "♙", "blackpawn": "♟"}[z.color + z.piece_type[0]]) if use_unicode else (z.color[0].upper() + (z.piece_type[0][0].upper() if z.piece_type[0] != "knight" else "N"))) if functions.coordinateToIndex(z.position) == [x, y] else "" for z in self.pieces]) for y in range(len(self.squares[x]))] for x in range(len(self.squares))]) + (" |\n---------------------------------" if use_unicode else " |\n-----------------------------------------")
 
 	def __str__(self):
 		return "Chess Game with FEN " + self.FEN()
