@@ -372,6 +372,7 @@ class Piece:
 class Game:
 	def __init__(self, raise_errors=True):
 		"""Initialize"""
+		self.move_list = ""
 		self.turn = enums.Color.white
 		self.squares, self.pieces = [], []
 		for x in range(8):
@@ -418,6 +419,13 @@ class Game:
 					self.pieces.remove(self.pieceAt(i.new_position))
 				i.piece.position = i.new_position
 				break
+		if self.turn == enums.Color.white:  # Add move to move list
+			if self.move_list == "":
+				self.move_list += "1. " + move
+			else:
+				self.move_list += " " + str(int(self.move_list.split(" ")[-3][0]) + 1) + ". " + move
+		else:
+			self.move_list += " " + move
 		self.turn = (enums.Color.white, enums.Color.black)[self.turn == enums.Color.white]
 
 	def legal_moves(self, show_data=False):
