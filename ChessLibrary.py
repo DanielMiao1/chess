@@ -214,6 +214,71 @@ class Piece:
 						moves.append(enums.Move(name="N" + ("x" if found else "") + functions.indexToCoordinate([functions.coordinateToIndex(self.position)[0] - 1, functions.coordinateToIndex(self.position)[1] + 2]), old_position=self.position, new_position=functions.indexToCoordinate([functions.coordinateToIndex(self.position)[0] - 1, functions.coordinateToIndex(self.position)[1] + 2]), piece=self, is_capture=found))
 					else:
 						moves.append("N" + ("x" if found else "") + functions.indexToCoordinate([functions.coordinateToIndex(self.position)[0] - 1, functions.coordinateToIndex(self.position)[1] + 2]))
+		elif self.piece_type == enums.Piece.bishop:  # Bishop moves
+			capture = False
+			pos1, pos2 = functions.coordinateToIndex(self.position)
+			while pos1 != 0 and pos2 != 0:
+				pos1, pos2 = pos1 - 1, pos2 - 1
+				for i in self.board.pieces:
+					if functions.coordinateToIndex(i.position) == [pos1, pos2]:
+						if i.color == self.color: break
+						capture = True
+				else:
+					if show_data:
+						moves.append(enums.Move(name="B" + ("x" if capture else "") + functions.indexToCoordinate([pos1, pos2]), old_position=self.position, new_position=functions.indexToCoordinate([pos1, pos2]), piece=self, is_capture=capture))
+					else:
+						moves.append("B" + ("x" if capture else "") + functions.indexToCoordinate([pos1, pos2]))
+					if capture: break
+					continue
+				break
+			capture = False
+			pos1, pos2 = functions.coordinateToIndex(self.position)
+			while pos1 != 7 and pos2 != 7:
+				pos1, pos2 = pos1 + 1, pos2 + 1
+				for i in self.board.pieces:
+					if functions.coordinateToIndex(i.position) == [pos1, pos2]:
+						if i.color == self.color: break
+						capture = True
+				else:
+					if show_data:
+						moves.append(enums.Move(name="B" + ("x" if capture else "") + functions.indexToCoordinate([pos1, pos2]), old_position=self.position, new_position=functions.indexToCoordinate([pos1, pos2]), piece=self, is_capture=capture))
+					else:
+						moves.append("B" + ("x" if capture else "") + functions.indexToCoordinate([pos1, pos2]))
+					if capture: break
+					continue
+				break
+			capture = False
+			pos1, pos2 = functions.coordinateToIndex(self.position)
+			while pos1 != 0 and pos2 != 7:
+				pos1, pos2 = pos1 - 1, pos2 + 1
+				for i in self.board.pieces:
+					if functions.coordinateToIndex(i.position) == [pos1, pos2]:
+						if i.color == self.color: break
+						capture = True
+				else:
+					if show_data:
+						moves.append(enums.Move(name="B" + ("x" if capture else "") + functions.indexToCoordinate([pos1, pos2]), old_position=self.position, new_position=functions.indexToCoordinate([pos1, pos2]), piece=self, is_capture=capture))
+					else:
+						moves.append("B" + ("x" if capture else "") + functions.indexToCoordinate([pos1, pos2]))
+					if capture: break
+					continue
+				break
+			capture = False
+			pos1, pos2 = functions.coordinateToIndex(self.position)
+			while pos1 != 7 and pos2 != 0:
+				pos1, pos2 = pos1 + 1, pos2 - 1
+				for i in self.board.pieces:
+					if functions.coordinateToIndex(i.position) == [pos1, pos2]:
+						if i.color == self.color: break
+						capture = True
+				else:
+					if show_data:
+						moves.append(enums.Move(name="B" + ("x" if capture else "") + functions.indexToCoordinate([pos1, pos2]), old_position=self.position, new_position=functions.indexToCoordinate([pos1, pos2]), piece=self, is_capture=capture))
+					else:
+						moves.append("B" + ("x" if capture else "") + functions.indexToCoordinate([pos1, pos2]))
+					if capture: break
+					continue
+				break
 		return moves
 
 	def __str__(self):
