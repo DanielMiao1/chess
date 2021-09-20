@@ -7,7 +7,7 @@ from distutils.core import setup
 
 setup(
 	name="ChessLibrary",
-	version="0.0.1",
+	version="0.0.3",
 	author="Daniel Miao",
 	author_email="danielmiao2019@icloud.com",
 	url="https://github.com/DanielMiao1/ChessLibrary",
