@@ -122,15 +122,16 @@ class Piece:
 						break
 				if capture_found:
 					if show_data:
-						moves.append(enums.Move(name=functions.indexToCoordinate(functions.coordinateToIndex(self.position))[0] + "x" + functions.indexToCoordinate([functions.coordinateToIndex(self.position)[0] + 1, functions.coordinateToIndex(self.position)[1] + 1]), old_position=self.position, new_position=functions.indexToCoordinate([functions.coordinateToIndex(self.position)[0] + 1, functions.coordinateToIndex(self.position)[1] + 1]), piece=self, is_capture=True)) # Append pawn capture move
+						moves.append(enums.Move(name=functions.indexToCoordinate(functions.coordinateToIndex(self.position))[0] + "x" + functions.indexToCoordinate([functions.coordinateToIndex(self.position)[0] + 1, functions.coordinateToIndex(self.position)[1] + 1]), old_position=self.position, new_position=functions.indexToCoordinate([functions.coordinateToIndex(self.position)[0] + 1, functions.coordinateToIndex(self.position)[1] + 1]), piece=self, is_capture=True))  # Append pawn capture move
 					else:
-						moves.append(functions.indexToCoordinate(functions.coordinateToIndex(self.position))[0] + "x" + functions.indexToCoordinate([functions.coordinateToIndex(self.position)[0] + 1, functions.coordinateToIndex(self.position)[1] + 1])) # Append pawn capture move
+						moves.append(functions.indexToCoordinate(functions.coordinateToIndex(self.position))[0] + "x" + functions.indexToCoordinate([functions.coordinateToIndex(self.position)[0] + 1, functions.coordinateToIndex(self.position)[1] + 1]))  # Append pawn capture move
 		elif self.piece_type == enums.Piece.knight:  # Knight moves
 			found, valid = False, True
 			if self.position[1] not in "78" and self.position[0] != "a":
 				for i in self.board.pieces:
 					if functions.coordinateToIndex(i.position) == [functions.coordinateToIndex(self.position)[0] - 2, functions.coordinateToIndex(self.position)[1] - 1]:
-						if i.color == self.color: valid = False
+						if i.color == self.color:
+							valid = False
 						found = True
 				if valid:
 					if show_data:
@@ -141,7 +142,8 @@ class Piece:
 			if self.position[1] not in "12" and self.position[0] != "a":
 				for i in self.board.pieces:
 					if functions.coordinateToIndex(i.position) == [functions.coordinateToIndex(self.position)[0] + 2, functions.coordinateToIndex(self.position)[1] - 1]:
-						if i.color == self.color: valid = False
+						if i.color == self.color:
+							valid = False
 						found = True
 				if valid:
 					if show_data:
@@ -152,7 +154,8 @@ class Piece:
 			if self.position[1] not in "78" and self.position[0] != "h":
 				for i in self.board.pieces:
 					if functions.coordinateToIndex(i.position) == [functions.coordinateToIndex(self.position)[0] - 2, functions.coordinateToIndex(self.position)[1] + 1]:
-						if i.color == self.color: valid = False
+						if i.color == self.color:
+							valid = False
 						found = True
 				if valid:
 					if show_data:
@@ -163,7 +166,8 @@ class Piece:
 			if self.position[1] not in "12" and self.position[0] != "h":
 				for i in self.board.pieces:
 					if functions.coordinateToIndex(i.position) == [functions.coordinateToIndex(self.position)[0] + 2, functions.coordinateToIndex(self.position)[1] + 1]:
-						if i.color == self.color: valid = False
+						if i.color == self.color:
+							valid = False
 						found = True
 				if valid:
 					if show_data:
@@ -174,7 +178,8 @@ class Piece:
 			if self.position[1] != "8" and self.position[0] not in "ab":
 				for i in self.board.pieces:
 					if functions.coordinateToIndex(i.position) == [functions.coordinateToIndex(self.position)[0] - 1, functions.coordinateToIndex(self.position)[1] - 2]:
-						if i.color == self.color: valid = False
+						if i.color == self.color:
+							valid = False
 						found = True
 				if valid:
 					if show_data:
@@ -185,7 +190,8 @@ class Piece:
 			if self.position[1] != "1" and self.position[0] not in "ab":
 				for i in self.board.pieces:
 					if functions.coordinateToIndex(i.position) == [functions.coordinateToIndex(self.position)[0] + 1, functions.coordinateToIndex(self.position)[1] - 2]:
-						if i.color == self.color: valid = False
+						if i.color == self.color:
+							valid = False
 						found = True
 				if valid:
 					if show_data:
@@ -196,7 +202,8 @@ class Piece:
 			if self.position[1] != "1" and self.position[0] not in "gh":
 				for i in self.board.pieces:
 					if functions.coordinateToIndex(i.position) == [functions.coordinateToIndex(self.position)[0] + 1, functions.coordinateToIndex(self.position)[1] + 2]:
-						if i.color == self.color: valid = False
+						if i.color == self.color:
+							valid = False
 						found = True
 				if valid:
 					if show_data:
@@ -207,7 +214,8 @@ class Piece:
 			if self.position[1] != "8" and self.position[0] not in "gh":
 				for i in self.board.pieces:
 					if functions.coordinateToIndex(i.position) == [functions.coordinateToIndex(self.position)[0] - 1, functions.coordinateToIndex(self.position)[1] + 2]:
-						if i.color == self.color: valid = False
+						if i.color == self.color:
+							valid = False
 						found = True
 				if valid:
 					if show_data:
@@ -221,14 +229,16 @@ class Piece:
 				pos1, pos2 = pos1 - 1, pos2 - 1
 				for i in self.board.pieces:
 					if functions.coordinateToIndex(i.position) == [pos1, pos2]:
-						if i.color == self.color: break
+						if i.color == self.color:
+							break
 						capture = True
 				else:
 					if show_data:
 						moves.append(enums.Move(name="B" + ("x" if capture else "") + functions.indexToCoordinate([pos1, pos2]), old_position=self.position, new_position=functions.indexToCoordinate([pos1, pos2]), piece=self, is_capture=capture))
 					else:
 						moves.append("B" + ("x" if capture else "") + functions.indexToCoordinate([pos1, pos2]))
-					if capture: break
+					if capture:
+						break
 					continue
 				break
 			capture = False
@@ -237,14 +247,16 @@ class Piece:
 				pos1, pos2 = pos1 + 1, pos2 + 1
 				for i in self.board.pieces:
 					if functions.coordinateToIndex(i.position) == [pos1, pos2]:
-						if i.color == self.color: break
+						if i.color == self.color:
+							break
 						capture = True
 				else:
 					if show_data:
 						moves.append(enums.Move(name="B" + ("x" if capture else "") + functions.indexToCoordinate([pos1, pos2]), old_position=self.position, new_position=functions.indexToCoordinate([pos1, pos2]), piece=self, is_capture=capture))
 					else:
 						moves.append("B" + ("x" if capture else "") + functions.indexToCoordinate([pos1, pos2]))
-					if capture: break
+					if capture:
+						break
 					continue
 				break
 			capture = False
@@ -253,14 +265,16 @@ class Piece:
 				pos1, pos2 = pos1 - 1, pos2 + 1
 				for i in self.board.pieces:
 					if functions.coordinateToIndex(i.position) == [pos1, pos2]:
-						if i.color == self.color: break
+						if i.color == self.color:
+							break
 						capture = True
 				else:
 					if show_data:
 						moves.append(enums.Move(name="B" + ("x" if capture else "") + functions.indexToCoordinate([pos1, pos2]), old_position=self.position, new_position=functions.indexToCoordinate([pos1, pos2]), piece=self, is_capture=capture))
 					else:
 						moves.append("B" + ("x" if capture else "") + functions.indexToCoordinate([pos1, pos2]))
-					if capture: break
+					if capture:
+						break
 					continue
 				break
 			capture = False
@@ -269,14 +283,16 @@ class Piece:
 				pos1, pos2 = pos1 + 1, pos2 - 1
 				for i in self.board.pieces:
 					if functions.coordinateToIndex(i.position) == [pos1, pos2]:
-						if i.color == self.color: break
+						if i.color == self.color:
+							break
 						capture = True
 				else:
 					if show_data:
 						moves.append(enums.Move(name="B" + ("x" if capture else "") + functions.indexToCoordinate([pos1, pos2]), old_position=self.position, new_position=functions.indexToCoordinate([pos1, pos2]), piece=self, is_capture=capture))
 					else:
 						moves.append("B" + ("x" if capture else "") + functions.indexToCoordinate([pos1, pos2]))
-					if capture: break
+					if capture:
+						break
 					continue
 				break
 		if self.piece_type == enums.Piece.rook:  # Rook moves
@@ -284,56 +300,64 @@ class Piece:
 			for x in reversed(range(functions.coordinateToIndex(self.position)[0])):
 				for y in self.board.pieces:
 					if functions.coordinateToIndex(y.position) == [x, functions.coordinateToIndex(self.position)[1]]:
-						if y.color == self.color: break
+						if y.color == self.color:
+							break
 						capture = True
 				else:
 					if show_data:
 						moves.append(enums.Move(name="R" + ("x" if capture else "") + functions.indexToCoordinate([x, functions.coordinateToIndex(self.position)[1]]), old_position=self.position, new_position=functions.indexToCoordinate([x, functions.coordinateToIndex(self.position)[1]]), piece=self, is_capture=capture))
 					else:
 						moves.append("R" + ("x" if capture else "") + functions.indexToCoordinate([x, functions.coordinateToIndex(self.position)[1]]))
-					if capture: break
+					if capture:
+						break
 					continue
 				break
 			capture = False
 			for x in reversed(range(functions.coordinateToIndex(self.position)[1])):
 				for y in self.board.pieces:
 					if functions.coordinateToIndex(y.position) == [functions.coordinateToIndex(self.position)[0], x]:
-						if y.color == self.color: break
+						if y.color == self.color:
+							break
 						capture = True
 				else:
 					if show_data:
 						moves.append(enums.Move(name="R" + ("x" if capture else "") + functions.indexToCoordinate([functions.coordinateToIndex(self.position)[0], x]), old_position=self.position, new_position=functions.indexToCoordinate([functions.coordinateToIndex(self.position)[0], x]), piece=self, is_capture=capture))
 					else:
 						moves.append("R" + ("x" if capture else "") + functions.indexToCoordinate([functions.coordinateToIndex(self.position)[0], x]))
-					if capture: break
+					if capture:
+						break
 					continue
 				break
 			capture = False
 			for x in range(functions.coordinateToIndex(self.position)[0] + 1, 8):
 				for y in self.board.pieces:
 					if functions.coordinateToIndex(y.position) == [x, functions.coordinateToIndex(self.position)[1]]:
-						if y.color == self.color: break
+						if y.color == self.color:
+							break
 						capture = True
 				else:
 					if show_data:
 						moves.append(enums.Move(name="R" + ("x" if capture else "") + functions.indexToCoordinate([x, functions.coordinateToIndex(self.position)[1]]), old_position=self.position, new_position=functions.indexToCoordinate([x, functions.coordinateToIndex(self.position)[1]]), piece=self, is_capture=capture))
 					else:
 						moves.append("R" + ("x" if capture else "") + functions.indexToCoordinate([x, functions.coordinateToIndex(self.position)[1]]))
-					if capture: break
+					if capture:
+						break
 					continue
 				break
 			capture = False
 			for x in range(functions.coordinateToIndex(self.position)[1] + 1, 8):
 				for y in self.board.pieces:
 					if functions.coordinateToIndex(y.position) == [functions.coordinateToIndex(self.position)[0], x]:
-						if y.color == self.color: break
+						if y.color == self.color:
+							break
 						capture = True
 				else:
 					if show_data:
 						moves.append(enums.Move(name="R" + ("x" if capture else "") + functions.indexToCoordinate([functions.coordinateToIndex(self.position)[0], x]), old_position=self.position, new_position=functions.indexToCoordinate([functions.coordinateToIndex(self.position)[0], x]), piece=self, is_capture=capture))
 					else:
 						moves.append("R" + ("x" if capture else "") + functions.indexToCoordinate([functions.coordinateToIndex(self.position)[0], x]))
-					if capture: break
+					if capture:
+						break
 					continue
 				break
 		elif self.piece_type == "queen":  # Queen moves
@@ -343,14 +367,16 @@ class Piece:
 				pos1, pos2 = pos1 - 1, pos2 - 1
 				for i in self.board.pieces:
 					if functions.coordinateToIndex(i.position) == [pos1, pos2]:
-						if i.color == self.color: break
+						if i.color == self.color:
+							break
 						capture = True
 				else:
 					if show_data:
 						moves.append(enums.Move(name="Q" + ("x" if capture else "") + functions.indexToCoordinate([pos1, pos2]), old_position=self.position, new_position=functions.indexToCoordinate([pos1, pos2]), piece=self, is_capture=capture))
 					else:
 						moves.append("Q" + ("x" if capture else "") + functions.indexToCoordinate([pos1, pos2]))
-					if capture: break
+					if capture:
+						break
 					continue
 				break
 			capture = False
@@ -359,14 +385,16 @@ class Piece:
 				pos1, pos2 = pos1 + 1, pos2 + 1
 				for i in self.board.pieces:
 					if functions.coordinateToIndex(i.position) == [pos1, pos2]:
-						if i.color == self.color: break
+						if i.color == self.color:
+							break
 						capture = True
 				else:
 					if show_data:
 						moves.append(enums.Move(name="Q" + ("x" if capture else "") + functions.indexToCoordinate([pos1, pos2]), old_position=self.position, new_position=functions.indexToCoordinate([pos1, pos2]), piece=self, is_capture=capture))
 					else:
 						moves.append("Q" + ("x" if capture else "") + functions.indexToCoordinate([pos1, pos2]))
-					if capture: break
+					if capture:
+						break
 					continue
 				break
 			capture = False
@@ -375,14 +403,16 @@ class Piece:
 				pos1, pos2 = pos1 - 1, pos2 + 1
 				for i in self.board.pieces:
 					if functions.coordinateToIndex(i.position) == [pos1, pos2]:
-						if i.color == self.color: break
+						if i.color == self.color:
+							break
 						capture = True
 				else:
 					if show_data:
 						moves.append(enums.Move(name="Q" + ("x" if capture else "") + functions.indexToCoordinate([pos1, pos2]), old_position=self.position, new_position=functions.indexToCoordinate([pos1, pos2]), piece=self, is_capture=capture))
 					else:
 						moves.append("Q" + ("x" if capture else "") + functions.indexToCoordinate([pos1, pos2]))
-					if capture: break
+					if capture:
+						break
 					continue
 				break
 			capture = False
@@ -391,79 +421,194 @@ class Piece:
 				pos1, pos2 = pos1 + 1, pos2 - 1
 				for i in self.board.pieces:
 					if functions.coordinateToIndex(i.position) == [pos1, pos2]:
-						if i.color == self.color: break
+						if i.color == self.color:
+							break
 						capture = True
 				else:
 					if show_data:
 						moves.append(enums.Move(name="Q" + ("x" if capture else "") + functions.indexToCoordinate([pos1, pos2]), old_position=self.position, new_position=functions.indexToCoordinate([pos1, pos2]), piece=self, is_capture=capture))
 					else:
 						moves.append("Q" + ("x" if capture else "") + functions.indexToCoordinate([pos1, pos2]))
-					if capture: break
+					if capture:
+						break
 					continue
 				break
 			capture = False
 			for x in reversed(range(functions.coordinateToIndex(self.position)[0])):
 				for y in self.board.pieces:
 					if functions.coordinateToIndex(y.position) == [x, functions.coordinateToIndex(self.position)[1]]:
-						if y.color == self.color: break
+						if y.color == self.color:
+							break
 						capture = True
 				else:
 					if show_data:
 						moves.append(enums.Move(name="Q" + ("x" if capture else "") + functions.indexToCoordinate([x, functions.coordinateToIndex(self.position)[1]]), old_position=self.position, new_position=functions.indexToCoordinate([x, functions.coordinateToIndex(self.position)[1]]), piece=self, is_capture=capture))
 					else:
 						moves.append("Q" + ("x" if capture else "") + functions.indexToCoordinate([x, functions.coordinateToIndex(self.position)[1]]))
-					if capture: break
+					if capture:
+						break
 					continue
 				break
 			capture = False
 			for x in reversed(range(functions.coordinateToIndex(self.position)[1])):
 				for y in self.board.pieces:
 					if functions.coordinateToIndex(y.position) == [functions.coordinateToIndex(self.position)[0], x]:
-						if y.color == self.color: break
+						if y.color == self.color:
+							break
 						capture = True
 				else:
 					if show_data:
 						moves.append(enums.Move(name="Q" + ("x" if capture else "") + functions.indexToCoordinate([functions.coordinateToIndex(self.position)[0], x]), old_position=self.position, new_position=functions.indexToCoordinate([functions.coordinateToIndex(self.position)[0], x]), piece=self, is_capture=capture))
 					else:
 						moves.append("Q" + ("x" if capture else "") + functions.indexToCoordinate([functions.coordinateToIndex(self.position)[0], x]))
-					if capture: break
+					if capture:
+						break
 					continue
 				break
 			capture = False
 			for x in range(functions.coordinateToIndex(self.position)[0] + 1, 8):
 				for y in self.board.pieces:
 					if functions.coordinateToIndex(y.position) == [x, functions.coordinateToIndex(self.position)[1]]:
-						if y.color == self.color: break
+						if y.color == self.color:
+							break
 						capture = True
 				else:
 					if show_data:
 						moves.append(enums.Move(name="Q" + ("x" if capture else "") + functions.indexToCoordinate([x, functions.coordinateToIndex(self.position)[1]]), old_position=self.position, new_position=functions.indexToCoordinate([x, functions.coordinateToIndex(self.position)[1]]), piece=self, is_capture=capture))
 					else:
 						moves.append("Q" + ("x" if capture else "") + functions.indexToCoordinate([x, functions.coordinateToIndex(self.position)[1]]))
-					if capture: break
+					if capture:
+						break
 					continue
 				break
 			capture = False
 			for x in range(functions.coordinateToIndex(self.position)[1] + 1, 8):
 				for y in self.board.pieces:
 					if functions.coordinateToIndex(y.position) == [functions.coordinateToIndex(self.position)[0], x]:
-						if y.color == self.color: break
+						if y.color == self.color:
+							break
 						capture = True
 				else:
 					if show_data:
 						moves.append(enums.Move(name="Q" + ("x" if capture else "") + functions.indexToCoordinate([functions.coordinateToIndex(self.position)[0], x]), old_position=self.position, new_position=functions.indexToCoordinate([functions.coordinateToIndex(self.position)[0], x]), piece=self, is_capture=capture))
 					else:
 						moves.append("Q" + ("x" if capture else "") + functions.indexToCoordinate([functions.coordinateToIndex(self.position)[0], x]))
-					if capture: break
+					if capture:
+						break
 					continue
 				break
+		elif self.piece_type == enums.Piece.king:
+			if self.position[0] != "h" and self.position[1] != "1":
+				if not self.board.attackers(functions.indexToCoordinate([functions.coordinateToIndex(self.position)[0] + 1, functions.coordinateToIndex(self.position)[1] + 1]), enums.Color.invert(self.color)):
+					if self.board.pieceAt(functions.indexToCoordinate([functions.coordinateToIndex(self.position)[0] + 1, functions.coordinateToIndex(self.position)[1] + 1])):
+						if self.board.pieceAt(functions.indexToCoordinate([functions.coordinateToIndex(self.position)[0] + 1, functions.coordinateToIndex(self.position)[1] + 1])).color != self.color:
+							if show_data:
+								moves.append(enums.Move(name="Kx" + functions.indexToCoordinate([functions.coordinateToIndex(self.position)[0] + 1, functions.coordinateToIndex(self.position)[1] + 1]), old_position=self, new_position=functions.indexToCoordinate([functions.coordinateToIndex(self.position)[0] + 1, functions.coordinateToIndex(self.position)[1] + 1]), piece=self, is_capture=True))
+							else:
+								moves.append("Kx" + functions.indexToCoordinate([functions.coordinateToIndex(self.position)[0] + 1, functions.coordinateToIndex(self.position)[1] + 1]))
+					else:
+						if show_data:
+							moves.append(enums.Move(name="K" + functions.indexToCoordinate([functions.coordinateToIndex(self.position)[0] + 1, functions.coordinateToIndex(self.position)[1] + 1]), old_position=self, new_position=functions.indexToCoordinate([functions.coordinateToIndex(self.position)[0] + 1, functions.coordinateToIndex(self.position)[1] + 1]), piece=self))
+						else:
+							moves.append("K" + functions.indexToCoordinate([functions.coordinateToIndex(self.position)[0] + 1, functions.coordinateToIndex(self.position)[1] + 1]))
+			if self.position[0] != "a" and self.position[1] != "8":
+				if not self.board.attackers(functions.indexToCoordinate([functions.coordinateToIndex(self.position)[0] - 1, functions.coordinateToIndex(self.position)[1] - 1]), enums.Color.invert(self.color)):
+					if self.board.pieceAt(functions.indexToCoordinate([functions.coordinateToIndex(self.position)[0] - 1, functions.coordinateToIndex(self.position)[1] - 1])):
+						if self.board.pieceAt(functions.indexToCoordinate([functions.coordinateToIndex(self.position)[0] - 1, functions.coordinateToIndex(self.position)[1] - 1])).color != self.color:
+							if show_data:
+								moves.append(enums.Move(name="Kx" + functions.indexToCoordinate([functions.coordinateToIndex(self.position)[0] - 1, functions.coordinateToIndex(self.position)[1] - 1]), old_position=self, new_position=functions.indexToCoordinate([functions.coordinateToIndex(self.position)[0] - 1, functions.coordinateToIndex(self.position)[1] - 1]), piece=self, is_capture=True))
+							else:
+								moves.append("Kx" + functions.indexToCoordinate([functions.coordinateToIndex(self.position)[0] - 1, functions.coordinateToIndex(self.position)[1] - 1]))
+					else:
+						if show_data:
+							moves.append(enums.Move(name="K" + functions.indexToCoordinate([functions.coordinateToIndex(self.position)[0] - 1, functions.coordinateToIndex(self.position)[1] - 1]), old_position=self, new_position=functions.indexToCoordinate([functions.coordinateToIndex(self.position)[0] - 1, functions.coordinateToIndex(self.position)[1] - 1]), piece=self))
+						else:
+							moves.append("K" + functions.indexToCoordinate([functions.coordinateToIndex(self.position)[0] - 1, functions.coordinateToIndex(self.position)[1] - 1]))
+			if self.position[0] != "a" and self.position[1] != "1":
+				if not self.board.attackers(functions.indexToCoordinate([functions.coordinateToIndex(self.position)[0] + 1, functions.coordinateToIndex(self.position)[1] - 1]), enums.Color.invert(self.color)):
+					if self.board.pieceAt(functions.indexToCoordinate([functions.coordinateToIndex(self.position)[0] + 1, functions.coordinateToIndex(self.position)[1] - 1])):
+						if self.board.pieceAt(functions.indexToCoordinate([functions.coordinateToIndex(self.position)[0] + 1, functions.coordinateToIndex(self.position)[1] - 1])).color != self.color:
+							if show_data:
+								moves.append(enums.Move(name="Kx" + functions.indexToCoordinate([functions.coordinateToIndex(self.position)[0] + 1, functions.coordinateToIndex(self.position)[1] - 1]), old_position=self, new_position=functions.indexToCoordinate([functions.coordinateToIndex(self.position)[0] + 1, functions.coordinateToIndex(self.position)[1] - 1]), piece=self, is_capture=True))
+							else:
+								moves.append("Kx" + functions.indexToCoordinate([functions.coordinateToIndex(self.position)[0] + 1, functions.coordinateToIndex(self.position)[1] - 1]))
+					else:
+						if show_data:
+							moves.append(enums.Move(name="K" + functions.indexToCoordinate([functions.coordinateToIndex(self.position)[0] + 1, functions.coordinateToIndex(self.position)[1] - 1]), old_position=self, new_position=functions.indexToCoordinate([functions.coordinateToIndex(self.position)[0] + 1, functions.coordinateToIndex(self.position)[1] - 1]), piece=self))
+						else:
+							moves.append("K" + functions.indexToCoordinate([functions.coordinateToIndex(self.position)[0] + 1, functions.coordinateToIndex(self.position)[1] - 1]))
+			if self.position[0] != "h" and self.position[1] != "8":
+				if not self.board.attackers(functions.indexToCoordinate([functions.coordinateToIndex(self.position)[0] - 1, functions.coordinateToIndex(self.position)[1] + 1]), enums.Color.invert(self.color)):
+					if self.board.pieceAt(functions.indexToCoordinate([functions.coordinateToIndex(self.position)[0] - 1, functions.coordinateToIndex(self.position)[1] + 1])):
+						if self.board.pieceAt(functions.indexToCoordinate([functions.coordinateToIndex(self.position)[0] - 1, functions.coordinateToIndex(self.position)[1] + 1])).color != self.color:
+							if show_data:
+								moves.append(enums.Move(name="Kx" + functions.indexToCoordinate([functions.coordinateToIndex(self.position)[0] - 1, functions.coordinateToIndex(self.position)[1] + 1]), old_position=self, new_position=functions.indexToCoordinate([functions.coordinateToIndex(self.position)[0] - 1, functions.coordinateToIndex(self.position)[1] + 1]), piece=self, is_capture=True))
+							else:
+								moves.append("Kx" + functions.indexToCoordinate([functions.coordinateToIndex(self.position)[0] - 1, functions.coordinateToIndex(self.position)[1] + 1]))
+					else:
+						if show_data:
+							moves.append(enums.Move(name="K" + functions.indexToCoordinate([functions.coordinateToIndex(self.position)[0] - 1, functions.coordinateToIndex(self.position)[1] + 1]), old_position=self, new_position=functions.indexToCoordinate([functions.coordinateToIndex(self.position)[0] - 1, functions.coordinateToIndex(self.position)[1] + 1]), piece=self))
+						else:
+							moves.append("K" + functions.indexToCoordinate([functions.coordinateToIndex(self.position)[0] - 1, functions.coordinateToIndex(self.position)[1] + 1]))
+			if self.position[0] != "a":
+				if not self.board.attackers(functions.indexToCoordinate([functions.coordinateToIndex(self.position)[0], functions.coordinateToIndex(self.position)[1] - 1]), enums.Color.invert(self.color)):
+					if self.board.pieceAt(functions.indexToCoordinate([functions.coordinateToIndex(self.position)[0], functions.coordinateToIndex(self.position)[1] - 1])):
+						if self.board.pieceAt(functions.indexToCoordinate([functions.coordinateToIndex(self.position)[0], functions.coordinateToIndex(self.position)[1] - 1])).color != self.color:
+							if show_data:
+								moves.append(enums.Move(name="Kx" + functions.indexToCoordinate([functions.coordinateToIndex(self.position)[0], functions.coordinateToIndex(self.position)[1] - 1]), old_position=self, new_position=functions.indexToCoordinate([functions.coordinateToIndex(self.position)[0], functions.coordinateToIndex(self.position)[1] - 1]), piece=self, is_capture=True))
+							else:
+								moves.append("Kx" + functions.indexToCoordinate([functions.coordinateToIndex(self.position)[0], functions.coordinateToIndex(self.position)[1] - 1]))
+					else:
+						if show_data:
+							moves.append(enums.Move(name="K" + functions.indexToCoordinate([functions.coordinateToIndex(self.position)[0], functions.coordinateToIndex(self.position)[1] - 1]), old_position=self, new_position=functions.indexToCoordinate([functions.coordinateToIndex(self.position)[0], functions.coordinateToIndex(self.position)[1] - 1]), piece=self))
+						else:
+							moves.append("K" + functions.indexToCoordinate([functions.coordinateToIndex(self.position)[0], functions.coordinateToIndex(self.position)[1] - 1]))
+			if self.position[0] != "h":
+				if not self.board.attackers(functions.indexToCoordinate([functions.coordinateToIndex(self.position)[0], functions.coordinateToIndex(self.position)[1] + 1]), enums.Color.invert(self.color)):
+					if self.board.pieceAt(functions.indexToCoordinate([functions.coordinateToIndex(self.position)[0], functions.coordinateToIndex(self.position)[1] + 1])):
+						if self.board.pieceAt(functions.indexToCoordinate([functions.coordinateToIndex(self.position)[0], functions.coordinateToIndex(self.position)[1] + 1])).color != self.color:
+							if show_data:
+								moves.append(enums.Move(name="Kx" + functions.indexToCoordinate([functions.coordinateToIndex(self.position)[0], functions.coordinateToIndex(self.position)[1] + 1]), old_position=self, new_position=functions.indexToCoordinate([functions.coordinateToIndex(self.position)[0], functions.coordinateToIndex(self.position)[1] + 1]), piece=self, is_capture=True))
+							else:
+								moves.append("Kx" + functions.indexToCoordinate([functions.coordinateToIndex(self.position)[0], functions.coordinateToIndex(self.position)[1] + 1]))
+					else:
+						if show_data:
+							moves.append(enums.Move(name="K" + functions.indexToCoordinate([functions.coordinateToIndex(self.position)[0], functions.coordinateToIndex(self.position)[1] + 1]), old_position=self, new_position=functions.indexToCoordinate([functions.coordinateToIndex(self.position)[0], functions.coordinateToIndex(self.position)[1] + 1]), piece=self))
+						else:
+							moves.append("K" + functions.indexToCoordinate([functions.coordinateToIndex(self.position)[0], functions.coordinateToIndex(self.position)[1] + 1]))
+			if self.position[1] != "1":
+				if not self.board.attackers(functions.indexToCoordinate([functions.coordinateToIndex(self.position)[0] + 1, functions.coordinateToIndex(self.position)[1]]), enums.Color.invert(self.color)):
+					if self.board.pieceAt(functions.indexToCoordinate([functions.coordinateToIndex(self.position)[0] + 1, functions.coordinateToIndex(self.position)[1]])):
+						if self.board.pieceAt(functions.indexToCoordinate([functions.coordinateToIndex(self.position)[0] + 1, functions.coordinateToIndex(self.position)[1]])).color != self.color:
+							if show_data:
+								moves.append(enums.Move(name="Kx" + functions.indexToCoordinate([functions.coordinateToIndex(self.position)[0] + 1, functions.coordinateToIndex(self.position)[1]]), old_position=self, new_position=functions.indexToCoordinate([functions.coordinateToIndex(self.position)[0] + 1, functions.coordinateToIndex(self.position)[1]]), piece=self, is_capture=True))
+							else:
+								moves.append("Kx" + functions.indexToCoordinate([functions.coordinateToIndex(self.position)[0] + 1, functions.coordinateToIndex(self.position)[1]]))
+					else:
+						if show_data:
+							moves.append(enums.Move(name="K" + functions.indexToCoordinate([functions.coordinateToIndex(self.position)[0] + 1, functions.coordinateToIndex(self.position)[1]]), old_position=self, new_position=functions.indexToCoordinate([functions.coordinateToIndex(self.position)[0] + 1, functions.coordinateToIndex(self.position)[1]]), piece=self))
+						else:
+							moves.append("K" + functions.indexToCoordinate([functions.coordinateToIndex(self.position)[0] + 1, functions.coordinateToIndex(self.position)[1]]))
+			if self.position[1] != "8":
+				if not self.board.attackers(functions.indexToCoordinate([functions.coordinateToIndex(self.position)[0] - 1, functions.coordinateToIndex(self.position)[1]]), enums.Color.invert(self.color)):
+					if self.board.pieceAt(functions.indexToCoordinate([functions.coordinateToIndex(self.position)[0] - 1, functions.coordinateToIndex(self.position)[1]])):
+						if self.board.pieceAt(functions.indexToCoordinate([functions.coordinateToIndex(self.position)[0] - 1, functions.coordinateToIndex(self.position)[1]])).color != self.color:
+							if show_data:
+								moves.append(enums.Move(name="Kx" + functions.indexToCoordinate([functions.coordinateToIndex(self.position)[0] - 1, functions.coordinateToIndex(self.position)[1]]), old_position=self, new_position=functions.indexToCoordinate([functions.coordinateToIndex(self.position)[0] - 1, functions.coordinateToIndex(self.position)[1]]), piece=self, is_capture=True))
+							else:
+								moves.append("Kx" + functions.indexToCoordinate([functions.coordinateToIndex(self.position)[0] - 1, functions.coordinateToIndex(self.position)[1]]))
+					else:
+						if show_data:
+							moves.append(enums.Move(name="K" + functions.indexToCoordinate([functions.coordinateToIndex(self.position)[0] - 1, functions.coordinateToIndex(self.position)[1]]), old_position=self, new_position=functions.indexToCoordinate([functions.coordinateToIndex(self.position)[0] - 1, functions.coordinateToIndex(self.position)[1]]), piece=self))
+						else:
+							moves.append("K" + functions.indexToCoordinate([functions.coordinateToIndex(self.position)[0] - 1, functions.coordinateToIndex(self.position)[1]]))
 		return moves
 
 	def __str__(self):
 		return self.color.title() + " " + self.piece_type + " at " + self.position + " from " + repr(self.board)
 
 	def __lt__(self, other):
-		return {"pawn": 1, "knight": 3, "bishop": 3, "rook": 5, "queen": 9, "king": float("inf")}[self.piece_type] < {"pawn": 1, "knight": 3, "bishop": 3, "rook": 5, "queen": 9, "king": float("inf")}[other.piece_type]
+		return enums.Piece.value(self.piece_type) < enums.Piece.value(other)
 
 	def __add__(self, _):
 		raise ArithmeticError("Cannot add pieces")
@@ -559,6 +704,8 @@ class Game:
 
 	def attackers(self, coordinate, color):
 		"""Returns the pieces that attack the coordinate"""
+		if color not in [enums.Color.white, enums.Color.black]:
+			self.error(errors.UndefinedColor(color))
 		attackers = []
 		for i in self.pieces:
 			if i.color != color:
@@ -566,12 +713,15 @@ class Game:
 			if i.piece_type == enums.Piece.pawn:
 				if functions.coordinateToIndex(coordinate) in [[functions.coordinateToIndex(i.position)[0] - (1 if i.color == enums.Color.white else -1), functions.coordinateToIndex(i.position)[1] - 1], [functions.coordinateToIndex(i.position)[0] - (1 if i.color == enums.Color.white else -1), functions.coordinateToIndex(i.position)[1] + 1]]:
 					attackers.append(i)
-			elif coordinate in i.moves():
+			elif i.piece_type == enums.Piece.king:
+				if functions.coordinateToIndex(coordinate) in [[functions.coordinateToIndex(i.position)[0] - 1, functions.coordinateToIndex(i.position)[1] - 1], [functions.coordinateToIndex(i.position)[0] - 1, functions.coordinateToIndex(i.position)[1]], [functions.coordinateToIndex(i.position)[0] - 1, functions.coordinateToIndex(i.position)[1] + 1], [functions.coordinateToIndex(i.position)[0], functions.coordinateToIndex(i.position)[1] - 1], [functions.coordinateToIndex(i.position)[0], functions.coordinateToIndex(i.position)[1] + 1], [functions.coordinateToIndex(i.position)[0] + 1, functions.coordinateToIndex(i.position)[1] - 1], [functions.coordinateToIndex(i.position)[0] + 1, functions.coordinateToIndex(i.position)[1]], [functions.coordinateToIndex(i.position)[0] + 1, functions.coordinateToIndex(i.position)[1] + 1]]:
+					attackers.append(i)
+			elif any([coordinate in x for x in i.moves()]):
 				attackers.append(i)
 		return attackers
 
 	def visualized(self, use_unicode=True, empty_squares=" ", separators=True):
-		return (("---------------------------------\n| " if use_unicode else "-----------------------------------------\n| ") + (" |\n---------------------------------\n| " if use_unicode else " |\n-----------------------------------------\n| ").join(" | ".join([y + ((empty_squares if use_unicode else empty_squares + " ") if y == "" else "") for y in x]) for x in [["".join([(({"whiteking": "♔", "blackking": "♚", "whitequeen": "♕", "blackqueen": "♛", "whiterook": "♖", "blackrook": "♜", "whitebishop": "♗", "blackbishop": "♝", "whiteknight": "♘", "blackknight": "♞", "whitepawn": "♙", "blackpawn": "♟"}[z.color + z.piece_type]) if use_unicode else (z.color[0].upper() + (z.piece_type[0].upper() if z.piece_type != "knight" else "N"))) if functions.coordinateToIndex(z.position) == [x, y] else "" for z in self.pieces]) for y in range(len(self.squares[x]))] for x in range(len(self.squares))]) + (" |\n---------------------------------" if use_unicode else " |\n-----------------------------------------")) if separators else ("\n".join(" ".join([y + ((empty_squares if use_unicode else empty_squares + " ") if y == "" else "") for y in x]) for x in [["".join([(({"whiteking": "♔", "blackking": "♚", "whitequeen": "♕", "blackqueen": "♛", "whiterook": "♖", "blackrook": "♜", "whitebishop": "♗", "blackbishop": "♝", "whiteknight": "♘", "blackknight": "♞", "whitepawn": "♙", "blackpawn": "♟"}[z.color + z.piece_type]) if use_unicode else (z.color[0].upper() + (z.piece_type[0].upper() if z.piece_type != "knight" else "N"))) if functions.coordinateToIndex(z.position) == [x, y] else "" for z in self.pieces]) for y in range(len(self.squares[x]))] for x in range(len(self.squares))]))
+		return (("---------------------------------\n| " if use_unicode else "-----------------------------------------\n| ") + (" |\n---------------------------------\n| " if use_unicode else " |\n-----------------------------------------\n| ").join(" | ".join([y + ((empty_squares if use_unicode else empty_squares + " ") if y == "" else "") for y in x]) for x in [["".join([((enums.Piece.unicode(z.piece_type, z.color)) if use_unicode else (z.color[0].upper() + (z.piece_type[0].upper() if z.piece_type != "knight" else "N"))) if functions.coordinateToIndex(z.position) == [x, y] else "" for z in self.pieces]) for y in range(len(self.squares[x]))] for x in range(len(self.squares))]) + (" |\n---------------------------------" if use_unicode else " |\n-----------------------------------------")) if separators else ("\n".join(" ".join([y + ((empty_squares if use_unicode else empty_squares + " ") if y == "" else "") for y in x]) for x in [["".join([((enums.Piece.unicode(z.piece_type, z.color)) if use_unicode else (z.color[0].upper() + (z.piece_type[0].upper() if z.piece_type != "knight" else "N"))) if functions.coordinateToIndex(z.position) == [x, y] else "" for z in self.pieces]) for y in range(len(self.squares[x]))] for x in range(len(self.squares))]))
 
 	def __str__(self):
 		return "Chess Game with FEN " + self.FEN()
