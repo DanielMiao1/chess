@@ -5,7 +5,7 @@ Tests File
 import os
 import sys
 sys.path.insert(0, os.path.abspath(os.curdir))
-from ChessLibrary.ChessLibrary import *
+from chess import *
 
 import random
 

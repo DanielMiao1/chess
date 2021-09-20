@@ -3,13 +3,20 @@ setup.py
 Setup
 """
 
-from distutils.core import setup
+import setuptools
 
-setup(
-	name="ChessLibrary",
-	version="v0.0.3-dev.2",
-	author="Daniel Miao",
+setuptools.setup(
+	name="PyChess",
+	version="v0.0.4",
+	author="Daniel M",
 	author_email="danielmiao2019@icloud.com",
-	url="https://github.com/DanielMiao1/ChessLibrary",
-	py_modules=["ChessLibrary", "functions", "errors", "enums"]
+	description="A Chess library in Python 3",
+	long_description=open("README.md", "r").read(),
+	long_description_content_type="text/markdown",
+	url="https://github.com/DanielMiao1/PyChess",
+	classifiers=["Programming Language :: Python 3"],
+	package_dir={"": "."},
+	py_modules=["chess"],
+	packages=["./"],
+	python_requires=">=3",
 )
