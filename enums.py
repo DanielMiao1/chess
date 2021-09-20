@@ -44,3 +44,7 @@ class Move:
 		self.name = name
 		self.old_position, self.new_position = old_position, new_position
 		self.is_capture = is_capture
+		if is_capture:
+			self.captured_piece = self.piece.board.pieceAt(new_position)
+		else:
+			self.captured_piece = None
