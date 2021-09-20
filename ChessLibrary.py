@@ -641,7 +641,7 @@ class Game:
 	def __init__(self, raise_errors=True):
 		"""Initialize"""
 		self.opening = ""
-		self.move_list = ""
+		self.move_list, self.raw_move_list = "", []
 		self.turn = enums.Color.white
 		self.squares, self.pieces = [], []
 		for x in range(8):
@@ -687,6 +687,7 @@ class Game:
 				if i.is_capture:
 					self.pieces.remove(self.pieceAt(i.new_position))
 				i.piece.position = i.new_position
+				self.raw_move_list.append(i)
 				break
 		if self.turn == enums.Color.white:  # Add move to move list
 			if self.move_list == "":
@@ -707,6 +708,26 @@ class Game:
 	def pieceAt(self, coordinate):
 		"""Returns the piece at coordinate if one exists, otherwise return None"""
 		return self.pieces[[i.position for i in self.pieces].index(coordinate)] if coordinate in [i.position for i in self.pieces] else None
+
+	def takeback(self):
+		"""Take backs one move. To take back multiple moves, call the function multiple times."""
+		if not self.raw_move_list:
+			return
+		if self.raw_move_list[-1].is_capture:
+			self.pieces.append(Piece(self.raw_move_list[-1].new_position, self.raw_move_list[-1].captured_piece.piece_type, self.raw_move_list[-1].captured_piece.color, self))
+		self.raw_move_list[-1].piece.position = self.raw_move_list[-1].old_position
+		self.raw_move_list.pop()
+		if self.move_list.split(" ")[-2][-1] == ".":
+			self.move_list = " ".join(self.move_list.split(" ")[:-2])
+		else:
+			self.move_list = " ".join(self.move_list.split(" ")[:-1])
+		self.turn = enums.Color.invert(self.turn)
+		if self.move_list == "":
+			self.opening = ""
+		else:
+			for i in json.load(open("openings.json", "r+")):
+				if i["moves"] == self.move_list:
+					self.opening = i["eco"] + " " + i["name"]
 
 	def attackers(self, coordinate, color):
 		"""Returns the pieces that attack the coordinate"""
