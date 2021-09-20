@@ -7,6 +7,8 @@ import enums
 import errors
 import functions
 
+import json
+
 
 class Square:
 	def __init__(self, position, board):
@@ -638,6 +640,7 @@ class Piece:
 class Game:
 	def __init__(self, raise_errors=True):
 		"""Initialize"""
+		self.opening = ""
 		self.move_list = ""
 		self.turn = enums.Color.white
 		self.squares, self.pieces = [], []
@@ -693,6 +696,9 @@ class Game:
 		else:
 			self.move_list += " " + move
 		self.turn = (enums.Color.white, enums.Color.black)[self.turn == enums.Color.white]
+		for i in json.load(open("openings.json", "r+")):
+			if i["moves"] == self.move_list:
+				self.opening = i["eco"] + " " + i["name"]
 
 	def legal_moves(self, show_data=False):
 		"""Returns all legal moves"""
