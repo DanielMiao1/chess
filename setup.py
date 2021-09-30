@@ -7,7 +7,7 @@ import setuptools
 
 setuptools.setup(
 	name="PyChess",
-	version="v0.0.4",
+	version="v0.1.0-dev",
 	author="Daniel M",
 	author_email="danielmiao2019@icloud.com",
 	description="A Chess library in Python 3",
