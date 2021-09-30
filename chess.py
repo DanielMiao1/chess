@@ -1622,7 +1622,6 @@ openings = [
   {"eco": "C19", "name": "French Defense: Winawer, Positional Variation", "moves": "1. e4 e6 2. d4 d5 3. Nc3 Bb4 4. e5 c5 5. a3 Bxc3+ 6. bxc3 Ne7 7. Nf3"},
   {"eco": "C20", "name": "Barnes Opening: Walkerling Variation", "moves": "1. f3 e5 2. e4 Nf6 3. Bc4"},
   {"eco": "C20", "name": "Open Game: Bongcloud Attack", "moves": "1. e4 e5 2. Ke2"},
-	{"eco": "C20", "name": "Open Game: Extended Bongcloud", "moves": "1. e4 e5 2. Ke2 Ke7 3. Ke3 Ke6"},
   {"eco": "C20", "name": "Center Game", "moves": "1. e4 e5 2. d4"},
   {"eco": "C20", "name": "English Opening: The Whale", "moves": "1. e4 e5 2. c4"},
   {"eco": "C20", "name": "Open Game", "moves": "1. e4 e5"},
@@ -3143,7 +3142,7 @@ class functions:
 					return {"knight": "N", "bishop": "B", "rook": "R", "queen": "Q", "king": "K"}[game.pieceAt(move[:2].lower()).piece_type[0]] + "x" + move[3:] + extra_characters
 		if len(move) == 4:  # Check if the move is not a capture (e.g. e2e4)
 			# If the first two (move[:2]) and last two (move[2:]) characters are coordinates
-			if coordinateValid(move[:2].lower()) and coordinateValid(move[2:].lower()):
+			if functions.coordinateValid(move[:2].lower()) and functions.coordinateValid(move[2:].lower()):
 				if game.pieceAt(move[:2].lower()) is None:  # If the piece is not found, return move
 					return move + extra_characters
 				if game.pieceAt(move[:2].lower()).piece_type[0] == "pawn":  # If the piece is a pawn
@@ -3180,6 +3179,10 @@ class errors:
 	class UndefinedPiece(Exception):
 		def __init__(self, piece):
 			super(errors.UndefinedPiece, self).__init__("Piece '" + str(piece) + "' is invalid")
+	
+	class UndefinedGamePhase(Exception):
+		def __init__(self, phase):
+			super(errors.UndefinedGamePhase, self).__init__("Game phase '" + str(phase) + "' is invalid")
 
 
 """
@@ -3190,7 +3193,12 @@ Type Enumerations
 class enums:
 	class Color:
 		white, black = "white", "black"
-	
+		current, any = "current", "any"
+		
+		@staticmethod
+		def all():
+			return [enums.Color.white, enums.Color.black]
+		
 		@staticmethod
 		def invert(color):
 			if color in ["white", "w"]:
@@ -3204,20 +3212,62 @@ class enums:
 		pawn, knight, bishop, rook = "pawn", "knight", "bishop", "rook"
 		queen, king = "queen", "king"
 		unicode_dictionary = {"whiteking": "♔", "blackking": "♚", "whitequeen": "♕", "blackqueen": "♛", "whiterook": "♖", "blackrook": "♜", "whitebishop": "♗", "blackbishop": "♝", "whiteknight": "♘", "blackknight": "♞", "whitepawn": "♙", "blackpawn": "♟"}
+		piece_values = {"pawn": 1, "knight": 3, "bishop": 3, "rook": 5, "queen": 9, "king": float("inf")}
+		piece_square_tables = {
+			"middlegame": {
+				"pawn": [[0, 0, 0, 0, 0, 0, 0, 0], [50, 50, 50, 50, 50, 50, 50, 50], [35, 35, 35, 35, 35, 35, 35, 35], [5, 5, 15, 14, 14, 15, 5, 5], [5, 5, 7, 12, 12, 7, 5, 5], [-4, -4, -4, -2, -2, -4, -4, -4], [0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0]],
+				"knight": [[-100, -70, -50, -50, -50, -50, -70, -100], [-70, -30, 0, 0, 0, 0, -30, -70], [-50, 10, 15, 16, 16, 15, 10, -50], [-30, 5, 8, 30, 30, 8, 5, -30], [-30, 4, 12, 15, 15, 12, 4, -30], [-50, 5, 15, 5, 5, 15, 5, -50], [-70, -50, -5, -2, -7, -5, -50, -70], [-100, -20, -50, -10, -10, -20, -20, -100]],
+				"bishop": [[-20, 0, -2, -2, -2, -2, 0, -20], [-10, 0, 0, 0, 0, 0, 0, -10], [-6, 10, 8, 5, 5, 8, 10, -6], [-4, 15, 10, 9, 9, 10, 15, -4], [-2, 0, 20, 12, 12, 20, 0, -2], [-5, -5, 2, 15, 15, 2, -5, -5], [0, 30, -5, 5, 5, -5, 30, 0], [-50, -20, -10, -40, -40, -10, -20, -50]],
+				"rook": [[10, 10, 10, 10, 10, 10, 10, 10], [25, 25, 25, 25, 25, 25, 25, 25], [5, 5, 5, 5, 5, 5, 5, 5], [5, 5, 5, 5, 5, 5, 5, 5], [5, 5, 5, 5, 5, 5, 5, 5], [-5, -5, -5, -5, -5, -5, -5, -5], [-15, -15, -5, -15, -15, -15, -15, -15], [0, -5, 0, 10, 15, 10, -5, 0]],
+				"queen": [[0, 30, 30, 40, 40, 30, 30, 0], [5, 20, 20, 25, 25, 20, 20, 5], [0, 20, 20, 25, 25, 20, 20, 0], [0, 20, 20, 20, 20, 20, 20, 6], [-2, 5, 5, 5, 5, 5, 5, -2], [-5, 0, 0, -5, -5, 6, 0, -5], [-10, -2, 0, 2, 2, 2, -2, -10], [-20, -19, -5, 5, 0, -5, -19, -20]],
+				"king": [[-50, -50, -50, -50, -50, -50, -50, -50], [-50, -50, -50, -50, -50, -50, -50, -50], [-50, -50, -50, -50, -50, -50, -50, -50], [-50, -50, -50, -50, -50, -50, -50, -50], [-50, -50, -50, -50, -50, -50, -50, -50], [-50, -50, -50, -50, -50, -50, -50, -50], [-50, -50, -50, -45, -45, -50, -50, -50], [5, 7, 5, -10, 0, 0, 5, 7]]
+			},
+			"endgame": {
+				"pawn": [[0, 0, 0, 0, 0, 0, 0, 0], [200, 200, 200, 200, 200, 200, 200, 200], [80, 80, 80, 80, 80, 80, 80, 80], [40, 30, 20, 10, 10, 20, 30, 40], [20, 10, 0, -2, -2, 0, 10, 20], [10, 10, 5, 0, 0, 5, 10, 10], [5, 5, 5, 5, 5, 5, 5, 5], [0, 0, 0, 0, 0, 0, 0, 0]],
+				"knight": [[-100, -70, -50, -50, -50, -50, -70, -100], [-70, -30, 0, 0, 0, 0, -30, -70], [-50, 10, 15, 16, 16, 15, 10, -50], [-30, 5, 8, 30, 30, 8, 5, -30], [-30, 4, 12, 15, 15, 12, 4, -30], [-50, 5, 15, 5, 5, 15, 5, -50], [-70, -50, -5, -2, -7, -5, -50, -70], [-100, -150, -50, -10, -10, -20, -150, -100]],
+				"bishop": [[-20, -10, -2, -2, -2, -2, -10, -20], [-10, 0, 0, 0, 0, 0, 0, -10], [-6, 10, 8, 5, 5, 8, 10, -6], [-4, 15, 10, 9, 9, 10, 15, -4], [-2, 0, 20, 12, 12, 20, 0, -2], [-5, -5, 2, 15, 15, 2, -5, -5], [0, 30, -5, 5, 5, -5, 30, 0], [-50, -20, -150, -40, -40, -150, -20, -50]],
+				"rook": [[10, 10, 10, 10, 10, 10, 10, 10], [30, 30, 30, 30, 30, 25, 25, 25], [5, 5, 5, 5, 5, 5, 5, 5], [5, 5, 5, 5, 5, 5, 5, 5], [5, 5, 5, 5, 5, 5, 5, 5], [-5, -5, -5, -5, -5, -5, -5, -5], [-15, -15, -5, -15, -15, -15, -15, -15], [0, -5, 0, 10, 15, 10, -5, 0]],
+				"queen": [[20, 30, 30, 40, 40, 30, 30, 20], [5, 20, 20, 25, 25, 20, 20, 5], [0, 20, 20, 25, 25, 20, 20, 0], [0, 20, 20, 20, 20, 20, 20, 0], [5, 5, 5, 5, 5, 5, 5, 5], [5, 5, 5, 5, 5, 5, 5, 5], [5, 5, 5, 5, 5, 5, 5, 5], [5, 5, 5, -150, 5, 5, 5, 5]],
+				"king": [[-500, -250, -200, -200, -200, -200, -250, -500], [-250, 10, 10, 10, 10, 10, 10, -250], [-200, 10, 10, 10, 10, 10, 10, -200], [-200, 10, 10, 10, 10, 10, 10, -200], [-200, 10, 10, 10, 10, 10, 10, -200], [-200, 10, 10, 10, 10, 10, 10, -200], [-250, 0, 0, 0, 0, 0, 0, -250], [-500, -400, -350, -200, -200, -200, -400, -500]]
+			}
+		}
+		
+		@staticmethod
+		def all():
+			return [enums.Piece.pawn, enums.Piece.knight, enums.Piece.bishop, enums.Piece.rook, enums.Piece.queen, enums.Piece.king]
 		
 		@staticmethod
 		def unicode(piece, color="white"):
-			if piece not in ["pawn", "knight", "bishop", "rook", "queen", "king"]:
+			if piece not in enums.Piece.all():
 				raise errors.UndefinedPiece(piece)
-			if color not in ["white", "black"]:
+			if color not in [enums.Color.white, enums.Color.black]:
 				raise errors.UndefinedColor(color)
-			return {"whiteking": "♔", "blackking": "♚", "whitequeen": "♕", "blackqueen": "♛", "whiterook": "♖", "blackrook": "♜", "whitebishop": "♗", "blackbishop": "♝", "whiteknight": "♘", "blackknight": "♞", "whitepawn": "♙", "blackpawn": "♟"}[color + piece]
+			return enums.Piece.unicode_dictionary[color + piece]
 		
 		@staticmethod
 		def value(piece):
-			if piece in ["pawn", "knight", "bishop", "rook", "queen", "king"]:
-				return {"pawn": 1, "knight": 3, "bishop": 3, "rook": 5, "queen": 9, "king": float("inf")}[piece]
+			if piece in enums.Piece.all():
+				return enums.Piece.piece_values[piece]
 			raise errors.UndefinedPiece(piece)
+		
+		@staticmethod
+		def evaluate_piece_position(piece, position, color, game_phase):
+			if game_phase not in enums.Phase.all():
+				raise errors.UndefinedGamePhase(game_phase)
+			if piece not in enums.Piece.all():
+				raise errors.UndefinedPiece(piece)
+			if color not in [enums.Color.white, enums.Color.black]:
+				raise errors.UndefinedColor(color)
+			if color == enums.Color.white:
+				return enums.Piece.piece_square_tables["middlegame" if game_phase in [enums.Phase.opening, enums.Phase.middlegame] else "endgame"][piece][functions.coordinateToIndex(position)[0]][functions.coordinateToIndex(position)[1]]
+			return list(reversed([list(reversed(i)) for i in enums.Piece.piece_square_tables["middlegame" if game_phase in [enums.Phase.opening, enums.Phase.middlegame] else "endgame"][piece]]))[functions.coordinateToIndex(position)[0]][functions.coordinateToIndex(position)[1]]
+	
+	class Phase:
+		opening, middlegame, endgame = "opening", "middlegame", "endgame"
+		
+		@staticmethod
+		def all():
+			return [enums.Phase.opening, enums.Phase.middlegame, enums.Phase.endgame]
 	
 	class Move:
 		def __init__(self, name, old_position, new_position, piece, is_capture=False):
@@ -3866,6 +3916,7 @@ class Game:
 		"""Initialize"""
 		self.opening = ""
 		self.move_list, self.raw_move_list = "", []
+		self.captured_piece = False
 		self.turn = enums.Color.white
 		self.squares, self.pieces = [], []
 		for x in range(8):
@@ -3888,7 +3939,8 @@ class Game:
 			self.squares.append(row)
 		self.raise_errors = raise_errors
 
-	def FEN(self):
+	@staticmethod # Temporary
+	def FEN():
 		"""Returns the FEN of the game"""
 		return "(FEN TEXT)"
 
@@ -3910,6 +3962,7 @@ class Game:
 			if i.name == move and i.piece.color == self.turn:
 				if i.is_capture:
 					self.pieces.remove(self.pieceAt(i.new_position))
+					self.captured_piece = True
 				i.piece.position = i.new_position
 				self.raw_move_list.append(i)
 				break
@@ -3925,10 +3978,38 @@ class Game:
 			if i["moves"] == self.move_list:
 				self.opening = i["eco"] + " " + i["name"]
 
-	def legal_moves(self, show_data=False):
+	def legal_moves(self, show_data=False, color=enums.Color.current):
 		"""Returns all legal moves"""
-		return [y for x in self.pieces if x.color == self.turn for y in x.moves(show_data)]
-
+		return [y for x in self.pieces if x.color == (self.turn if color == enums.Color.current else color) for y in x.moves(show_data)]
+	
+	def pieceType(self, piece, color=enums.Color.any):
+		"""Returns all pieces with type `piece` and color `color`"""
+		return [i for i in self.pieces if i.color in (["white", "black"] if color == enums.Color.any else [color]) and i.piece_type == piece]
+	
+	def gamePhase(self):
+		"""Returns the current game phase"""
+		if len(self.raw_move_list) // 2 <= 6 or not self.captured_piece:
+			return enums.Phase.opening
+		if not self.pieceType(enums.Piece.queen) or [i.piece.piece_type for i in self.raw_move_list].count(enums.Piece.king) > 3:
+			return enums.Phase.endgame
+		return enums.Phase.middlegame
+	
+	def materialDifference(self):
+		"""Returns the material difference. Positive values indicate white has more material, while negative values indicate black has more."""
+		difference = 0
+		for i in enums.Piece.all():
+			if i == enums.Piece.king:
+				continue
+			difference += sum([enums.Piece.value(x.piece_type) for x in self.pieceType(i, enums.Color.white)]) - sum([enums.Piece.value(x.piece_type) for x in self.pieceType(i, enums.Color.black)])
+		return difference
+	
+	def evaluate(self):
+		"""Evaluates the current position"""
+		evaluation_centipawns = (self.materialDifference() * 100) + (0.1 * (len(self.legal_moves(color=enums.Color.white)) - len(self.legal_moves(color=enums.Color.black)))) # Material difference + piece mobility
+		for i in self.pieces:
+			evaluation_centipawns += enums.Piece.evaluate_piece_position(i.piece_type, i.position, i.color, self.gamePhase()) / 10
+		return round(evaluation_centipawns / 100, 5)
+	
 	def pieceAt(self, coordinate):
 		"""Returns the piece at coordinate if one exists, otherwise return None"""
 		return self.pieces[[i.position for i in self.pieces].index(coordinate)] if coordinate in [i.position for i in self.pieces] else None
