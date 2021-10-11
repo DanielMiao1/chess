@@ -3782,6 +3782,8 @@ class Game:
 		self.turn = enums.Color.white  # The side to move
 		self.squares, self.pieces = [], []
 		self.in_check = False  # False if neither side is in check, enums.Color.white if white is in check, otherwise enums.Color.black if black is in check
+		self.half_moves = 0
+		self.full_moves = 1
 		for x in range(8):
 			row = []
 			for y in range(8):
@@ -3802,10 +3804,39 @@ class Game:
 			self.squares.append(row)
 		self.raise_errors = raise_errors
 
-	@staticmethod  # Temporary
-	def FEN():
+	def FEN(self):
 		"""Returns the FEN of the game"""
-		return "(FEN TEXT)"
+		def combineNumbers(string):
+			"""Combines numbers in a string"""
+			if "1" not in string:
+				return string
+			if string.isnumeric():
+				return sum(map(int, string))
+			new_string = ""
+			index = 0
+			for i in range(len(string)):
+				if not string[i].isnumeric():
+					new_string += str(combineNumbers(string[index:i])) + string[i]
+					index = i + 1
+			if string[-1].isnumeric():
+				new_string += str(combineNumbers(string[index:]))
+			return new_string
+
+		fen = ""  # Set fen variable
+		# Get squares
+		for x in self.squares:
+			for y in x:
+				if self.pieceAt(y.position):
+					fen += (self.pieceAt(y.position).piece_type[0] if self.pieceAt(y.position).piece_type != enums.Piece.knight else "n").upper() if self.pieceAt(y.position).color == enums.Color.white else (self.pieceAt(y.position).piece_type[0] if self.pieceAt(y.position).piece_type != enums.Piece.knight else "n")
+				else:
+					fen += "1"
+			fen += "/"
+		fen = combineNumbers(fen[:-1])
+		fen += " " + self.turn[0]  # Add the side to move
+		fen += " -"  # TODO: Castling rights
+		fen += " -"  # TODO: En Passant captures
+		fen += " " + str(self.half_moves) + " " + str(self.full_moves)  # Add alfmove and fullmove clock
+		return fen
 
 	def error(self, error):
 		"""Raises an error if allowed"""
@@ -3814,13 +3845,20 @@ class Game:
 
 	def move(self, move):
 		"""Moves a piece"""
+		# If move is a enums.Move object, then redefine move as the name of move
 		if isinstance(move, enums.Move):
 			move = move.name
+		# If move is not a string, raise an error
 		if not isinstance(move, str):
 			self.error(errors.InvalidMove(move))
+			return False
+		# Convert to SAN if necessary
 		move = functions.toSAN(move, self)
+		# If move is not possible, raise an error
 		if move not in self.legal_moves():
 			self.error(errors.MoveNotPossible(move))
+			return False
+		# Find the move data
 		for i in self.legal_moves(True):
 			if i.name == move and i.piece.color == self.turn:
 				if i.is_capture:
@@ -3834,14 +3872,23 @@ class Game:
 			self.in_check = enums.Color.invert(self.turn)
 		else:
 			self.in_check = False
-		if self.turn == enums.Color.white:  # Add move to move list
-			if self.move_list == "":
+		# Add move to move list and increase fullmove counter if necessary
+		if self.turn == enums.Color.white:  # If white moved
+			# Add move to move list
+			if self.move_list == "":  # If there has not been any moves
 				self.move_list += "1. " + move
-			else:
+			else:  # Otherwise
 				self.move_list += " " + str(int(self.move_list.split(" ")[-3][0]) + 1) + ". " + move
-		else:
-			self.move_list += " " + move
-		self.turn = enums.Color.invert(self.turn)
+		else:  # If black moved
+			self.full_moves += 1  # Increase fullmove counter
+			self.move_list += " " + move  # Add move to move list
+		# Calculate halfmove counter
+		if i.is_capture or i.piece.piece_type == enums.Piece.pawn:  # Reset halfmove counter if the move is a pawn move or a capture
+			self.half_moves = 0
+		else:  # Otherwise, increase the halfmove counter by 1
+			self.half_moves += 1
+		self.turn = enums.Color.invert(self.turn)  # Invert turn
+		# Get opening
 		for i in openings:
 			if i["moves"] == self.move_list:
 				self.opening = i["eco"] + " " + i["name"]
