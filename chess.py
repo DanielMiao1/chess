@@ -3280,6 +3280,8 @@ class enums:
 			else:
 				self.captured_piece = None
 
+		__str__ = __repr__ = lambda self: str(self.name)
+
 
 """Main Script"""
 
@@ -3329,7 +3331,8 @@ class Square:
 
 class Piece:
 	def __init__(self, position, piece_type, color, board):
-		self.position = functions.indexToCoordinate(position)
+		board.pieces.append(self)
+		self.position = position if isinstance(position, str) else functions.indexToCoordinate(position)
 		self.piece_type, self.color, self.board = piece_type, color, board
 
 	def moves(self, show_data=False):
@@ -3774,40 +3777,46 @@ class Piece:
 
 
 class Game:
-	def __init__(self, raise_errors=True):
+	"""Game class"""
+	def __init__(self, raise_errors=True, fen="rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w - - 0 1"):
 		"""Initialize"""
-		self.opening = ""
-		self.move_list, self.raw_move_list = "", []
-		self.captured_piece = False
-		self.turn = enums.Color.white  # The side to move
-		self.squares, self.pieces = [], []
+		self.opening = ""  # Opening
+		self.move_list, self.raw_move_list = "", []  # Move lists
+		self.squares, self.pieces = [], []  # Pieces and squares
 		self.in_check = False  # False if neither side is in check, enums.Color.white if white is in check, otherwise enums.Color.black if black is in check
-		self.half_moves = 0
-		self.full_moves = 1
+		# Append to squares
 		for x in range(8):
-			row = []
-			for y in range(8):
-				row.append(Square([x, y], self))
-				if x in [0, 7]:
-					if y in [0, 7]:
-						self.pieces.append(Piece([x, y], enums.Piece.rook, enums.Color.black if x == 0 else enums.Color.white, self))
-					elif y in [1, 6]:
-						self.pieces.append(Piece([x, y], enums.Piece.knight, enums.Color.black if x == 0 else enums.Color.white, self))
-					elif y in [2, 5]:
-						self.pieces.append(Piece([x, y], enums.Piece.bishop, enums.Color.black if x == 0 else enums.Color.white, self))
-					elif y == 3:
-						self.pieces.append(Piece([x, y], enums.Piece.queen, enums.Color.black if x == 0 else enums.Color.white, self))
-					elif y == 4:
-						self.pieces.append(Piece([x, y], enums.Piece.king, enums.Color.black if x == 0 else enums.Color.white, self))
-				elif x in [1, 6]:
-					self.pieces.append(Piece([x, y], enums.Piece.pawn, enums.Color.black if x == 1 else enums.Color.white, self))
-			self.squares.append(row)
-		self.raise_errors = raise_errors
+			self.squares.append([Square([x, y], self) for y in range(8)])
+		self.raise_errors = raise_errors  # Raise errors
+		# Load FEN-specific values
+		self.loadFEN(fen)
+
+	def loadFEN(self, fen):
+		"""Load/Reload with the specified FEN"""
+		def splitNumbers(string):
+			"""Splits numbers in a string"""
+			return "".join(["1" * int(i) if i.isnumeric() else i for i in string])
+
+		if self.pieces:
+			self.pieces = []
+		self.captured_piece = sum([int(not y.isnumeric()) for x in fen.split(" ")[0].split("/") for y in x]) < 32  # If a piece has been captured
+		self.turn = enums.Color.white if fen.split(" ")[-5].lower() == "w" else enums.Color.black  # The side to move
+		self.half_moves = int(fen.split(" ")[-2])  # Halfmove clock
+		self.full_moves = int(fen.split(" ")[-1])  # Fullmove clock
+		for i, j in enumerate(splitNumbers(fen.split(" ")[0]).split("/")):
+			for x, y in enumerate(j):
+				if y.isnumeric():
+					continue
+				Piece(functions.indexToCoordinate([i, x]), enums.Piece.pawn if y.lower() == "p" else enums.Piece.knight if y.lower() == "n" else enums.Piece.bishop if y.lower() == "b" else enums.Piece.rook if y.lower() == "r" else enums.Piece.queen if y.lower() == "q" else enums.Piece.king, enums.Color.white if y.isupper() else enums.Color.black, self)
+
+	def reset(self):
+		"""Reset game"""
+		self.loadFEN("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w - - 0 1")
 
 	def FEN(self):
 		"""Returns the FEN of the game"""
 		def combineNumbers(string):
-			"""Combines numbers in a string"""
+			"""Combine numbers in a string"""
 			if "1" not in string:
 				return string
 			if string.isnumeric():
@@ -3880,8 +3889,11 @@ class Game:
 			else:  # Otherwise
 				self.move_list += " " + str(int(self.move_list.split(" ")[-3][0]) + 1) + ". " + move
 		else:  # If black moved
+			if self.move_list == "":  # Check for custom FENs
+				self.move_list += "1. ... " + move  # Add move to move list
+			else:
+				self.move_list += " " + move  # Add move to move list
 			self.full_moves += 1  # Increase fullmove counter
-			self.move_list += " " + move  # Add move to move list
 		# Calculate halfmove counter
 		if i.is_capture or i.piece.piece_type == enums.Piece.pawn:  # Reset halfmove counter if the move is a pawn move or a capture
 			self.half_moves = 0
