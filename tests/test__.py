@@ -21,4 +21,5 @@ def test():
 	else:
 		raise Exception("Invalid move does not raise a InvalidMove error")
 	# Test with random valid move
-	game.move(random.choice(game.legal_moves()))
+	for i in range(3):
+		game.move(random.choice(game.legal_moves()))
