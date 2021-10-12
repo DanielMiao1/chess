@@ -3429,6 +3429,28 @@ Functions
 
 class functions:
 	@staticmethod
+	def splitNumbers(string):
+		"""Splits numbers in a string"""
+		return "".join(["1" * int(i) if i.isnumeric() else i for i in string])
+
+	@staticmethod
+	def combineNumbers(string):
+		"""Combine numbers in a string"""
+		if "1" not in string:
+			return string
+		if string.isnumeric():
+			return sum(map(int, string))
+		new_string = ""
+		index = 0
+		for i in range(len(string)):
+			if not string[i].isnumeric():
+				new_string += str(functions.combineNumbers(string[index:i])) + string[i]
+				index = i + 1
+		if string[-1].isnumeric():
+			new_string += str(functions.combineNumbers(string[index:]))
+		return new_string
+
+	@staticmethod
 	def indexToCoordinate(index):
 		"""Return a board coordinate (e.g. e4) from index (e.g. [4, 4])"""
 		return ("a", "b", "c", "d", "e", "f", "g", "h")[index[1]] + str(abs(index[0] - 8))
@@ -3483,6 +3505,32 @@ class functions:
 
 		return move + extra_characters
 
+	@staticmethod
+	def FENvalid(fen):
+		if len(fen.split(" ")) < 6:
+			return False
+		if fen.split(" ")[0].count("/") != 7:
+			return False
+		kings = []
+		for x in fen.split(" ")[0].split("/"):
+			if not all([y.lower() in "pnbrqk" or (y.isnumeric() and int(y) < 9) for y in x]) or len(functions.splitNumbers(x)) != 8:
+				return False
+			if "k" in x:
+				if x.count("k") > 1:
+					kings.append("k")
+				kings.append("k")
+			if "K" in x:
+				if x.count("K") > 1:
+					kings.append("k")
+				kings.append("K")
+		if len(kings) > 2 or "k" not in kings or "K" not in kings:
+			return False
+		if fen.split(" ")[1] not in "wb":
+			return False
+		if (fen.split(" ")[2] != "-" and (not all([i.lower() in "kq" for i in fen.split(" ")[2]]) or len(set(fen.split(" ")[2])) != len(fen.split(" ")[2]))) or (fen.split(" ")[3] != "-" and not functions.coordinateValid(fen.split(" ")[3])) or not fen.split(" ")[4].isnumeric() or not fen.split(" ")[5].isnumeric():
+			return False
+		return True
+
 
 """
 Error Classes
@@ -3514,6 +3562,10 @@ class errors:
 	class UndefinedGamePhase(Exception):
 		def __init__(self, phase):
 			super(errors.UndefinedGamePhase, self).__init__("Game phase '" + str(phase) + "' is invalid")
+
+	class InvalidFEN(Exception):
+		def __init__(self, fen):
+			super(errors.InvalidFEN, self).__init__("FEN '" + str(fen) + "' is invalid")
 
 
 """
@@ -3601,11 +3653,12 @@ class enums:
 			return [enums.Phase.opening, enums.Phase.middlegame, enums.Phase.endgame]
 
 	class Move:
-		def __init__(self, name, old_position, new_position, piece, is_capture=False):
+		def __init__(self, name, old_position, new_position, piece, is_capture=False, check=False):
 			self.piece = piece
 			self.name = name
 			self.old_position, self.new_position = old_position, new_position
 			self.is_capture = is_capture
+			self.check = check
 			if is_capture:
 				self.captured_piece = self.piece.board.pieceAt(new_position)
 			else:
@@ -3665,12 +3718,13 @@ class Piece:
 		board.pieces.append(self)
 		self.position = position if isinstance(position, str) else functions.indexToCoordinate(position)
 		self.piece_type, self.color, self.board = piece_type, color, board
+		self.moved = False
 
 	def moves(self, show_data=False):
 		moves = []
 		if self.piece_type == enums.Piece.pawn:  # Pawn moves
 			# Straight pawn moves
-			#  # Check if pawn is blocked
+			# Check if pawn is blocked
 			for i in self.board.pieces:
 				if functions.coordinateToIndex(i.position) == [functions.coordinateToIndex(self.position)[0] - (1 if self.color == enums.Color.white else -1), functions.coordinateToIndex(self.position)[1]]:
 					break
@@ -4109,8 +4163,10 @@ class Piece:
 
 class Game:
 	"""Game class"""
-	def __init__(self, raise_errors=True, fen="rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w - - 0 1"):
+	def __init__(self, raise_errors=True, fen="rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"):
 		"""Initialize"""
+		if not functions.FENvalid(fen):
+			fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
 		self.starting_fen = fen
 		self.opening = ""  # Opening
 		self.move_list, self.raw_move_list = "", []  # Move lists
@@ -4125,17 +4181,16 @@ class Game:
 
 	def loadFEN(self, fen):
 		"""Load/Reload with the specified FEN"""
-		def splitNumbers(string):
-			"""Splits numbers in a string"""
-			return "".join(["1" * int(i) if i.isnumeric() else i for i in string])
-
+		if not functions.FENvalid(fen):
+			self.error(errors.InvalidFEN(fen))
+			return False
 		if self.pieces:
 			self.pieces = []
 		self.captured_piece = sum([int(not y.isnumeric()) for x in fen.split(" ")[0].split("/") for y in x]) < 32  # If a piece has been captured
 		self.turn = enums.Color.white if fen.split(" ")[-5].lower() == "w" else enums.Color.black  # The side to move
 		self.half_moves = int(fen.split(" ")[-2])  # Halfmove clock
 		self.full_moves = int(fen.split(" ")[-1])  # Fullmove clock
-		for i, j in enumerate(splitNumbers(fen.split(" ")[0]).split("/")):
+		for i, j in enumerate(functions.splitNumbers(fen.split(" ")[0]).split("/")):
 			for x, y in enumerate(j):
 				if y.isnumeric():
 					continue
@@ -4146,26 +4201,10 @@ class Game:
 
 	def reset(self):
 		"""Reset game"""
-		self.loadFEN("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w - - 0 1")
+		self.loadFEN("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1")
 
 	def FEN(self):
 		"""Returns the FEN of the game"""
-		def combineNumbers(string):
-			"""Combine numbers in a string"""
-			if "1" not in string:
-				return string
-			if string.isnumeric():
-				return sum(map(int, string))
-			new_string = ""
-			index = 0
-			for i in range(len(string)):
-				if not string[i].isnumeric():
-					new_string += str(combineNumbers(string[index:i])) + string[i]
-					index = i + 1
-			if string[-1].isnumeric():
-				new_string += str(combineNumbers(string[index:]))
-			return new_string
-
 		fen = ""  # Set fen variable
 		# Get squares
 		for x in self.squares:
@@ -4175,7 +4214,7 @@ class Game:
 				else:
 					fen += "1"
 			fen += "/"
-		fen = combineNumbers(fen[:-1])
+		fen = functions.combineNumbers(fen[:-1])
 		fen += " " + self.turn[0]  # Add the side to move
 		fen += " -"  # TODO: Castling rights
 		fen += " -"  # TODO: En Passant captures
@@ -4209,6 +4248,7 @@ class Game:
 					self.pieces.remove(self.pieceAt(i.new_position))
 					self.captured_piece = True
 				i.piece.position = i.new_position
+				i.piece.moved = True
 				self.raw_move_list.append(i)
 				break
 		if any([True for i in self.legal_moves(show_data=True, color=self.turn) if i.new_position == self.pieceType(enums.Piece.king, color=enums.Color.invert(self.turn))[0].position]):
