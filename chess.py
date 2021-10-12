@@ -1,5 +1,14 @@
 # -*- coding: utf-8 -*-
 
+
+"""
+Initialization
+"""
+try:
+	unicode
+except NameError:
+	unicode = str
+
 """
 Openings
 """
@@ -3431,22 +3440,22 @@ class functions:
 	@staticmethod
 	def splitNumbers(string):
 		"""Splits numbers in a string"""
-		return "".join(["1" * int(i) if i.isnumeric() else i for i in string])
+		return "".join(["1" * int(i) if unicode(i).isnumeric() else i for i in string])
 
 	@staticmethod
 	def combineNumbers(string):
 		"""Combine numbers in a string"""
 		if "1" not in string:
 			return string
-		if string.isnumeric():
+		if unicode(string).isnumeric():
 			return sum(map(int, string))
 		new_string = ""
 		index = 0
 		for i in range(len(string)):
-			if not string[i].isnumeric():
+			if not unicode(string[i]).isnumeric():
 				new_string += str(functions.combineNumbers(string[index:i])) + string[i]
 				index = i + 1
-		if string[-1].isnumeric():
+		if unicode(string[-1]).isnumeric():
 			new_string += str(functions.combineNumbers(string[index:]))
 		return new_string
 
@@ -3513,7 +3522,7 @@ class functions:
 			return False
 		kings = []
 		for x in fen.split(" ")[0].split("/"):
-			if not all([y.lower() in "pnbrqk" or (y.isnumeric() and int(y) < 9) for y in x]) or len(functions.splitNumbers(x)) != 8:
+			if not all([y.lower() in "pnbrqk" or (unicode(y).isnumeric() and int(y) < 9) for y in x]) or len(functions.splitNumbers(x)) != 8:
 				return False
 			if "k" in x:
 				if x.count("k") > 1:
@@ -3527,7 +3536,7 @@ class functions:
 			return False
 		if fen.split(" ")[1] not in "wb":
 			return False
-		if (fen.split(" ")[2] != "-" and (not all([i.lower() in "kq" for i in fen.split(" ")[2]]) or len(set(fen.split(" ")[2])) != len(fen.split(" ")[2]))) or (fen.split(" ")[3] != "-" and not functions.coordinateValid(fen.split(" ")[3])) or not fen.split(" ")[4].isnumeric() or not fen.split(" ")[5].isnumeric():
+		if (fen.split(" ")[2] != "-" and (not all([i.lower() in "kq" for i in fen.split(" ")[2]]) or len(set(fen.split(" ")[2])) != len(fen.split(" ")[2]))) or (fen.split(" ")[3] != "-" and not functions.coordinateValid(fen.split(" ")[3])) or not unicode(fen.split(" ")[4]).isnumeric() or not unicode(fen.split(" ")[5]).isnumeric():
 			return False
 		return True
 
@@ -4186,13 +4195,13 @@ class Game:
 			return False
 		if self.pieces:
 			self.pieces = []
-		self.captured_piece = sum([int(not y.isnumeric()) for x in fen.split(" ")[0].split("/") for y in x]) < 32  # If a piece has been captured
+		self.captured_piece = sum([int(not unicode(y).isnumeric()) for x in fen.split(" ")[0].split("/") for y in x]) < 32  # If a piece has been captured
 		self.turn = enums.Color.white if fen.split(" ")[-5].lower() == "w" else enums.Color.black  # The side to move
 		self.half_moves = int(fen.split(" ")[-2])  # Halfmove clock
 		self.full_moves = int(fen.split(" ")[-1])  # Fullmove clock
 		for i, j in enumerate(functions.splitNumbers(fen.split(" ")[0]).split("/")):
 			for x, y in enumerate(j):
-				if y.isnumeric():
+				if unicode(y).isnumeric():
 					continue
 				Piece(functions.indexToCoordinate([i, x]), enums.Piece.pawn if y.lower() == "p" else enums.Piece.knight if y.lower() == "n" else enums.Piece.bishop if y.lower() == "b" else enums.Piece.rook if y.lower() == "r" else enums.Piece.queen if y.lower() == "q" else enums.Piece.king, enums.Color.white if y.isupper() else enums.Color.black, self)
 		for i in openings:
