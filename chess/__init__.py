@@ -4,6 +4,7 @@
 """
 Initialization
 """
+
 try:
 	unicode
 except NameError:
