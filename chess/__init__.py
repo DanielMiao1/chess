@@ -521,12 +521,10 @@ class Game:
 		"""Initialize"""
 		if not functions.FENvalid(fen):
 			fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
-		self.starting_fen = fen
 		self.opening = ""  # Opening
-		self.move_list, self.raw_move_list = "", []  # Move lists
 		self.squares, self.pieces = [], []  # Pieces and squares
 		self.in_check = False  # False if neither side is in check, enums.Color.white if white is in check, otherwise enums.Color.black if black is in check
-		# Append to squares
+		# Append squares
 		for x in range(8):
 			self.squares.append([Square([x, y], self) for y in range(8)])
 		self.raise_errors = raise_errors  # Raise errors
@@ -535,23 +533,36 @@ class Game:
 
 	def loadFEN(self, fen):
 		"""Load/Reload with the specified FEN"""
+		self.move_list, self.raw_move_list = "", []  # Move lists
 		if not functions.FENvalid(fen):
 			self.error(errors.InvalidFEN(fen))
 			return False
+		self.starting_fen = fen  # Set the starting FEN
+		# Reset self.pieces
 		if self.pieces:
 			self.pieces = []
 		self.captured_piece = sum([int(not unicode(y).isnumeric()) for x in fen.split(" ")[0].split("/") for y in x]) < 32  # If a piece has been captured
 		self.turn = enums.Color.white if fen.split(" ")[-5].lower() == "w" else enums.Color.black  # The side to move
 		self.half_moves = int(fen.split(" ")[-2])  # Halfmove clock
 		self.full_moves = int(fen.split(" ")[-1])  # Fullmove clock
+		# Add pieces
 		for i, j in enumerate(functions.splitNumbers(fen.split(" ")[0]).split("/")):
 			for x, y in enumerate(j):
 				if unicode(y).isnumeric():
 					continue
 				Piece(functions.indexToCoordinate([i, x]), enums.Piece.pawn if y.lower() == "p" else enums.Piece.knight if y.lower() == "n" else enums.Piece.bishop if y.lower() == "b" else enums.Piece.rook if y.lower() == "r" else enums.Piece.queen if y.lower() == "q" else enums.Piece.king, enums.Color.white if y.isupper() else enums.Color.black, self)
+		# Load opening
 		for i in openings.openings:
 			if i["fen"] == " ".join(fen.split(" ")[:2]):
 				self.opening = i["eco"] + " " + i["name"]
+
+	def loadOpening(self, opening_name):
+		"""Load an opening"""
+		for i in openings.openings:
+			if opening_name.lower().replace("king's pawn game", "open game").replace("queen's pawn game", "closed game").replace("russian game", "petrov's defense") in [i["name"].lower(), i["eco"].lower() + " " + i["name"].lower(), i["eco"].lower() + i["name"].lower(), i["eco"].lower().replace("'", ""), i["eco"].lower() + " " + i["name"].lower().replace("'", ""), i["eco"].lower() + i["name"].lower().replace("'", "")]:
+				self.loadFEN(i["fen"] + " - - 0 0")
+				return True
+		return False
 
 	def reset(self):
 		"""Reset game"""

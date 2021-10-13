@@ -13,7 +13,7 @@ class Color:
 
 	@staticmethod
 	def all():
-		return [enums.Color.white, enums.Color.black]
+		return [Color.white, Color.black]
 
 	@staticmethod
 	def invert(color):
@@ -50,40 +50,40 @@ class Piece:
 
 	@staticmethod
 	def all():
-		return [enums.Piece.pawn, enums.Piece.knight, enums.Piece.bishop, enums.Piece.rook, enums.Piece.queen, enums.Piece.king]
+		return [Piece.pawn, Piece.knight, Piece.bishop, Piece.rook, Piece.queen, Piece.king]
 
 	@staticmethod
 	def unicode(piece, color="white"):
-		if piece not in enums.Piece.all():
+		if piece not in Piece.all():
 			raise errors.UndefinedPiece(piece)
-		if color not in [enums.Color.white, enums.Color.black]:
+		if color not in [Color.white, Color.black]:
 			raise errors.UndefinedColor(color)
-		return enums.Piece.unicode_dictionary[color + piece]
+		return Piece.unicode_dictionary[color + piece]
 
 	@staticmethod
 	def value(piece):
-		if piece in enums.Piece.all():
-			return enums.Piece.piece_values[piece]
+		if piece in Piece.all():
+			return Piece.piece_values[piece]
 		raise errors.UndefinedPiece(piece)
 
 	@staticmethod
 	def evaluate_piece_position(piece, position, color, game_phase):
-		if game_phase not in enums.Phase.all():
+		if game_phase not in Phase.all():
 			raise errors.UndefinedGamePhase(game_phase)
-		if piece not in enums.Piece.all():
+		if piece not in Piece.all():
 			raise errors.UndefinedPiece(piece)
-		if color not in [enums.Color.white, enums.Color.black]:
+		if color not in [Color.white, Color.black]:
 			raise errors.UndefinedColor(color)
-		if color == enums.Color.white:
-			return enums.Piece.piece_square_tables["middlegame" if game_phase in [enums.Phase.opening, enums.Phase.middlegame] else "endgame"][piece][functions.coordinateToIndex(position)[0]][functions.coordinateToIndex(position)[1]]
-		return list(reversed([list(reversed(i)) for i in enums.Piece.piece_square_tables["middlegame" if game_phase in [enums.Phase.opening, enums.Phase.middlegame] else "endgame"][piece]]))[functions.coordinateToIndex(position)[0]][functions.coordinateToIndex(position)[1]]
+		if color == Color.white:
+			return Piece.piece_square_tables["middlegame" if game_phase in [Phase.opening, Phase.middlegame] else "endgame"][piece][functions.coordinateToIndex(position)[0]][functions.coordinateToIndex(position)[1]]
+		return list(reversed([list(reversed(i)) for i in Piece.piece_square_tables["middlegame" if game_phase in [Phase.opening, Phase.middlegame] else "endgame"][piece]]))[functions.coordinateToIndex(position)[0]][functions.coordinateToIndex(position)[1]]
 
 class Phase:
 	opening, middlegame, endgame = "opening", "middlegame", "endgame"
 
 	@staticmethod
 	def all():
-		return [enums.Phase.opening, enums.Phase.middlegame, enums.Phase.endgame]
+		return [Phase.opening, Phase.middlegame, Phase.endgame]
 
 class Move:
 	def __init__(self, name, old_position, new_position, piece, is_capture=False, check=False):
