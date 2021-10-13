@@ -47,6 +47,8 @@ def coordinateValid(coordinate):
 def toSAN(move, game):
 	"""Return the move in standard algebraic notation (e.g. e2e4 -> e4, g1f3 -> Nf3, e4 -> e4)"""
 	extra_characters = ""  # Stores extra characters (e.g +,  #, =Q, =Q+...)
+	if move in ["O-O", "0-0", "O-O-O", "0-0-0"]:
+		return move.replace("0", "O")
 	if move.endswith("+"):  # If a "+" is found
 		extra_characters = "+"
 		move = move[:-1]
