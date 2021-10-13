@@ -482,6 +482,31 @@ class Piece:
 							moves.append(enums.Move(name="Kx" + functions.indexToCoordinate([functions.coordinateToIndex(self.position)[0] - 1, functions.coordinateToIndex(self.position)[1]]), old_position=self, new_position=functions.indexToCoordinate([functions.coordinateToIndex(self.position)[0] - 1, functions.coordinateToIndex(self.position)[1]]), piece=self, is_capture=True))
 					else:
 						moves.append(enums.Move(name="K" + functions.indexToCoordinate([functions.coordinateToIndex(self.position)[0] - 1, functions.coordinateToIndex(self.position)[1]]), old_position=self, new_position=functions.indexToCoordinate([functions.coordinateToIndex(self.position)[0] - 1, functions.coordinateToIndex(self.position)[1]]), piece=self))
+			# Castling
+			if not self.moved and self.board.in_check != self.color:
+				valid = True
+				for x in self.board.pieceType(enums.Piece.rook, self.color):
+					if x.position[1] == self.position[1] and not x.moved:
+						if functions.coordinateToIndex(self.position)[1] < functions.coordinateToIndex(x.position)[1]:
+							for y in range(functions.coordinateToIndex(self.position)[1] + 1, functions.coordinateToIndex(x.position)[1]):
+								if self.board.attackers(functions.indexToCoordinate([functions.coordinateToIndex(self.position)[0], y]), enums.Color.invert(self.color)) or self.board.pieceAt(functions.indexToCoordinate([functions.coordinateToIndex(self.position)[0], y])):
+									valid = False
+									break
+							if valid:
+								moves.append(enums.Move("O-O", self.position, "g" + self.position[1], piece=self, castle=enums.Castle.kingside, castle_rook=x))
+							else:
+								valid = True
+								continue
+						else:
+							for y in range(functions.coordinateToIndex(x.position)[1] + 1, functions.coordinateToIndex(self.position)[1]):
+								if self.board.attackers(functions.indexToCoordinate([functions.coordinateToIndex(self.position)[0], y]), enums.Color.invert(self.color)) or self.board.pieceAt(functions.indexToCoordinate([functions.coordinateToIndex(self.position)[0], y])):
+									valid = False
+									break
+							if valid:
+								moves.append(enums.Move("O-O-O", self.position, "c" + self.position[1], piece=self, castle=enums.Castle.queenside, castle_rook=x))
+							else:
+								valid = True
+								continue
 		return moves if show_data else [i.name for i in moves]
 
 	def __str__(self):
@@ -545,6 +570,7 @@ class Game:
 		self.turn = enums.Color.white if fen.split(" ")[-5].lower() == "w" else enums.Color.black  # The side to move
 		self.half_moves = int(fen.split(" ")[-2])  # Halfmove clock
 		self.full_moves = int(fen.split(" ")[-1])  # Fullmove clock
+		self.castling_rights = fen.split(" ")[2] if fen.split(" ")[2] != "-" else None  # Castling rights
 		# Add pieces
 		for i, j in enumerate(functions.splitNumbers(fen.split(" ")[0]).split("/")):
 			for x, y in enumerate(j):
@@ -560,7 +586,7 @@ class Game:
 		"""Load an opening"""
 		for i in openings.openings:
 			if opening_name.lower().replace("king's pawn game", "open game").replace("queen's pawn game", "closed game").replace("russian game", "petrov's defense") in [i["name"].lower(), i["eco"].lower() + " " + i["name"].lower(), i["eco"].lower() + i["name"].lower(), i["eco"].lower().replace("'", ""), i["eco"].lower() + " " + i["name"].lower().replace("'", ""), i["eco"].lower() + i["name"].lower().replace("'", "")]:
-				self.loadFEN(i["fen"] + " - - 0 0")
+				self.loadFEN(i["fen"] + " - - 0 1")
 				return True
 		return False
 
@@ -581,7 +607,7 @@ class Game:
 			fen += "/"
 		fen = functions.combineNumbers(fen[:-1])
 		fen += " " + self.turn[0]  # Add the side to move
-		fen += " -"  # TODO: Castling rights
+		fen += " " + self.castling_rights if self.castling_rights is not None else "-"  # Castling rights
 		fen += " -"  # TODO: En Passant captures
 		fen += " " + str(self.half_moves) + " " + str(self.full_moves)  # Add alfmove and fullmove clock
 		return fen
@@ -608,12 +634,18 @@ class Game:
 			return False
 		# Find the move data
 		for i in self.legal_moves(True):
-			if i.name == move and i.piece.color == self.turn:
+			if i.name == move:
 				if i.is_capture:
 					self.pieces.remove(self.pieceAt(i.new_position))
 					self.captured_piece = True
 				i.piece.position = i.new_position
 				i.piece.moved = True
+				if i.castle_rook:
+					i.castle_rook.moved = True
+					if i.castle == enums.Castle.kingside:
+						i.castle_rook.position = "f" + i.castle_rook.position[1]
+					else:
+						i.castle_rook.position = "d" + i.castle_rook.position[1]
 				self.raw_move_list.append(i)
 				break
 		if any([True for i in self.legal_moves(show_data=True, color=self.turn) if i.new_position == self.pieceType(enums.Piece.king, color=enums.Color.invert(self.turn))[0].position]):

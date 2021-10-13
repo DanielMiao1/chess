@@ -24,6 +24,7 @@ class Color:
 		else:
 			raise errors.UndefinedColor(color)
 
+
 class Piece:
 	pawn, knight, bishop, rook = "pawn", "knight", "bishop", "rook"
 	queen, king = "queen", "king"
@@ -78,6 +79,7 @@ class Piece:
 			return Piece.piece_square_tables["middlegame" if game_phase in [Phase.opening, Phase.middlegame] else "endgame"][piece][functions.coordinateToIndex(position)[0]][functions.coordinateToIndex(position)[1]]
 		return list(reversed([list(reversed(i)) for i in Piece.piece_square_tables["middlegame" if game_phase in [Phase.opening, Phase.middlegame] else "endgame"][piece]]))[functions.coordinateToIndex(position)[0]][functions.coordinateToIndex(position)[1]]
 
+
 class Phase:
 	opening, middlegame, endgame = "opening", "middlegame", "endgame"
 
@@ -85,13 +87,24 @@ class Phase:
 	def all():
 		return [Phase.opening, Phase.middlegame, Phase.endgame]
 
+
+class Castle:
+	kingside, queenside = "kingside", "queenside"
+
+	@staticmethod
+	def all():
+		return [Castle.kingside, Castle.queenside]
+
+
 class Move:
-	def __init__(self, name, old_position, new_position, piece, is_capture=False, check=False):
+	def __init__(self, name, old_position, new_position, piece, is_capture=False, check=False, castle=None, castle_rook=None):
 		self.piece = piece
 		self.name = name
 		self.old_position, self.new_position = old_position, new_position
 		self.is_capture = is_capture
 		self.check = check
+		self.castle = castle
+		self.castle_rook = castle_rook
 		if is_capture:
 			self.captured_piece = self.piece.board.pieceAt(new_position)
 		else:
