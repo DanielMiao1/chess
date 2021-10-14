@@ -97,7 +97,7 @@ class Castle:
 
 
 class Move:
-	def __init__(self, name, old_position, new_position, piece, is_capture=False, check=False, castle=None, castle_rook=None):
+	def __init__(self, name, old_position, new_position, piece, is_capture=False, check=False, castle=None, castle_rook=None, double_pawn_move=False, en_passant=False, en_passant_position=None):
 		self.piece = piece
 		self.name = name
 		self.old_position, self.new_position = old_position, new_position
@@ -105,6 +105,9 @@ class Move:
 		self.check = check
 		self.castle = castle
 		self.castle_rook = castle_rook
+		self.double_pawn_move = double_pawn_move
+		self.en_passant = en_passant
+		self.en_passant_position = en_passant_position
 		if is_capture:
 			self.captured_piece = self.piece.board.pieceAt(new_position)
 		else:
