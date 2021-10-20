@@ -2,7 +2,7 @@
 
 
 """
-Local Imports
+Imports
 """
 
 import chess.enums
@@ -10,6 +10,8 @@ import chess.errors
 import chess.openings
 import chess.functions
 
+
+import asyncio
 
 """
 Initialization
@@ -25,7 +27,9 @@ except NameError:
 
 
 class Square:
+	"""A square"""
 	def __init__(self, position, board):
+		"""Initialize the square"""
 		self.position = functions.indexToCoordinate(position)
 		self.board = board
 		if ((position[0] + position[1]) & 1) == 0:
@@ -68,14 +72,17 @@ class Square:
 
 
 class Piece:
-	def __init__(self, position, piece_type, color, board):
-		board.pieces.append(self)
+	def __init__(self, position, piece_type, color, board, append=True):
+		"""Initialize the piece. Auto-appends piece to the board if the `append` option is True"""
+		if append:
+			board.pieces.append(self)
 		self.position = position if isinstance(position, str) else functions.indexToCoordinate(position)
 		self.piece_type, self.color, self.board = piece_type, color, board
 		self.moved = False
 		self.en_passant = False
 
-	def moves(self, show_data=False):
+	def moves(self, show_data=False, evaluate_checks=True):
+		"""Legal moves of the piece"""
 		moves = []
 		if self.piece_type == enums.Piece.pawn:  # Pawn moves
 			# Straight pawn moves
@@ -563,11 +570,12 @@ class Piece:
 
 class Game:
 	"""Game class"""
-	def __init__(self, raise_errors=True, fen="rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"):
+	def __init__(self, raise_errors=True, fen="rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1", use_openings=False):
 		"""Initialize"""
 		if not functions.FENvalid(fen):
 			fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
 		self.opening = ""  # Opening
+		self.use_openings = use_openings
 		self.squares, self.pieces = [], []  # Pieces and squares
 		self.in_check = False  # False if neither side is in check, enums.Color.white if white is in check, otherwise enums.Color.black if black is in check
 		# Append squares
@@ -575,9 +583,9 @@ class Game:
 			self.squares.append([Square([x, y], self) for y in range(8)])
 		self.raise_errors = raise_errors  # Raise errors
 		# Load FEN-specific values
-		self.loadFEN(fen)
+		self.loadFEN(fen, evaluate_opening=fen != "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1")
 
-	def loadFEN(self, fen):
+	def loadFEN(self, fen, evaluate_opening=True):
 		"""Load/Reload with the specified FEN"""
 		self.move_list, self.raw_move_list = "", []  # Move lists
 		if not functions.FENvalid(fen):
@@ -600,9 +608,8 @@ class Game:
 					continue
 				Piece(functions.indexToCoordinate([i, x]), enums.Piece.pawn if y.lower() == "p" else enums.Piece.knight if y.lower() == "n" else enums.Piece.bishop if y.lower() == "b" else enums.Piece.rook if y.lower() == "r" else enums.Piece.queen if y.lower() == "q" else enums.Piece.king, enums.Color.white if y.isupper() else enums.Color.black, self)
 		# Load opening
-		for i in openings.openings:
-			if i["fen"].split(" ")[0] == fen.split(" ")[0]:
-				self.opening = i["eco"] + " " + i["name"]
+		if evaluate_opening:
+			self.updateOpening()
 
 	def loadOpening(self, opening_name):
 		"""Load an opening"""
@@ -639,11 +646,75 @@ class Game:
 		if self.raise_errors:
 			raise error
 
-	def move(self, move):
+	def move(self, move, evaluate_checks=True, evaluate_opening=True):
 		"""Moves a piece"""
-		# If move is a enums.Move object, then redefine move as the name of move
+		# If move is a enums.Move object
 		if isinstance(move, enums.Move):
-			move = move.name
+			if move.is_capture:
+				self.pieces.remove(self.pieceAt(move.new_position))
+				self.captured_piece = True
+			move.piece.position = move.new_position
+			move.piece.moved = True
+			if move.castle_rook:
+				move.castle_rook.moved = True
+				if move.castle == enums.Castle.kingside:
+					move.castle_rook.position = "f" + move.castle_rook.position[1]
+				else:
+					move.castle_rook.position = "d" + move.castle_rook.position[1]
+			self.en_passant_positions = None
+			for i in self.pieces:
+				i.en_passant = False
+			if move.double_pawn_move:
+				move.piece.en_passant = True
+				self.en_passant_positions = move.new_position[0] + str(int(move.new_position[1]) - (1 if move.piece.color == enums.Color.white else -1))
+			if move.en_passant:
+				self.pieces.remove(self.pieceAt(move.en_passant_position))
+				self.captured_piece = True
+			if self.castling_rights is not None and move.piece.piece_type == enums.Piece.king:
+				if move.piece.color == enums.Color.white:
+					self.castling_rights = self.castling_rights.replace("K", "").replace("Q", "")
+				else:
+					self.castling_rights = self.castling_rights.replace("k", "").replace("q", "")
+				if self.castling_rights == "":
+					self.castling_rights = None
+			if self.castling_rights is not None and move.piece.piece_type == enums.Piece.rook:
+				if move.old_position == "a1":
+					self.castling_rights = self.castling_rights.replace("Q", "")
+				elif move.old_position == "a8":
+					self.castling_rights = self.castling_rights.replace("q", "")
+				elif move.old_position == "h1":
+					self.castling_rights = self.castling_rights.replace("K", "")
+				elif move.old_position == "h8":
+					self.castling_rights = self.castling_rights.replace("k", "")
+			self.raw_move_list.append(move)
+			if evaluate_checks:
+				if any([True for i in self.legal_moves(show_data=True, color=self.turn) if i.new_position == self.pieceType(enums.Piece.king, color=enums.Color.invert(self.turn))[0].position]):
+					move += "+"
+					self.in_check = enums.Color.invert(self.turn)
+				else:
+					self.in_check = False
+			if self.turn == enums.Color.white:  # If white moved
+				# Add move to move list
+				if self.move_list == "":  # If there has not been any moves
+					self.move_list += "1. " + move.name
+				else:  # Otherwise
+					self.move_list += " " + str(int(self.move_list.split(" ")[-3][0]) + 1) + ". " + move.name
+			else:  # If black moved
+				if self.move_list == "":  # Check for custom FENs
+					self.move_list += "1. ... " + move.name  # Add move to move list
+				else:
+					self.move_list += " " + move.name  # Add move to move list
+				self.full_moves += 1  # Increase fullmove counter
+			# Calculate halfmove counter
+			if move.is_capture or move.piece.piece_type == enums.Piece.pawn:  # Reset halfmove counter if the move is a pawn move or a capture
+				self.half_moves = 0
+			else:  # Otherwise, increase the halfmove counter by 1
+				self.half_moves += 1
+			self.turn = enums.Color.invert(self.turn)  # Invert turn
+			# Get opening
+			if evaluate_opening:
+				self.updateOpening()
+			return move
 		# If move is not a string, raise an error
 		if not isinstance(move, str):
 			self.error(errors.InvalidMove(move))
@@ -654,9 +725,11 @@ class Game:
 		if move not in self.legal_moves():
 			self.error(errors.MoveNotPossible(move))
 			return False
+		move_data = None
 		# Find the move data
 		for i in self.legal_moves(True):
 			if i.name == move:
+				move_data = i
 				if i.is_capture:
 					self.pieces.remove(self.pieceAt(i.new_position))
 					self.captured_piece = True
@@ -695,11 +768,12 @@ class Game:
 						self.castling_rights = self.castling_rights.replace("k", "")
 				self.raw_move_list.append(i)
 				break
-		if any([True for i in self.legal_moves(show_data=True, color=self.turn) if i.new_position == self.pieceType(enums.Piece.king, color=enums.Color.invert(self.turn))[0].position]):
-			move += "+"
-			self.in_check = enums.Color.invert(self.turn)
-		else:
-			self.in_check = False
+		if evaluate_checks:
+			if any([True for i in self.legal_moves(show_data=True, color=self.turn) if i.new_position == self.pieceType(enums.Piece.king, color=enums.Color.invert(self.turn))[0].position]):
+				move += "+"
+				self.in_check = enums.Color.invert(self.turn)
+			else:
+				self.in_check = False
 		# Add move to move list and increase fullmove counter if necessary
 		if self.turn == enums.Color.white:  # If white moved
 			# Add move to move list
@@ -719,14 +793,15 @@ class Game:
 		else:  # Otherwise, increase the halfmove counter by 1
 			self.half_moves += 1
 		self.turn = enums.Color.invert(self.turn)  # Invert turn
+		print("moved")
 		# Get opening
-		for i in openings.openings:
-			if i["fen"].split(" ")[0] == self.FEN().split(" ")[0] or i["moves"] == self.move_list:
-				self.opening = i["eco"] + " " + i["name"]
+		if evaluate_opening:
+			self.updateOpening()
+		return move_data
 
-	def legal_moves(self, show_data=False, color=enums.Color.current):
+	def legal_moves(self, show_data=False, color=enums.Color.current, evaluate_checks=True):
 		"""Returns all legal moves"""
-		return [y for x in self.pieces if x.color == (self.turn if color == enums.Color.current else color) for y in x.moves(show_data)]
+		return [y for x in self.pieces if x.color == (self.turn if color == enums.Color.current else color) for y in x.moves(show_data, evaluate_checks=evaluate_checks)]
 
 	def pieceType(self, piece, color=enums.Color.any):
 		"""Returns all pieces with type `piece` and color `color`"""
@@ -778,9 +853,22 @@ class Game:
 		if self.move_list == "":
 			self.opening = ""
 		else:
+			self.updateOpening()
+
+	def updateOpening(self):
+		"""Updates the opening if use_openings is True"""
+		if self.use_openings:
+			opening = None
 			for i in openings.openings:
-				if i["fen"].split(" ")[0] == self.FEN().split(" ")[0] or i["moves"] == self.move_list:
+				if i["position"] == self.FEN().split(" ")[0]:
 					self.opening = i["eco"] + " " + i["name"]
+					opening = i["eco"] + " " + i["name"]
+					break
+			else:
+				return False
+			return opening
+		else:
+			return False
 
 	def attackers(self, coordinate, color):
 		"""Returns the pieces that attack the coordinate"""
