@@ -17,12 +17,24 @@ class Color:
 
 	@staticmethod
 	def invert(color):
-		if color in ["white", "w"]:
-			return "black"
-		elif color in ["black", "b"]:
-			return "white"
-		else:
+		if not Color.valid(color):
 			raise errors.UndefinedColor(color)
+		elif Color.isWhite(color):
+			return "black"
+		else:
+			return "white"
+
+	@staticmethod
+	def valid(color):
+		return color in Color.all()
+
+	@staticmethod
+	def isWhite(color):
+		return color in [Color.white, "w"]
+
+	@staticmethod
+	def isBlack(color):
+		return color in [Color.black, "b"]
 
 
 class Piece:
@@ -55,29 +67,33 @@ class Piece:
 
 	@staticmethod
 	def unicode(piece, color="white"):
-		if piece not in Piece.all():
+		if not Piece.valid(piece):
 			raise errors.UndefinedPiece(piece)
-		if color not in [Color.white, Color.black]:
+		if not Color.valid(color):
 			raise errors.UndefinedColor(color)
 		return Piece.unicode_dictionary[color + piece]
 
 	@staticmethod
 	def value(piece):
-		if piece in Piece.all():
+		if Piece.valid(piece):
 			return Piece.piece_values[piece]
 		raise errors.UndefinedPiece(piece)
 
 	@staticmethod
 	def evaluate_piece_position(piece, position, color, game_phase):
-		if game_phase not in Phase.all():
+		if not Phase.valid(game_phase):
 			raise errors.UndefinedGamePhase(game_phase)
-		if piece not in Piece.all():
+		if not Piece.valid(piece):
 			raise errors.UndefinedPiece(piece)
-		if color not in [Color.white, Color.black]:
+		if not Color.valid(color):
 			raise errors.UndefinedColor(color)
 		if color == Color.white:
 			return Piece.piece_square_tables["middlegame" if game_phase in [Phase.opening, Phase.middlegame] else "endgame"][piece][functions.coordinateToIndex(position)[0]][functions.coordinateToIndex(position)[1]]
 		return list(reversed([list(reversed(i)) for i in Piece.piece_square_tables["middlegame" if game_phase in [Phase.opening, Phase.middlegame] else "endgame"][piece]]))[functions.coordinateToIndex(position)[0]][functions.coordinateToIndex(position)[1]]
+
+	@staticmethod
+	def valid(piece):
+		return piece in Piece.all()
 
 
 class Phase:
@@ -87,6 +103,10 @@ class Phase:
 	def all():
 		return [Phase.opening, Phase.middlegame, Phase.endgame]
 
+	@staticmethod
+	def valid(phase):
+		return phase in Phase.all()
+
 
 class Castle:
 	kingside, queenside = "kingside", "queenside"
@@ -94,6 +114,10 @@ class Castle:
 	@staticmethod
 	def all():
 		return [Castle.kingside, Castle.queenside]
+
+	@staticmethod
+	def valid(castle):
+		return castle in Castle.all()
 
 
 class Move:
