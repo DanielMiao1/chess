@@ -10,9 +10,6 @@ import chess.errors
 import chess.openings
 import chess.functions
 
-
-import asyncio
-
 """
 Initialization
 """
@@ -570,12 +567,12 @@ class Piece:
 
 class Game:
 	"""Game class"""
-	def __init__(self, raise_errors=True, fen="rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1", use_openings=False):
+	def __init__(self, raise_errors=True, fen="rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1", evaluate_openings=False):
 		"""Initialize"""
 		if not functions.FENvalid(fen):
 			fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
 		self.opening = ""  # Opening
-		self.use_openings = use_openings
+		self.evaluate_openings = evaluate_openings
 		self.squares, self.pieces = [], []  # Pieces and squares
 		self.in_check = False  # False if neither side is in check, enums.Color.white if white is in check, otherwise enums.Color.black if black is in check
 		# Append squares
@@ -856,8 +853,8 @@ class Game:
 			self.updateOpening()
 
 	def updateOpening(self):
-		"""Updates the opening if use_openings is True"""
-		if self.use_openings:
+		"""Updates the opening if evaluate_openings is True"""
+		if self.evaluate_openings:
 			opening = None
 			for i in openings.openings:
 				if i["position"] == self.FEN().split(" ")[0]:
@@ -890,6 +887,50 @@ class Game:
 
 	def visualized(self, use_unicode=True, empty_squares=" ", separators=True):
 		return (("---------------------------------\n| " if use_unicode else "-----------------------------------------\n| ") + (" |\n---------------------------------\n| " if use_unicode else " |\n-----------------------------------------\n| ").join(" | ".join([y + ((empty_squares if use_unicode else empty_squares + " ") if y == "" else "") for y in x]) for x in [["".join([((enums.Piece.unicode(z.piece_type, z.color)) if use_unicode else (z.color[0].upper() + (z.piece_type[0].upper() if z.piece_type != "knight" else "N"))) if functions.coordinateToIndex(z.position) == [x, y] else "" for z in self.pieces]) for y in range(len(self.squares[x]))] for x in range(len(self.squares))]) + (" |\n---------------------------------" if use_unicode else " |\n-----------------------------------------")) if separators else ("\n".join(" ".join([y + ((empty_squares if use_unicode else empty_squares + " ") if y == "" else "") for y in x]) for x in [["".join([((enums.Piece.unicode(z.piece_type, z.color)) if use_unicode else (z.color[0].upper() + (z.piece_type[0].upper() if z.piece_type != "knight" else "N"))) if functions.coordinateToIndex(z.position) == [x, y] else "" for z in self.pieces]) for y in range(len(self.squares[x]))] for x in range(len(self.squares))]))
+
+	def generatePawnMoves(self, position, color, return_all=False):
+		if (color == enums.Color.black and position[1] == "1") or (color == enums.Color.white and position[1] == "8"):
+			return []
+		if not functions.coordinateValid(position):
+			self.error(errors.InvalidCoordinate(position))
+		elif enums.Color.isWhite(color):
+			if not return_all and self.pieceAt(functions.indexToCoordinate([functions.coordinateToIndex(position)[0] - 1, functions.coordinateToIndex(position)[1]])):
+				return []
+			if position[1] == "2" and ((not return_all and not self.pieceAt(functions.indexToCoordinate([functions.coordinateToIndex(position)[0] - 2, functions.coordinateToIndex(position)[1]]))) or return_all):
+				return [functions.indexToCoordinate([functions.coordinateToIndex(position)[0] - 1, functions.coordinateToIndex(position)[1]]), functions.indexToCoordinate([functions.coordinateToIndex(position)[0] - 2, functions.coordinateToIndex(position)[1]])]
+			return [functions.indexToCoordinate([functions.coordinateToIndex(position)[0] - 1, functions.coordinateToIndex(position)[1]])]
+		elif enums.Color.isBlack(color):
+			if not return_all and self.pieceAt(functions.indexToCoordinate([functions.coordinateToIndex(position)[0] + 1, functions.coordinateToIndex(position)[1]])):
+				return []
+			if position[1] == "7" and ((not return_all and not self.pieceAt(functions.indexToCoordinate([functions.coordinateToIndex(position)[0] + 2, functions.coordinateToIndex(position)[1]]))) or return_all):
+				return [functions.indexToCoordinate([functions.coordinateToIndex(position)[0] + 1, functions.coordinateToIndex(position)[1]]), functions.indexToCoordinate([functions.coordinateToIndex(position)[0] + 2, functions.coordinateToIndex(position)[1]])]
+			return [functions.indexToCoordinate([functions.coordinateToIndex(position)[0] + 1, functions.coordinateToIndex(position)[1]])]
+		else:
+			self.error(errors.UndefinedColor(color))
+
+	def generatePawnCaptures(self, position, color, return_all=False):
+		if (color == enums.Color.black and position[1] == "1") or (color == enums.Color.white and position[1] == "8"):
+			return []
+		if not functions.coordinateValid(position):
+			self.error(errors.InvalidCoordinate(position))
+		elif enums.Color.isWhite(color):
+			if return_all or (self.pieceAt(functions.indexToCoordinate([functions.coordinateToIndex(position)[0] - 1, functions.coordinateToIndex(position)[1] + 1])) and self.pieceAt(functions.indexToCoordinate([functions.coordinateToIndex(position)[0] - 1, functions.coordinateToIndex(position)[1] - 1]))):
+				return [functions.indexToCoordinate([functions.coordinateToIndex(position)[0] - 1, functions.coordinateToIndex(position)[1] + 1]), functions.indexToCoordinate([functions.coordinateToIndex(position)[0] - 1, functions.coordinateToIndex(position)[1] - 1])]
+			elif self.pieceAt(functions.indexToCoordinate([functions.coordinateToIndex(position)[0] - 1, functions.coordinateToIndex(position)[1] + 1])):
+				return [functions.indexToCoordinate([functions.coordinateToIndex(position)[0] - 1, functions.coordinateToIndex(position)[1] + 1])]
+			elif self.pieceAt(functions.indexToCoordinate([functions.coordinateToIndex(position)[0] - 1, functions.coordinateToIndex(position)[1] - 1])):
+				return [functions.indexToCoordinate([functions.coordinateToIndex(position)[0] - 1, functions.coordinateToIndex(position)[1] - 1])]
+		elif enums.Color.isBlack(color):
+			if return_all or (self.pieceAt(functions.indexToCoordinate([functions.coordinateToIndex(position)[0] + 1, functions.coordinateToIndex(position)[1] + 1])) and self.pieceAt(functions.indexToCoordinate([functions.coordinateToIndex(position)[0] + 1, functions.coordinateToIndex(position)[1] - 1]))):
+				return [functions.indexToCoordinate([functions.coordinateToIndex(position)[0] + 1, functions.coordinateToIndex(position)[1] + 1]), functions.indexToCoordinate([functions.coordinateToIndex(position)[0] + 1, functions.coordinateToIndex(position)[1] - 1])]
+			elif self.pieceAt(functions.indexToCoordinate([functions.coordinateToIndex(position)[0] + 1, functions.coordinateToIndex(position)[1] + 1])):
+				return [functions.indexToCoordinate([functions.coordinateToIndex(position)[0] + 1, functions.coordinateToIndex(position)[1] + 1])]
+			elif self.pieceAt(functions.indexToCoordinate([functions.coordinateToIndex(position)[0] + 1, functions.coordinateToIndex(position)[1] - 1])):
+				return [functions.indexToCoordinate([functions.coordinateToIndex(position)[0] + 1, functions.coordinateToIndex(position)[1] - 1])]
+		else:
+			self.error(errors.UndefinedColor(color))
+			return
+		return []
 
 	def __str__(self):
 		return "Chess Game with FEN " + self.FEN()
