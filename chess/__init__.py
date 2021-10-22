@@ -994,6 +994,78 @@ class Game:
 				moves.append(enums.Move("N" + functions.indexToCoordinate([functions.coordinateToIndex(position)[0] - 1, functions.coordinateToIndex(position)[1] + 2]), position, functions.indexToCoordinate([functions.coordinateToIndex(position)[0] - 1, functions.coordinateToIndex(position)[1] + 2]), None))
 		return moves
 
+	def generateBishopMoves(self, position, color, return_all=False):
+		moves = []
+		capture, (pos1, pos2) = False, functions.coordinateToIndex(position)
+		while pos1 != 0 and pos2 != 0:
+			pos1, pos2 = pos1 - 1, pos2 - 1
+			if not return_all:
+				for i in self.pieces:
+					if functions.coordinateToIndex(i.position) == [pos1, pos2]:
+						if i.color == color:
+							break
+						capture = True
+				else:
+					moves.append(enums.Move("B" + ("x" if capture else "") + functions.indexToCoordinate([pos1, pos2]), position, functions.indexToCoordinate([pos1, pos2]), None, is_capture=capture))
+					if capture:
+						break
+					continue
+				break
+			else:
+				moves.append(enums.Move("B" + functions.indexToCoordinate([pos1, pos2]), position, functions.indexToCoordinate([pos1, pos2]), None))
+		capture, (pos1, pos2) = False, functions.coordinateToIndex(position)
+		while pos1 != 7 and pos2 != 7:
+			pos1, pos2 = pos1 + 1, pos2 + 1
+			if not return_all:
+				for i in self.pieces:
+					if functions.coordinateToIndex(i.position) == [pos1, pos2]:
+						if i.color == color:
+							break
+						capture = True
+				else:
+					moves.append(enums.Move("B" + ("x" if capture else "") + functions.indexToCoordinate([pos1, pos2]), position, functions.indexToCoordinate([pos1, pos2]), None, is_capture=capture))
+					if capture:
+						break
+					continue
+				break
+			else:
+				moves.append(enums.Move("B" + functions.indexToCoordinate([pos1, pos2]), position, functions.indexToCoordinate([pos1, pos2]), None))
+		capture, (pos1, pos2) = False, functions.coordinateToIndex(position)
+		while pos1 != 0 and pos2 != 7:
+			pos1, pos2 = pos1 - 1, pos2 + 1
+			if not return_all:
+				for i in self.pieces:
+					if functions.coordinateToIndex(i.position) == [pos1, pos2]:
+						if i.color == color:
+							break
+						capture = True
+				else:
+					moves.append(enums.Move("B" + ("x" if capture else "") + functions.indexToCoordinate([pos1, pos2]), position, functions.indexToCoordinate([pos1, pos2]), None, is_capture=capture))
+					if capture:
+						break
+					continue
+				break
+			else:
+				moves.append(enums.Move("B" + functions.indexToCoordinate([pos1, pos2]), position, functions.indexToCoordinate([pos1, pos2]), None))
+		capture, (pos1, pos2) = False, functions.coordinateToIndex(position)
+		while pos1 != 7 and pos2 != 0:
+			pos1, pos2 = pos1 + 1, pos2 - 1
+			if not return_all:
+				for i in self.pieces:
+					if functions.coordinateToIndex(i.position) == [pos1, pos2]:
+						if i.color == color:
+							break
+						capture = True
+				else:
+					moves.append(enums.Move("B" + ("x" if capture else "") + functions.indexToCoordinate([pos1, pos2]), position, functions.indexToCoordinate([pos1, pos2]), None, is_capture=capture))
+					if capture:
+						break
+					continue
+				break
+			else:
+				moves.append(enums.Move("B" + functions.indexToCoordinate([pos1, pos2]), position, functions.indexToCoordinate([pos1, pos2]), None))
+		return moves
+
 	def __str__(self):
 		return "Chess Game with FEN " + self.FEN()
 
