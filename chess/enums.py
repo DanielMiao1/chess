@@ -6,6 +6,8 @@ enums.py
 Type Enumerations
 """
 
+from . import functions
+
 
 class Color:
 	white, black = "white", "black"
@@ -132,9 +134,21 @@ class Move:
 		self.double_pawn_move = double_pawn_move
 		self.en_passant = en_passant
 		self.en_passant_position = en_passant_position
-		if is_capture:
+		if is_capture and piece is not None:
 			self.captured_piece = self.piece.board.pieceAt(new_position)
 		else:
 			self.captured_piece = None
+
+	def visualized(self, empty_squares=" ", separators=True, old_position_symbol="□", new_position_symbol="■", capture_symbol="X"):
+		if empty_squares == "":
+			empty_squares = " "
+		empty_squares = empty_squares[0]
+		squares = []
+		for x in range(8):
+			row = []
+			for y in range(8):
+				row.append(old_position_symbol if functions.coordinateToIndex(self.old_position) == [x, y] else capture_symbol if functions.coordinateToIndex(self.new_position) == [x, y] and self.is_capture else new_position_symbol if functions.coordinateToIndex(self.new_position) == [x, y] else empty_squares)
+			squares.append(row)
+		return ("---------------------------------\n" if separators else "") + ("\n---------------------------------\n" if separators else "\n").join([("| " if separators else "") + (" | " if separators else " ").join(i) + (" |" if separators else "") for i in squares]) + ("\n---------------------------------" if separators else "")
 
 	__str__ = __repr__ = lambda self: str(self.name)
