@@ -77,6 +77,10 @@ class Piece:
 
 	@staticmethod
 	def value(piece):
+		try:
+			piece = piece.piece_type
+		except AttributeError:
+			pass
 		if Piece.valid(piece):
 			return Piece.piece_values[piece]
 		raise errors.UndefinedPiece(piece)
