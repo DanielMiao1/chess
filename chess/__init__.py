@@ -37,35 +37,17 @@ class Square:
 	def __str__(self):
 		return self.color.title() + " square from " + str(self.board)
 
-	def __repr__(self):
-		return self.color.title() + " square from " + str(self.board)
+	def __eq__(self, other):
+		return self.position == other.position and isinstance(other, Square)
 
-	def __lt__(self, other):
-		raise ArithmeticError("Cannot compare squares")
+	def __unicode__(self):
+		return self.color.title() + " square"
 
-	def __add__(self, _):
-		raise ArithmeticError("Cannot add pieces")
+	__lt__ = __le__ = lambda self, *args: self.error(Exception("Cannot compare squares"))
 
-	def __sub__(self, _):
-		raise ArithmeticError("Cannot subtract pieces")
+	__add__ = __radd__ = __sub__ = __rsub__ = __mul__ = __rmul__ = __div__ = __rdiv__ = __truediv__ = __rtruediv__ = __floordiv__ = __rfloordiv__ = __mod__ = __rmod__ = __divmod__ = __rdivmod__ = __pow__ = __rpow__ = __lshift__ = __rlshift__ = __rshift__ = __rrshift__ = __and__ = __rand__ = __or__ = __ror__ = __xor__ = __rxor__ = __iadd__ = __isub__ = __imul__ = __idiv__ = __itruediv__ = __ifloordiv__ = __imod__ = __ipow__ = __iand__ = __ior__ = __ixor__ = __ilshift__ = __irshift__ = __neg__ = __pos__ = __abs__ = __invert__ = __int__ = __long__ = __float__ = __complex__ = __oct__ = __hex__ = __coerce__ = lambda self, *args: self.error(ArithmeticError("Cannot perform arithmetic operations on Square object"))
 
-	def __mul__(self, _):
-		raise ArithmeticError("Cannot multiply pieces")
-
-	def __mod__(self, _):
-		raise ArithmeticError("Cannot modulo pieces")
-
-	def __floordiv__(self, _):
-		raise ArithmeticError("Cannot divide pieces")
-
-	def __divmod__(self, _):
-		raise ArithmeticError("Cannot divide pieces")
-
-	def __truediv__(self, _):
-		raise ArithmeticError("Cannot divide pieces")
-
-	def __floor__(self):
-		raise ArithmeticError("Cannot floor")
+	__getitem__ = __setitem__ = __delitem__ = __getslice__ = __setslice__ = __delslice__ = __contains__ = lambda self, *args: self.error(IndexError("Cannot perform operation on Square"))
 
 
 class Piece:
@@ -540,29 +522,18 @@ class Piece:
 	def __lt__(self, other):
 		return enums.Piece.value(self.piece_type) < enums.Piece.value(other)
 
-	def __add__(self, _):
-		raise ArithmeticError("Cannot add pieces")
+	def __le__(self, other):
+		return enums.Piece.value(self.piece_type) <= enums.Piece.value(other)
 
-	def __sub__(self, _):
-		raise ArithmeticError("Cannot subtract pieces")
+	def __eq__(self, other):
+		return {x: y for x, y in vars(self).items() if x != "board"} == {x: y for x, y in vars(other).items() if x != "board"}
 
-	def __mul__(self, _):
-		raise ArithmeticError("Cannot multiply pieces")
+	def __unicode__(self):
+		return self.color.title() + " " + self.piece_type
 
-	def __mod__(self, _):
-		raise ArithmeticError("Cannot modulo pieces")
+	__add__ = __radd__ = __sub__ = __rsub__ = __mul__ = __rmul__ = __div__ = __rdiv__ = __truediv__ = __rtruediv__ = __floordiv__ = __rfloordiv__ = __mod__ = __rmod__ = __divmod__ = __rdivmod__ = __pow__ = __rpow__ = __lshift__ = __rlshift__ = __rshift__ = __rrshift__ = __and__ = __rand__ = __or__ = __ror__ = __xor__ = __rxor__ = __iadd__ = __isub__ = __imul__ = __idiv__ = __itruediv__ = __ifloordiv__ = __imod__ = __ipow__ = __iand__ = __ior__ = __ixor__ = __ilshift__ = __irshift__ = __neg__ = __pos__ = __abs__ = __invert__ = __int__ = __long__ = __float__ = __complex__ = __oct__ = __hex__ = __coerce__ = lambda self, *args: self.error(ArithmeticError("Cannot perform arithmetic operations on Piece object"))
 
-	def __floordiv__(self, _):
-		raise ArithmeticError("Cannot divide pieces")
-
-	def __divmod__(self, _):
-		raise ArithmeticError("Cannot divide pieces")
-
-	def __truediv__(self, _):
-		raise ArithmeticError("Cannot divide pieces")
-
-	def __floor__(self):
-		raise ArithmeticError("Cannot floor")
+	__getitem__ = __setitem__ = __delitem__ = __getslice__ = __setslice__ = __delslice__ = __contains__ = lambda self, *args: self.error(IndexError("Cannot perform operation on Piece"))
 
 
 class Game:
@@ -811,13 +782,17 @@ class Game:
 			return enums.Phase.endgame
 		return enums.Phase.middlegame
 
+	def totalMaterial(self):
+		"""The total amount of material"""
+		return sum(map(enums.Piece.value, [i for i in self.pieces if i.piece_type != enums.Piece.king]))
+
 	def materialDifference(self):
 		"""Returns the material difference. Positive values indicate white has more material, while negative values indicate black has more."""
 		difference = 0
 		for i in enums.Piece.all():
 			if i == enums.Piece.king:
 				continue
-			difference += sum([enums.Piece.value(x.piece_type) for x in self.pieceType(i, enums.Color.white)]) - sum([enums.Piece.value(x.piece_type) for x in self.pieceType(i, enums.Color.black)])
+			difference += sum([enums.Piece.value(x) for x in self.pieceType(i, enums.Color.white)]) - sum([enums.Piece.value(x) for x in self.pieceType(i, enums.Color.black)])
 		return difference
 
 	def evaluate(self):
@@ -1066,35 +1041,96 @@ class Game:
 				moves.append(enums.Move("B" + functions.indexToCoordinate([pos1, pos2]), position, functions.indexToCoordinate([pos1, pos2]), None))
 		return moves
 
+	def generateRookMoves(self, position, color, return_all=False):
+		moves = []
+		capture = False
+		for x in reversed(range(functions.coordinateToIndex(position)[0])):
+			if not return_all:
+				for y in self.pieces:
+					if functions.coordinateToIndex(y.position) == [x, functions.coordinateToIndex(position)[1]]:
+						if y.color == color:
+							break
+						capture = True
+				else:
+					moves.append(enums.Move("R" + ("x" if capture else "") + functions.indexToCoordinate([x, functions.coordinateToIndex(position)[1]]), position, functions.indexToCoordinate([x, functions.coordinateToIndex(position)[1]]), None, is_capture=capture))
+					if capture:
+						break
+					continue
+				break
+			else:
+				moves.append(enums.Move("R" + functions.indexToCoordinate([x, functions.coordinateToIndex(position)[1]]), position, functions.indexToCoordinate([x, functions.coordinateToIndex(position)[1]]), None))
+		capture = False
+		for x in reversed(range(functions.coordinateToIndex(position)[1])):
+			if not return_all:
+				for y in self.pieces:
+					if functions.coordinateToIndex(y.position) == [functions.coordinateToIndex(position)[0], x]:
+						if y.color == color:
+							break
+						capture = True
+				else:
+					moves.append(enums.Move("R" + ("x" if capture else "") + functions.indexToCoordinate([functions.coordinateToIndex(position)[0], x]), position, functions.indexToCoordinate([functions.coordinateToIndex(position)[0], x]), None, is_capture=capture))
+					if capture:
+						break
+					continue
+				break
+			else:
+				moves.append(enums.Move("R" + functions.indexToCoordinate([functions.coordinateToIndex(position)[0], x]), position, functions.indexToCoordinate([functions.coordinateToIndex(position)[0], x]), None))
+		capture = False
+		for x in range(functions.coordinateToIndex(position)[0] + 1, 8):
+			if not return_all:
+				for y in self.pieces:
+					if functions.coordinateToIndex(y.position) == [x, functions.coordinateToIndex(position)[1]]:
+						if y.color == color:
+							break
+						capture = True
+				else:
+					moves.append(enums.Move("R" + ("x" if capture else "") + functions.indexToCoordinate([x, functions.coordinateToIndex(position)[1]]), position, functions.indexToCoordinate([x, functions.coordinateToIndex(position)[1]]), None, is_capture=capture))
+					if capture:
+						break
+					continue
+				break
+			else:
+				moves.append(enums.Move("R" + functions.indexToCoordinate([x, functions.coordinateToIndex(position)[1]]), position, functions.indexToCoordinate([x, functions.coordinateToIndex(position)[1]]), None))
+		capture = False
+		for x in range(functions.coordinateToIndex(position)[1] + 1, 8):
+			if not return_all:
+				for y in self.pieces:
+					if functions.coordinateToIndex(y.position) == [functions.coordinateToIndex(position)[0], x]:
+						if y.color == color:
+							break
+						capture = True
+				else:
+					moves.append(enums.Move("R" + ("x" if capture else "") + functions.indexToCoordinate([functions.coordinateToIndex(position)[0], x]), position, functions.indexToCoordinate([functions.coordinateToIndex(position)[0], x]), None, is_capture=capture))
+					if capture:
+						break
+					continue
+				break
+			else:
+				moves.append(enums.Move("R" + functions.indexToCoordinate([functions.coordinateToIndex(position)[0], x]), position, functions.indexToCoordinate([functions.coordinateToIndex(position)[0], x]), None))
+		return moves
+
 	def __str__(self):
 		return "Chess Game with FEN " + self.FEN()
 
 	def __lt__(self, other):
-		return len(self.pieces) < len(other.pieces)
+		return self.totalMaterial() < other.totalMaterial()
 
-	def __add__(self, _):
-		raise ArithmeticError("Cannot add games")
+	def __le__(self, other):
+		return self.totalMaterial() <= other.totalMaterial()
 
-	def __sub__(self, _):
-		raise ArithmeticError("Cannot subtract games")
+	def __contains__(self, obj):
+		if isinstance(obj, Piece):
+			return obj in self.pieces
+		if isinstance(obj, Square):
+			return obj in self.squares
+		self.error(TypeError("Invalid type: " + str(obj)))
 
-	def __mul__(self, _):
-		raise ArithmeticError("Cannot multiply games")
-
-	def __mod__(self, _):
-		raise ArithmeticError("Cannot modulo games")
-
-	def __floordiv__(self, _):
-		raise ArithmeticError("Cannot divide games")
-
-	def __divmod__(self, _):
-		raise ArithmeticError("Cannot divide games")
-
-	def __truediv__(self, _):
-		raise ArithmeticError("Cannot divide games")
-
-	def __floor__(self):
-		raise ArithmeticError("Cannot floor")
+	def __unicode__(self):
+		return "---------------------------------\n| " + (" |\n---------------------------------\n| ").join(" | ".join([y + ((" ") if y == "" else "") for y in x]) for x in [["".join([((enums.Piece.unicode(z.piece_type, z.color))) if functions.coordinateToIndex(z.position) == [x, y] else "" for z in self.pieces]) for y in range(len(self.squares[x]))] for x in range(len(self.squares))]) + " |\n---------------------------------"
 
 	def __eq__(self, other):
 		return self.FEN() == other.FEN()
+
+	__add__ = __radd__ = __sub__ = __rsub__ = __mul__ = __rmul__ = __div__ = __rdiv__ = __truediv__ = __rtruediv__ = __floordiv__ = __rfloordiv__ = __mod__ = __rmod__ = __divmod__ = __rdivmod__ = __pow__ = __rpow__ = __lshift__ = __rlshift__ = __rshift__ = __rrshift__ = __and__ = __rand__ = __or__ = __ror__ = __xor__ = __rxor__ = __iadd__ = __isub__ = __imul__ = __idiv__ = __itruediv__ = __ifloordiv__ = __imod__ = __ipow__ = __iand__ = __ior__ = __ixor__ = __ilshift__ = __irshift__ = __neg__ = __pos__ = __abs__ = __invert__ = __int__ = __long__ = __float__ = __complex__ = __oct__ = __hex__ = __coerce__ = lambda self, *args: self.error(ArithmeticError("Cannot perform arithmetic operations on Game object"))
+
+	__getitem__ = __setitem__ = __delitem__ = __getslice__ = __setslice__ = __delslice__ = lambda self, *args: self.error(IndexError("Cannot perform operation on Game object"))
