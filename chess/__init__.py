@@ -453,7 +453,7 @@ class Game:
 		if not self.raw_move_list:
 			return
 		if self.raw_move_list[-1].is_capture:
-			self.pieces.append(Piece(self.raw_move_list[-1].new_position, self.raw_move_list[-1].captured_piece.piece_type, self.raw_move_list[-1].captured_piece.color, self))
+			Piece(self.raw_move_list[-1].new_position, self.raw_move_list[-1].captured_piece.piece_type, self.raw_move_list[-1].captured_piece.color, self)
 		self.raw_move_list[-1].piece.position = self.raw_move_list[-1].old_position
 		self.raw_move_list.pop()
 		if self.move_list.split(" ")[-2][-1] == ".":
@@ -491,7 +491,7 @@ class Game:
 			self.error(errors.UndefinedColor(color))
 			return []
 		if self.pieceAt(coordinate) and self.pieceAt(coordinate).color == color:
-			self.error(errors.InvalidColor("The color " + str(color) + " is invalid, as the piece at " + str(coordinate) + " has the same color."))
+			self.error(errors.InvalidColor("The color " + str(color) + " is invalid, as the piece at " + str(coordinate) + " has the same color. Perhaps you meant to use the protectors() function?"))
 			return []
 		attackers = []
 		for i in self.pieces:
@@ -516,6 +516,31 @@ class Game:
 				if functions.coordinateToIndex(coordinate) in [[functions.coordinateToIndex(i.position)[0] - 1, functions.coordinateToIndex(i.position)[1] - 1], [functions.coordinateToIndex(i.position)[0] - 1, functions.coordinateToIndex(i.position)[1]], [functions.coordinateToIndex(i.position)[0] - 1, functions.coordinateToIndex(i.position)[1] + 1], [functions.coordinateToIndex(i.position)[0], functions.coordinateToIndex(i.position)[1] - 1], [functions.coordinateToIndex(i.position)[0], functions.coordinateToIndex(i.position)[1] + 1], [functions.coordinateToIndex(i.position)[0] + 1, functions.coordinateToIndex(i.position)[1] - 1], [functions.coordinateToIndex(i.position)[0] + 1, functions.coordinateToIndex(i.position)[1]], [functions.coordinateToIndex(i.position)[0] + 1, functions.coordinateToIndex(i.position)[1] + 1]]:
 					attackers.append(i)
 		return attackers
+
+	def protectors(self, piece):
+		"""Returns a list of the pieces that protect the coordinate"""
+		if not isinstance(piece, Piece):
+			self.error(errors.InvalidPiece(piece))
+		protectors = []
+		for x in self.pieces:
+			if x.color != piece.color:
+				continue
+			if x.piece_type == enums.Piece.pawn:
+				if piece.position in [i.new_position for i in self.generatePawnCaptures(x.position, x.color, return_all=True)]:
+					protectors.append(x)
+			elif x.piece_type == enums.Piece.knight:
+				if piece.position in [i.new_position for i in self.generateKnightMoves(x.position, x.color, return_all=True)]:
+					protectors.append(x)
+			elif x.piece_type == enums.Piece.bishop:
+				if piece.position in [i.new_position for i in self.generateBishopMoves(x.position, x.color, stop=enums.Stop.piece)]:
+					protectors.append(x)
+			elif x.piece_type == enums.Piece.rook:
+				if piece.position in [i.new_position for i in self.generateRookMoves(x.position, x.color, stop=enums.Stop.piece)]:
+					protectors.append(x)
+			elif x.piece_type == enums.Piece.queen:
+				if piece.position in [i.new_position for i in self.generateQueenMoves(x.position, x.color, stop=enums.Stop.piece)]:
+					protectors.append(x)
+		return protectors
 
 	def visualized(self, print_result=False, use_unicode=True, empty_squares=" ", separators=True):
 		if empty_squares == "":
@@ -630,17 +655,24 @@ class Game:
 				moves.append(enums.Move("N" + functions.indexToCoordinate([functions.coordinateToIndex(position)[0] - 1, functions.coordinateToIndex(position)[1] + 2]), position, functions.indexToCoordinate([functions.coordinateToIndex(position)[0] - 1, functions.coordinateToIndex(position)[1] + 2]), piece))
 		return moves
 
-	def generateBishopMoves(self, position, color, return_all=False, piece=None):
+	def generateBishopMoves(self, position, color, stop=enums.Stop.capture_piece, piece=None):
 		moves = []
-		capture, (pos1, pos2) = False, functions.coordinateToIndex(position)
+		capture, (pos1, pos2), piece_found = False, functions.coordinateToIndex(position), 0
 		while pos1 != 0 and pos2 != 0:
 			pos1, pos2 = pos1 - 1, pos2 - 1
-			if not return_all:
+			if stop == enums.Stop.piece:
+				moves.append(enums.Move("B" + functions.indexToCoordinate([pos1, pos2]), position, functions.indexToCoordinate([pos1, pos2]), piece))
+				if self.pieceAt(functions.indexToCoordinate([pos1, pos2])):
+					break
+			elif stop != enums.Stop.never:
 				for i in self.pieces:
 					if functions.coordinateToIndex(i.position) == [pos1, pos2]:
-						if i.color == color:
+						if stop == enums.Stop.capture_piece:
+							if i.color == color:
+								break
+							capture = True
+						elif stop == enums.Stop.no_capture:
 							break
-						capture = True
 				else:
 					moves.append(enums.Move("B" + ("x" if capture else "") + functions.indexToCoordinate([pos1, pos2]), position, functions.indexToCoordinate([pos1, pos2]), piece, is_capture=capture))
 					if capture:
@@ -652,12 +684,19 @@ class Game:
 		capture, (pos1, pos2) = False, functions.coordinateToIndex(position)
 		while pos1 != 7 and pos2 != 7:
 			pos1, pos2 = pos1 + 1, pos2 + 1
-			if not return_all:
+			if stop == enums.Stop.piece:
+				moves.append(enums.Move("B" + functions.indexToCoordinate([pos1, pos2]), position, functions.indexToCoordinate([pos1, pos2]), piece))
+				if self.pieceAt(functions.indexToCoordinate([pos1, pos2])):
+					break
+			elif stop != enums.Stop.never:
 				for i in self.pieces:
 					if functions.coordinateToIndex(i.position) == [pos1, pos2]:
-						if i.color == color:
+						if stop == enums.Stop.capture_piece:
+							if i.color == color:
+								break
+							capture = True
+						elif stop == enums.Stop.no_capture:
 							break
-						capture = True
 				else:
 					moves.append(enums.Move("B" + ("x" if capture else "") + functions.indexToCoordinate([pos1, pos2]), position, functions.indexToCoordinate([pos1, pos2]), piece, is_capture=capture))
 					if capture:
@@ -669,12 +708,19 @@ class Game:
 		capture, (pos1, pos2) = False, functions.coordinateToIndex(position)
 		while pos1 != 0 and pos2 != 7:
 			pos1, pos2 = pos1 - 1, pos2 + 1
-			if not return_all:
+			if stop == enums.Stop.piece:
+				moves.append(enums.Move("B" + functions.indexToCoordinate([pos1, pos2]), position, functions.indexToCoordinate([pos1, pos2]), piece))
+				if self.pieceAt(functions.indexToCoordinate([pos1, pos2])):
+					break
+			elif stop != enums.Stop.never:
 				for i in self.pieces:
 					if functions.coordinateToIndex(i.position) == [pos1, pos2]:
-						if i.color == color:
+						if stop == enums.Stop.capture_piece:
+							if i.color == color:
+								break
+							capture = True
+						elif stop == enums.Stop.no_capture:
 							break
-						capture = True
 				else:
 					moves.append(enums.Move("B" + ("x" if capture else "") + functions.indexToCoordinate([pos1, pos2]), position, functions.indexToCoordinate([pos1, pos2]), piece, is_capture=capture))
 					if capture:
@@ -686,12 +732,19 @@ class Game:
 		capture, (pos1, pos2) = False, functions.coordinateToIndex(position)
 		while pos1 != 7 and pos2 != 0:
 			pos1, pos2 = pos1 + 1, pos2 - 1
-			if not return_all:
+			if stop == enums.Stop.piece:
+				moves.append(enums.Move("B" + functions.indexToCoordinate([pos1, pos2]), position, functions.indexToCoordinate([pos1, pos2]), piece))
+				if self.pieceAt(functions.indexToCoordinate([pos1, pos2])):
+					break
+			elif stop != enums.Stop.never:
 				for i in self.pieces:
 					if functions.coordinateToIndex(i.position) == [pos1, pos2]:
-						if i.color == color:
+						if stop == enums.Stop.capture_piece:
+							if i.color == color:
+								break
+							capture = True
+						elif stop == enums.Stop.no_capture:
 							break
-						capture = True
 				else:
 					moves.append(enums.Move("B" + ("x" if capture else "") + functions.indexToCoordinate([pos1, pos2]), position, functions.indexToCoordinate([pos1, pos2]), piece, is_capture=capture))
 					if capture:
@@ -702,14 +755,18 @@ class Game:
 				moves.append(enums.Move("B" + functions.indexToCoordinate([pos1, pos2]), position, functions.indexToCoordinate([pos1, pos2]), piece))
 		return moves
 
-	def generateRookMoves(self, position, color, return_all=False, piece=None):
+	def generateRookMoves(self, position, color, stop=enums.Stop.capture_piece, piece=None):
 		moves = []
 		capture = False
 		for x in reversed(range(functions.coordinateToIndex(position)[0])):
-			if not return_all:
+			if stop == enums.Stop.piece:
+				moves.append(enums.Move("R" + functions.indexToCoordinate([x, functions.coordinateToIndex(position)[1]]), position, functions.indexToCoordinate([x, functions.coordinateToIndex(position)[1]]), piece))
+				if self.pieceAt(functions.indexToCoordinate([x, functions.coordinateToIndex(position)[1]])):
+					break
+			elif stop != enums.Stop.never:
 				for y in self.pieces:
 					if functions.coordinateToIndex(y.position) == [x, functions.coordinateToIndex(position)[1]]:
-						if y.color == color:
+						if y.color == color or stop == enums.Stop.no_capture:
 							break
 						capture = True
 				else:
@@ -722,10 +779,14 @@ class Game:
 				moves.append(enums.Move("R" + functions.indexToCoordinate([x, functions.coordinateToIndex(position)[1]]), position, functions.indexToCoordinate([x, functions.coordinateToIndex(position)[1]]), piece))
 		capture = False
 		for x in reversed(range(functions.coordinateToIndex(position)[1])):
-			if not return_all:
+			if stop == enums.Stop.piece:
+				moves.append(enums.Move("R" + functions.indexToCoordinate([functions.coordinateToIndex(position)[0], x]), position, functions.indexToCoordinate([functions.coordinateToIndex(position)[0], x]), piece))
+				if self.pieceAt(functions.indexToCoordinate([functions.coordinateToIndex(position)[0], x])):
+					break
+			elif stop != enums.Stop.never:
 				for y in self.pieces:
 					if functions.coordinateToIndex(y.position) == [functions.coordinateToIndex(position)[0], x]:
-						if y.color == color:
+						if y.color == color or stop == enums.Stop.no_capture:
 							break
 						capture = True
 				else:
@@ -738,10 +799,14 @@ class Game:
 				moves.append(enums.Move("R" + functions.indexToCoordinate([functions.coordinateToIndex(position)[0], x]), position, functions.indexToCoordinate([functions.coordinateToIndex(position)[0], x]), piece))
 		capture = False
 		for x in range(functions.coordinateToIndex(position)[0] + 1, 8):
-			if not return_all:
+			if stop == enums.Stop.piece:
+				moves.append(enums.Move("R" + functions.indexToCoordinate([x, functions.coordinateToIndex(position)[1]]), position, functions.indexToCoordinate([x, functions.coordinateToIndex(position)[1]]), piece))
+				if self.pieceAt(functions.indexToCoordinate([x, functions.coordinateToIndex(position)[1]])):
+					break
+			elif stop != enums.Stop.never:
 				for y in self.pieces:
 					if functions.coordinateToIndex(y.position) == [x, functions.coordinateToIndex(position)[1]]:
-						if y.color == color:
+						if y.color == color or stop == enums.Stop.no_capture:
 							break
 						capture = True
 				else:
@@ -754,10 +819,14 @@ class Game:
 				moves.append(enums.Move("R" + functions.indexToCoordinate([x, functions.coordinateToIndex(position)[1]]), position, functions.indexToCoordinate([x, functions.coordinateToIndex(position)[1]]), piece))
 		capture = False
 		for x in range(functions.coordinateToIndex(position)[1] + 1, 8):
-			if not return_all:
+			if stop == enums.Stop.piece:
+				moves.append(enums.Move("R" + functions.indexToCoordinate([functions.coordinateToIndex(position)[0], x]), position, functions.indexToCoordinate([functions.coordinateToIndex(position)[0], x]), piece))
+				if self.pieceAt(functions.indexToCoordinate([functions.coordinateToIndex(position)[0], x])):
+					break
+			elif stop != enums.Stop.never:
 				for y in self.pieces:
 					if functions.coordinateToIndex(y.position) == [functions.coordinateToIndex(position)[0], x]:
-						if y.color == color:
+						if y.color == color or stop == enums.Stop.no_capture:
 							break
 						capture = True
 				else:
@@ -770,17 +839,25 @@ class Game:
 				moves.append(enums.Move("R" + functions.indexToCoordinate([functions.coordinateToIndex(position)[0], x]), position, functions.indexToCoordinate([functions.coordinateToIndex(position)[0], x]), piece))
 		return moves
 
-	def generateQueenMoves(self, position, color, return_all=False, piece=None):
+	def generateQueenMoves(self, position, color, stop=enums.Stop.capture_piece, piece=None):
 		moves = []
-		capture, (pos1, pos2) = False, functions.coordinateToIndex(position)
+		# Diagonal moves
+		capture, (pos1, pos2), piece_found = False, functions.coordinateToIndex(position), 0
 		while pos1 != 0 and pos2 != 0:
 			pos1, pos2 = pos1 - 1, pos2 - 1
-			if not return_all:
+			if stop == enums.Stop.piece:
+				moves.append(enums.Move("Q" + functions.indexToCoordinate([pos1, pos2]), position, functions.indexToCoordinate([pos1, pos2]), piece))
+				if self.pieceAt(functions.indexToCoordinate([pos1, pos2])):
+					break
+			elif stop != enums.Stop.never:
 				for i in self.pieces:
 					if functions.coordinateToIndex(i.position) == [pos1, pos2]:
-						if i.color == color:
+						if stop == enums.Stop.capture_piece:
+							if i.color == color:
+								break
+							capture = True
+						elif stop == enums.Stop.no_capture:
 							break
-						capture = True
 				else:
 					moves.append(enums.Move("Q" + ("x" if capture else "") + functions.indexToCoordinate([pos1, pos2]), position, functions.indexToCoordinate([pos1, pos2]), piece, is_capture=capture))
 					if capture:
@@ -792,12 +869,19 @@ class Game:
 		capture, (pos1, pos2) = False, functions.coordinateToIndex(position)
 		while pos1 != 7 and pos2 != 7:
 			pos1, pos2 = pos1 + 1, pos2 + 1
-			if not return_all:
+			if stop == enums.Stop.piece:
+				moves.append(enums.Move("Q" + functions.indexToCoordinate([pos1, pos2]), position, functions.indexToCoordinate([pos1, pos2]), piece))
+				if self.pieceAt(functions.indexToCoordinate([pos1, pos2])):
+					break
+			elif stop != enums.Stop.never:
 				for i in self.pieces:
 					if functions.coordinateToIndex(i.position) == [pos1, pos2]:
-						if i.color == color:
+						if stop == enums.Stop.capture_piece:
+							if i.color == color:
+								break
+							capture = True
+						elif stop == enums.Stop.no_capture:
 							break
-						capture = True
 				else:
 					moves.append(enums.Move("Q" + ("x" if capture else "") + functions.indexToCoordinate([pos1, pos2]), position, functions.indexToCoordinate([pos1, pos2]), piece, is_capture=capture))
 					if capture:
@@ -809,12 +893,19 @@ class Game:
 		capture, (pos1, pos2) = False, functions.coordinateToIndex(position)
 		while pos1 != 0 and pos2 != 7:
 			pos1, pos2 = pos1 - 1, pos2 + 1
-			if not return_all:
+			if stop == enums.Stop.piece:
+				moves.append(enums.Move("Q" + functions.indexToCoordinate([pos1, pos2]), position, functions.indexToCoordinate([pos1, pos2]), piece))
+				if self.pieceAt(functions.indexToCoordinate([pos1, pos2])):
+					break
+			elif stop != enums.Stop.never:
 				for i in self.pieces:
 					if functions.coordinateToIndex(i.position) == [pos1, pos2]:
-						if i.color == color:
+						if stop == enums.Stop.capture_piece:
+							if i.color == color:
+								break
+							capture = True
+						elif stop == enums.Stop.no_capture:
 							break
-						capture = True
 				else:
 					moves.append(enums.Move("Q" + ("x" if capture else "") + functions.indexToCoordinate([pos1, pos2]), position, functions.indexToCoordinate([pos1, pos2]), piece, is_capture=capture))
 					if capture:
@@ -826,12 +917,19 @@ class Game:
 		capture, (pos1, pos2) = False, functions.coordinateToIndex(position)
 		while pos1 != 7 and pos2 != 0:
 			pos1, pos2 = pos1 + 1, pos2 - 1
-			if not return_all:
+			if stop == enums.Stop.piece:
+				moves.append(enums.Move("Q" + functions.indexToCoordinate([pos1, pos2]), position, functions.indexToCoordinate([pos1, pos2]), piece))
+				if self.pieceAt(functions.indexToCoordinate([pos1, pos2])):
+					break
+			elif stop != enums.Stop.never:
 				for i in self.pieces:
 					if functions.coordinateToIndex(i.position) == [pos1, pos2]:
-						if i.color == color:
+						if stop == enums.Stop.capture_piece:
+							if i.color == color:
+								break
+							capture = True
+						elif stop == enums.Stop.no_capture:
 							break
-						capture = True
 				else:
 					moves.append(enums.Move("Q" + ("x" if capture else "") + functions.indexToCoordinate([pos1, pos2]), position, functions.indexToCoordinate([pos1, pos2]), piece, is_capture=capture))
 					if capture:
@@ -840,12 +938,17 @@ class Game:
 				break
 			else:
 				moves.append(enums.Move("Q" + functions.indexToCoordinate([pos1, pos2]), position, functions.indexToCoordinate([pos1, pos2]), piece))
+		# Straight moves
 		capture = False
 		for x in reversed(range(functions.coordinateToIndex(position)[0])):
-			if not return_all:
+			if stop == enums.Stop.piece:
+				moves.append(enums.Move("Q" + functions.indexToCoordinate([x, functions.coordinateToIndex(position)[1]]), position, functions.indexToCoordinate([x, functions.coordinateToIndex(position)[1]]), piece))
+				if self.pieceAt(functions.indexToCoordinate([x, functions.coordinateToIndex(position)[1]])):
+					break
+			elif stop != enums.Stop.never:
 				for y in self.pieces:
 					if functions.coordinateToIndex(y.position) == [x, functions.coordinateToIndex(position)[1]]:
-						if y.color == color:
+						if y.color == color or stop == enums.Stop.no_capture:
 							break
 						capture = True
 				else:
@@ -858,10 +961,14 @@ class Game:
 				moves.append(enums.Move("Q" + functions.indexToCoordinate([x, functions.coordinateToIndex(position)[1]]), position, functions.indexToCoordinate([x, functions.coordinateToIndex(position)[1]]), piece))
 		capture = False
 		for x in reversed(range(functions.coordinateToIndex(position)[1])):
-			if not return_all:
+			if stop == enums.Stop.piece:
+				moves.append(enums.Move("Q" + functions.indexToCoordinate([functions.coordinateToIndex(position)[0], x]), position, functions.indexToCoordinate([functions.coordinateToIndex(position)[0], x]), piece))
+				if self.pieceAt(functions.indexToCoordinate([functions.coordinateToIndex(position)[0], x])):
+					break
+			elif stop != enums.Stop.never:
 				for y in self.pieces:
 					if functions.coordinateToIndex(y.position) == [functions.coordinateToIndex(position)[0], x]:
-						if y.color == color:
+						if y.color == color or stop == enums.Stop.no_capture:
 							break
 						capture = True
 				else:
@@ -874,10 +981,14 @@ class Game:
 				moves.append(enums.Move("Q" + functions.indexToCoordinate([functions.coordinateToIndex(position)[0], x]), position, functions.indexToCoordinate([functions.coordinateToIndex(position)[0], x]), piece))
 		capture = False
 		for x in range(functions.coordinateToIndex(position)[0] + 1, 8):
-			if not return_all:
+			if stop == enums.Stop.piece:
+				moves.append(enums.Move("Q" + functions.indexToCoordinate([x, functions.coordinateToIndex(position)[1]]), position, functions.indexToCoordinate([x, functions.coordinateToIndex(position)[1]]), piece))
+				if self.pieceAt(functions.indexToCoordinate([x, functions.coordinateToIndex(position)[1]])):
+					break
+			elif stop != enums.Stop.never:
 				for y in self.pieces:
 					if functions.coordinateToIndex(y.position) == [x, functions.coordinateToIndex(position)[1]]:
-						if y.color == color:
+						if y.color == color or stop == enums.Stop.no_capture:
 							break
 						capture = True
 				else:
@@ -890,10 +1001,14 @@ class Game:
 				moves.append(enums.Move("Q" + functions.indexToCoordinate([x, functions.coordinateToIndex(position)[1]]), position, functions.indexToCoordinate([x, functions.coordinateToIndex(position)[1]]), piece))
 		capture = False
 		for x in range(functions.coordinateToIndex(position)[1] + 1, 8):
-			if not return_all:
+			if stop == enums.Stop.piece:
+				moves.append(enums.Move("Q" + functions.indexToCoordinate([functions.coordinateToIndex(position)[0], x]), position, functions.indexToCoordinate([functions.coordinateToIndex(position)[0], x]), piece))
+				if self.pieceAt(functions.indexToCoordinate([functions.coordinateToIndex(position)[0], x])):
+					break
+			elif stop != enums.Stop.never:
 				for y in self.pieces:
 					if functions.coordinateToIndex(y.position) == [functions.coordinateToIndex(position)[0], x]:
-						if y.color == color:
+						if y.color == color or stop == enums.Stop.no_capture:
 							break
 						capture = True
 				else:
