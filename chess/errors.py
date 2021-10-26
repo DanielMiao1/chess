@@ -17,6 +17,21 @@ class InvalidMove(Exception):
 		super(InvalidMove, self).__init__("Move '" + str(move) + "' is invalid")
 
 
+class InvalidFEN(Exception):
+	def __init__(self, fen):
+		super(InvalidFEN, self).__init__("FEN '" + str(fen) + "' is invalid")
+
+
+class InvalidCoordinate(Exception):
+	def __init__(self, coordinate):
+		super(InvalidCoordinate, self).__init__("Coordinate '" + str(coordinate) + "' is invalid")
+
+
+class InvalidColor(Exception):
+	def __init__(self, message):
+		super(InvalidColor, self).__init__(message)
+
+
 class UndefinedColor(Exception):
 	def __init__(self, color):
 		if color.lower() == "w":
@@ -35,13 +50,3 @@ class UndefinedPiece(Exception):
 class UndefinedGamePhase(Exception):
 	def __init__(self, phase):
 		super(UndefinedGamePhase, self).__init__("Game phase '" + str(phase) + "' is invalid")
-
-
-class InvalidFEN(Exception):
-	def __init__(self, fen):
-		super(InvalidFEN, self).__init__("FEN '" + str(fen) + "' is invalid")
-
-
-class InvalidCoordinate(Exception):
-	def __init__(self, coordinate):
-		super(InvalidCoordinate, self).__init__("Coordinate '" + str(coordinate) + "' is invalid")
