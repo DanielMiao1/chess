@@ -126,7 +126,20 @@ class Castle:
 		return castle in Castle.all()
 
 
+class Stop:
+	never, capture_piece, no_capture, piece = "never", "capture_piece", "no_capture", "piece"
+
+	@staticmethod
+	def all():
+		return [Stop.never, Stop.capture_piece, Stop.no_capture, Stop.piece]
+
+	@staticmethod
+	def valid(stop):
+		return stop in Stop.all()
+
+
 class Move:
+	# TODO: MoveSet
 	def __init__(self, name, old_position, new_position, piece, is_capture=False, check=False, castle=None, castle_rook=None, double_pawn_move=False, en_passant=False, en_passant_position=None):
 		self.piece = piece
 		self.name = name

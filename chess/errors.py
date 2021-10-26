@@ -32,6 +32,11 @@ class InvalidColor(Exception):
 		super(InvalidColor, self).__init__(message)
 
 
+class InvalidPiece(Exception):
+	def __init__(self, piece):
+		super(InvalidPiece, self).__init__("Piece '" + str(piece) + "' is invalid")
+
+
 class UndefinedColor(Exception):
 	def __init__(self, color):
 		if color.lower() == "w":
