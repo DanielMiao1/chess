@@ -195,7 +195,7 @@ class Game:
 		self.loadFEN(fen, evaluate_opening=fen != "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1")
 
 	def loadFEN(self, fen, evaluate_opening=True):
-		"""Load/Reload with the specified FEN"""
+		"""Load/Reload with the specified FEN. Returns True if the FEN loaded successfully, otherwise False."""
 		self.move_list, self.raw_move_list = "", []  # Move lists
 		if not functions.FENvalid(fen):
 			self.error(errors.InvalidFEN(fen))
@@ -219,6 +219,7 @@ class Game:
 		# Load opening
 		if evaluate_opening:
 			self.updateOpening()
+		return True
 
 	def loadOpening(self, opening_name):
 		"""Load an opening"""
@@ -483,21 +484,37 @@ class Game:
 			return False
 
 	def attackers(self, coordinate, color):
-		"""Returns the pieces that attack the coordinate"""
+		"""Returns a list of the pieces that attack the coordinate"""
+		if color == enums.Color.current:
+			color = self.turn
 		if color not in [enums.Color.white, enums.Color.black]:
 			self.error(errors.UndefinedColor(color))
+			return []
+		if self.pieceAt(coordinate) and self.pieceAt(coordinate).color == color:
+			self.error(errors.InvalidColor("The color " + str(color) + " is invalid, as the piece at " + str(coordinate) + " has the same color."))
+			return []
 		attackers = []
 		for i in self.pieces:
 			if i.color != color:
 				continue
-			if i.piece_type == enums.Piece.pawn:
-				if functions.coordinateToIndex(coordinate) in [[functions.coordinateToIndex(i.position)[0] - (1 if i.color == enums.Color.white else -1), functions.coordinateToIndex(i.position)[1] - 1], [functions.coordinateToIndex(i.position)[0] - (1 if i.color == enums.Color.white else -1), functions.coordinateToIndex(i.position)[1] + 1]]:
+			if i.piece_type == enums.Piece.pawn:  # Pawn capture squares
+				if coordinate in [i.new_position for i in self.generatePawnCaptures(i.position, color, return_all=True)]:
 					attackers.append(i)
-			elif i.piece_type == enums.Piece.king:
+			elif i.piece_type == enums.Piece.knight:  # Knight capture squares
+				if coordinate in [i.new_position for i in self.generateKnightMoves(i.position, color)]:
+					attackers.append(i)
+			elif i.piece_type == enums.Piece.bishop:  # Bishop capture squares
+				if coordinate in [i.new_position for i in self.generateBishopMoves(i.position, color)]:
+					attackers.append(i)
+			elif i.piece_type == enums.Piece.rook:  # Rook capture squares
+				if coordinate in [i.new_position for i in self.generateRookMoves(i.position, color)]:
+					attackers.append(i)
+			elif i.piece_type == enums.Piece.queen:  # Queen capture squares
+				if coordinate in [i.new_position for i in self.generateQueenMoves(i.position, color)]:
+					attackers.append(i)
+			elif i.piece_type == enums.Piece.king:  # King capture squares
 				if functions.coordinateToIndex(coordinate) in [[functions.coordinateToIndex(i.position)[0] - 1, functions.coordinateToIndex(i.position)[1] - 1], [functions.coordinateToIndex(i.position)[0] - 1, functions.coordinateToIndex(i.position)[1]], [functions.coordinateToIndex(i.position)[0] - 1, functions.coordinateToIndex(i.position)[1] + 1], [functions.coordinateToIndex(i.position)[0], functions.coordinateToIndex(i.position)[1] - 1], [functions.coordinateToIndex(i.position)[0], functions.coordinateToIndex(i.position)[1] + 1], [functions.coordinateToIndex(i.position)[0] + 1, functions.coordinateToIndex(i.position)[1] - 1], [functions.coordinateToIndex(i.position)[0] + 1, functions.coordinateToIndex(i.position)[1]], [functions.coordinateToIndex(i.position)[0] + 1, functions.coordinateToIndex(i.position)[1] + 1]]:
 					attackers.append(i)
-			elif any([coordinate in x for x in i.moves()]):
-				attackers.append(i)
 		return attackers
 
 	def visualized(self, print_result=False, use_unicode=True, empty_squares=" ", separators=True):
@@ -514,7 +531,7 @@ class Game:
 			return []
 		if not functions.coordinateValid(position):
 			self.error(errors.InvalidCoordinate(position))
-			return
+			return []
 		elif enums.Color.isWhite(color):
 			if not return_all and self.pieceAt(functions.indexToCoordinate([functions.coordinateToIndex(position)[0] - 1, functions.coordinateToIndex(position)[1]])):
 				return []
@@ -529,13 +546,14 @@ class Game:
 			return [enums.Move(functions.indexToCoordinate([functions.coordinateToIndex(position)[0] + 1, functions.coordinateToIndex(position)[1]]), position, functions.indexToCoordinate([functions.coordinateToIndex(position)[0] + 1, functions.coordinateToIndex(position)[1]]), piece)]
 		else:
 			self.error(errors.UndefinedColor(color))
+			return []
 
 	def generatePawnCaptures(self, position, color, return_all=False, piece=None):
 		if (color == enums.Color.black and position[1] == "1") or (color == enums.Color.white and position[1] == "8"):
 			return []
 		if not functions.coordinateValid(position):
 			self.error(errors.InvalidCoordinate(position))
-			return
+			return []
 		elif enums.Color.isWhite(color):
 			if position[0] not in "ah" and (return_all or (self.pieceAt(functions.indexToCoordinate([functions.coordinateToIndex(position)[0] - 1, functions.coordinateToIndex(position)[1] + 1])) and self.pieceAt(functions.indexToCoordinate([functions.coordinateToIndex(position)[0] - 1, functions.coordinateToIndex(position)[1] - 1])))):
 				return [enums.Move(position[0] + "x" + functions.indexToCoordinate([functions.coordinateToIndex(position)[0] - 1, functions.coordinateToIndex(position)[1] + 1]), position, functions.indexToCoordinate([functions.coordinateToIndex(position)[0] - 1, functions.coordinateToIndex(position)[1] + 1]), piece, is_capture=True), enums.Move(position[0] + "x" + functions.indexToCoordinate([functions.coordinateToIndex(position)[0] - 1, functions.coordinateToIndex(position)[1] - 1]), position, functions.indexToCoordinate([functions.coordinateToIndex(position)[0] - 1, functions.coordinateToIndex(position)[1] - 1]), piece, is_capture=True)]
@@ -552,16 +570,15 @@ class Game:
 				return [enums.Move(position[0] + "x" + functions.indexToCoordinate([functions.coordinateToIndex(position)[0] + 1, functions.coordinateToIndex(position)[1] - 1]), position, functions.indexToCoordinate([functions.coordinateToIndex(position)[0] + 1, functions.coordinateToIndex(position)[1] - 1]), piece, is_capture=True)]
 		else:
 			self.error(errors.UndefinedColor(color))
-			return
 		return []
 
 	def generateKnightMoves(self, position, color, return_all=False, piece=None):
 		if not functions.coordinateValid(position):
 			self.error(errors.InvalidCoordinate(position))
-			return
+			return []
 		if not enums.Color.valid(color):
 			self.error(errors.UndefinedColor(color))
-			return
+			return []
 		moves = []
 		if position[0] != "h" and position[1] not in ["1", "2"]:
 			if self.pieceAt(functions.indexToCoordinate([functions.coordinateToIndex(position)[0] + 2, functions.coordinateToIndex(position)[1] + 1])) and not return_all:
@@ -904,6 +921,7 @@ class Game:
 		if isinstance(obj, Square):
 			return vars(obj) in map(vars, self.squares)
 		self.error(TypeError("Invalid type: " + str(obj)))
+		return False
 
 	def __unicode__(self):
 		return "---------------------------------\n| " + (" |\n---------------------------------\n| ").join(" | ".join([y + ((" ") if y == "" else "") for y in x]) for x in [["".join([((enums.Piece.unicode(z.piece_type, z.color))) if functions.coordinateToIndex(z.position) == [x, y] else "" for z in self.pieces]) for y in range(len(self.squares[x]))] for x in range(len(self.squares))]) + " |\n---------------------------------"
