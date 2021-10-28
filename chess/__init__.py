@@ -155,6 +155,39 @@ class Piece:
 							else:
 								valid = True
 								continue
+		for x in range(len(moves)):
+			found = False
+			for y in self.board.pieces:
+				if y.piece_type == enums.Piece.pawn:
+					if self.board.getKing(enums.Color.invert(self.color)).position in [z.new_position for z in self.board.generatePawnCaptures(moves[x].new_position, self.color)]:
+						if not found:
+							moves[x].name += "+"
+							moves[x].check = True
+							found = True
+				elif y.piece_type == enums.Piece.knight:
+					if self.board.getKing(enums.Color.invert(self.color)).position in [z.new_position for z in self.board.generateKnightMoves(moves[x].new_position, self.color)]:
+						if not found:
+							moves[x].name += "+"
+							moves[x].check = True
+							found = True
+				elif y.piece_type == enums.Piece.bishop:
+					if self.board.getKing(enums.Color.invert(self.color)).position in [z.new_position for z in self.board.generateBishopMoves(moves[x].new_position, self.color)]:
+						if not found:
+							moves[x].name += "+"
+							moves[x].check = True
+							found = True
+				elif y.piece_type == enums.Piece.rook:
+					if self.board.getKing(enums.Color.invert(self.color)).position in [z.new_position for z in self.board.generateRookMoves(moves[x].new_position, self.color)]:
+						if not found:
+							moves[x].name += "+"
+							moves[x].check = True
+							found = True
+				elif y.piece_type == enums.Piece.queen:
+					if self.board.getKing(enums.Color.invert(self.color)).position in [z.new_position for z in self.board.generateQueenMoves(moves[x].new_position, self.color)]:
+						if not found:
+							moves[x].name += "+"
+							moves[x].check = True
+							found = True
 		return moves if show_data else [i.name for i in moves]
 
 	def __str__(self):
@@ -255,6 +288,12 @@ class Game:
 		"""Raises an error if allowed"""
 		if self.raise_errors:
 			raise error
+
+	def getKing(self, color):
+		if not enums.Color.valid(color):
+			self.error(UndefinedColor(color))
+			return
+		return [i for i in self.pieces if i.piece_type == enums.Piece.king and i.color == color][0]
 
 	def move(self, move, evaluate_checks=True, evaluate_opening=True):
 		"""Moves a piece"""
