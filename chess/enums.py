@@ -139,7 +139,6 @@ class Stop:
 
 
 class Move:
-	# TODO: MoveSet
 	def __init__(self, name, old_position, new_position, piece, is_capture=False, check=False, castle=None, castle_rook=None, double_pawn_move=False, en_passant=False, en_passant_position=None):
 		self.piece = piece
 		self.name = name
@@ -156,7 +155,7 @@ class Move:
 		else:
 			self.captured_piece = None
 
-	def visualized(self, empty_squares=" ", separators=True, old_position_symbol="□", new_position_symbol="■", capture_symbol="X"):
+	def visualized(self, print_result=False, empty_squares=" ", separators=True, old_position_symbol="□", new_position_symbol="■", capture_symbol="X"):
 		if empty_squares == "":
 			empty_squares = " "
 		empty_squares = empty_squares[0]
@@ -166,6 +165,108 @@ class Move:
 			for y in range(8):
 				row.append(old_position_symbol if functions.coordinateToIndex(self.old_position) == [x, y] else capture_symbol if functions.coordinateToIndex(self.new_position) == [x, y] and self.is_capture else new_position_symbol if functions.coordinateToIndex(self.new_position) == [x, y] else empty_squares)
 			squares.append(row)
+		if print_result:
+			print(("---------------------------------\n" if separators else "") + ("\n---------------------------------\n" if separators else "\n").join([("| " if separators else "") + (" | " if separators else " ").join(i) + (" |" if separators else "") for i in squares]) + ("\n---------------------------------" if separators else ""))
+			return
 		return ("---------------------------------\n" if separators else "") + ("\n---------------------------------\n" if separators else "\n").join([("| " if separators else "") + (" | " if separators else " ").join(i) + (" |" if separators else "") for i in squares]) + ("\n---------------------------------" if separators else "")
 
 	__str__ = __repr__ = lambda self: str(self.name)
+
+
+class MoveSet:
+	def __init__(self, *moves):
+		if len(moves) == 1 and isinstance(moves[0], (list, set, tuple)):
+			self.moves = [i for i in list(moves[0]) if isinstance(i, Move)]
+		else:
+			self.moves = [i for i in moves if isinstance(i, Move)]
+
+	def visualized(self, print_result=False, empty_squares=" ", separators=True, old_position_symbol="□", new_position_symbol="■", capture_symbol="X"):
+		if empty_squares == "":
+			empty_squares = " "
+		empty_squares = empty_squares[0]
+		squares = []
+		for x in range(8):
+			row = []
+			for y in range(8):
+				row.append(old_position_symbol if [x, y] in map(functions.coordinateToIndex, self.old_positions()) else capture_symbol if [x, y] in [i.new_position for i in self.moves if i.is_capture] else new_position_symbol if [x, y] in map(functions.coordinateToIndex, self.new_positions()) else empty_squares)
+			squares.append(row)
+		if print_result:
+			print(("---------------------------------\n" if separators else "") + ("\n---------------------------------\n" if separators else "\n").join([("| " if separators else "") + (" | " if separators else " ").join(i) + (" |" if separators else "") for i in squares]) + ("\n---------------------------------" if separators else ""))
+			return
+		return ("---------------------------------\n" if separators else "") + ("\n---------------------------------\n" if separators else "\n").join([("| " if separators else "") + (" | " if separators else " ").join(i) + (" |" if separators else "") for i in squares]) + ("\n---------------------------------" if separators else "")
+
+	def old_positions(self):
+		return [i.old_position for i in self.moves]
+
+	def new_positions(self):
+		return [i.new_position for i in self.moves]
+
+	def __contains__(self, obj):
+		if isinstance(obj, Move):
+			return obj in self.moves
+		return False
+
+	def __add__(self, other):
+		if isinstance(other, MoveSet):
+			return MoveSet(self.moves + other.moves)
+		if isinstance(other, Move):
+			return MoveSet(self.moves + [other])
+		if isinstance(other, (list, set, tuple)):
+			new_set = MoveSet(self.moves)
+			for i in other:
+				new_set += i
+			return new_set
+		return self
+
+	def __radd__(self, other):
+		return self.__add__(other)
+
+	def __iadd__(self, other):
+		return self.__add__(other)
+
+	def __sub__(self, other):
+		if isinstance(other, MoveSet):
+			new_set = MoveSet(self.moves)
+			for i in other.moves:
+				if i in self.moves:
+					new_set.moves.remove(i)
+			return new_set
+		if isinstance(other, Move):
+			return MoveSet([i for i in self.moves if i != other])
+		if isinstance(other, (list, set, tuple)):
+			new_set = MoveSet(self.moves)
+			for i in other:
+				new_set -= i
+			return new_set
+		return self
+
+	def __rsub__(self, other):
+		return self.__sub__(other)
+
+	def __isub__(self, other):
+		return self.__sub__(other)
+
+	def __neg__(self):
+		new_set = MoveSet(self.moves)
+		for i in new_set:
+			i.new_position, i.old_position = i.old_position, i.new_position
+		return new_set
+
+	def __pos__(self):
+		return MoveSet(self.moves)
+
+	def __len__(self):
+		return len(self.moves)
+
+	def __iter__(self):
+		self.iter_position = 0
+		return self
+
+	def __next__(self):
+		if self.iter_position < len(self.moves):
+			self.iter_position += 1
+			return self.moves[self.iter_position - 1]
+		else:
+			raise StopIteration
+
+	__str__ = __repr__ = lambda self: ", ".join(map(str, self.moves))
