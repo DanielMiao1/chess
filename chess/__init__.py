@@ -9,7 +9,6 @@ import chess.functions
 import chess.enums
 import chess.errors
 import chess.openings
-import time
 
 """
 Initialization
