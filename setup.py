@@ -11,13 +11,13 @@ if sys.version_info < (2, 7):
 
 setuptools.setup(
 	name="chess",
-	version="v0.3.1-dev",
+	version="v0.3.2-dev",
 	author="Daniel M",
 	author_email="danielmiao2019@icloud.com",
 	description="Chess Library for Python 3 and Python 2",
 	long_description=open("README.md", "r").read(),
 	long_description_content_type="text/markdown",
-	url="https://github.com/DanielMiao1/PyChess",
+	url="https://github.com/DanielMiao1/chess",
 	classifiers=[
 		"Programming Language :: Python 3",
 		"Operating System :: OS Independent"

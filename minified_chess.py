@@ -4161,7 +4161,7 @@ class Game:
 			return
 		return [i for i in self.pieces if i.piece_type == enums.Piece.king and i.color == color][0]
 
-	def move(self, move, evaluate_checks=True, evaluate_opening=True):
+	def move(self, move, evaluate_checks=True, evaluate_opening=True, evaluate_move_checks=True):
 		"""Moves a piece"""
 		# If move is a enums.Move object
 		if isinstance(move, enums.Move):
@@ -4203,7 +4203,7 @@ class Game:
 					self.castling_rights = self.castling_rights.replace("k", "")
 			self.raw_move_list.append(move)
 			if evaluate_checks:
-				if any([True for i in self.legal_moves(show_data=True, color=self.turn) if i.new_position == self.pieceType(enums.Piece.king, color=enums.Color.invert(self.turn))[0].position]):
+				if any([True for i in self.legal_moves(show_data=True, color=self.turn, evaluate_checks=evaluate_move_checks) if i.new_position == self.pieceType(enums.Piece.king, color=enums.Color.invert(self.turn))[0].position]):
 					move += "+"
 					self.in_check = enums.Color.invert(self.turn)
 				else:
@@ -4237,12 +4237,12 @@ class Game:
 		# Convert to SAN if necessary
 		move = functions.toSAN(move, self)
 		# If move is not possible, raise an error
-		if move not in self.legal_moves():
+		if move not in self.legal_moves(evaluate_checks=evaluate_move_checks):
 			self.error(errors.MoveNotPossible(move))
 			return False
 		move_data = None
 		# Find the move data
-		for i in self.legal_moves(True):
+		for i in self.legal_moves(True, evaluate_checks=evaluate_move_checks):
 			if i.name == move:
 				move_data = i
 				if i.is_capture:
@@ -4284,7 +4284,7 @@ class Game:
 				self.raw_move_list.append(i)
 				break
 		if evaluate_checks:
-			if any([True for i in self.legal_moves(show_data=True, color=self.turn) if i.new_position == self.pieceType(enums.Piece.king, color=enums.Color.invert(self.turn))[0].position]):
+			if any([True for i in self.legal_moves(show_data=True, color=self.turn, evaluate_checks=evaluate_move_checks) if i.new_position == self.pieceType(enums.Piece.king, color=enums.Color.invert(self.turn))[0].position]):
 				move += "+"
 				self.in_check = enums.Color.invert(self.turn)
 			else:
