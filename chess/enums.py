@@ -269,4 +269,11 @@ class MoveSet:
 		else:
 			raise StopIteration
 
+	def next(self):
+		if self.iter_position < len(self.moves):
+			self.iter_position += 1
+			return self.moves[self.iter_position - 1]
+		else:
+			raise StopIteration
+
 	__str__ = __repr__ = lambda self: ", ".join(map(str, self.moves))
