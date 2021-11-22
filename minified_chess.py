@@ -3425,6 +3425,11 @@ class openings:
 	]
 
 
+"""
+Functions
+"""
+
+
 class functions:
 	@staticmethod
 	def splitNumbers(string):
@@ -3532,6 +3537,11 @@ class functions:
 		return True
 
 
+"""
+Error Classes
+"""
+
+
 class errors:
 	class MoveNotPossible(Exception):
 		def __init__(self, move):
@@ -3581,6 +3591,11 @@ class errors:
 	class UndefinedGamePhase(Exception):
 		def __init__(self, phase):
 			super(UndefinedGamePhase, self).__init__("Game phase '" + str(phase) + "' is invalid")
+
+
+"""
+Type Enumerations
+"""
 
 
 class enums:
@@ -3847,12 +3862,9 @@ class enums:
 		__str__ = __repr__ = lambda self: ", ".join(map(str, self.moves))
 
 
-
-
-
-
-
-"""Main"""
+"""
+Main
+"""
 
 
 class Square:
@@ -3903,7 +3915,7 @@ class Piece:
 			moves.extend(self.board.generateBishopMoves(self.position, self.color, piece=self))
 		if self.piece_type == enums.Piece.rook:  # Rook moves
 			moves.extend(self.board.generateRookMoves(self.position, self.color, piece=self))
-		elif self.piece_type == "queen":  # Queen moves
+		elif self.piece_type == enums.Piece.queen:  # Queen moves
 			moves.extend(self.board.generateQueenMoves(self.position, self.color, piece=self))
 		elif self.piece_type == enums.Piece.king:
 			if self.position[0] != "h" and self.position[1] != "1":
@@ -4027,33 +4039,34 @@ class Piece:
 							else:
 								valid = True
 								continue
-		for x in range(len(moves)):
-			for y in self.board.pieces:
-				if y.piece_type == enums.Piece.pawn:
-					if self.board.getKing(enums.Color.invert(self.color)).position in [z.new_position for z in self.board.generatePawnCaptures(moves[x].new_position, self.color)]:
-						moves[x].name += "+"
-						moves[x].check = True
-						break
-				elif y.piece_type == enums.Piece.knight:
-					if self.board.getKing(enums.Color.invert(self.color)).position in [z.new_position for z in self.board.generateKnightMoves(moves[x].new_position, self.color)]:
-						moves[x].name += "+"
-						moves[x].check = True
-						break
-				elif y.piece_type == enums.Piece.bishop:
-					if self.board.getKing(enums.Color.invert(self.color)).position in [z.new_position for z in self.board.generateBishopMoves(moves[x].new_position, self.color)]:
-						moves[x].name += "+"
-						moves[x].check = True
-						break
-				elif y.piece_type == enums.Piece.rook:
-					if self.board.getKing(enums.Color.invert(self.color)).position in [z.new_position for z in self.board.generateRookMoves(moves[x].new_position, self.color)]:
-						moves[x].name += "+"
-						moves[x].check = True
-						break
-				elif y.piece_type == enums.Piece.queen:
-					if self.board.getKing(enums.Color.invert(self.color)).position in [z.new_position for z in self.board.generateQueenMoves(moves[x].new_position, self.color)]:
-						moves[x].name += "+"
-						moves[x].check = True
-						break
+		if evaluate_checks:
+			for x in range(len(moves)):
+				for y in self.board.pieces:
+					if y.piece_type == enums.Piece.pawn:
+						if self.board.getKing(enums.Color.invert(self.color)).position in [z.new_position for z in self.board.generatePawnCaptures(moves[x].new_position, self.color)]:
+							moves[x].name += "+"
+							moves[x].check = True
+							break
+					elif y.piece_type == enums.Piece.knight:
+						if self.board.getKing(enums.Color.invert(self.color)).position in [z.new_position for z in self.board.generateKnightMoves(moves[x].new_position, self.color)]:
+							moves[x].name += "+"
+							moves[x].check = True
+							break
+					elif y.piece_type == enums.Piece.bishop:
+						if self.board.getKing(enums.Color.invert(self.color)).position in [z.new_position for z in self.board.generateBishopMoves(moves[x].new_position, self.color)]:
+							moves[x].name += "+"
+							moves[x].check = True
+							break
+					elif y.piece_type == enums.Piece.rook:
+						if self.board.getKing(enums.Color.invert(self.color)).position in [z.new_position for z in self.board.generateRookMoves(moves[x].new_position, self.color)]:
+							moves[x].name += "+"
+							moves[x].check = True
+							break
+					elif y.piece_type == enums.Piece.queen:
+						if self.board.getKing(enums.Color.invert(self.color)).position in [z.new_position for z in self.board.generateQueenMoves(moves[x].new_position, self.color)]:
+							moves[x].name += "+"
+							moves[x].check = True
+							break
 		return moves if show_data else [i.name for i in moves]
 
 	def __str__(self):
@@ -4157,7 +4170,7 @@ class Game:
 
 	def getKing(self, color):
 		if not enums.Color.valid(color):
-			self.error(UndefinedColor(color))
+			self.error(errors.UndefinedColor(color))
 			return
 		return [i for i in self.pieces if i.piece_type == enums.Piece.king and i.color == color][0]
 
@@ -4237,12 +4250,13 @@ class Game:
 		# Convert to SAN if necessary
 		move = functions.toSAN(move, self)
 		# If move is not possible, raise an error
-		if move not in self.legal_moves(evaluate_checks=evaluate_move_checks):
+		legal_moves = self.legal_moves(evaluate_checks=evaluate_move_checks)
+		if move not in legal_moves:
 			self.error(errors.MoveNotPossible(move))
 			return False
 		move_data = None
 		# Find the move data
-		for i in self.legal_moves(True, evaluate_checks=evaluate_move_checks):
+		for i in legal_moves:
 			if i.name == move:
 				move_data = i
 				if i.is_capture:
@@ -4313,20 +4327,55 @@ class Game:
 			self.updateOpening()
 		return move_data
 
-	def legal_moves(self, show_data=False, color=enums.Color.current, evaluate_checks=True):
+	def legal_moves(self, show_data=False, color=enums.Color.current, evaluate_checks=True, piece_type=enums.Piece.all()):
 		"""Returns all legal moves"""
-		return [y for x in self.pieces if x.color == (self.turn if color == enums.Color.current else color) for y in x.moves(show_data, evaluate_checks=evaluate_checks)]
+		moves = []
+
+		if isinstance(piece_type, (list, set, tuple)):
+			pieces = {"pawn": [], "knight": [], "bishop": [], "rook": [], "queen": [], "king": []}
+
+			for i in self.pieces:
+				pieces[i.piece_type].append(i)
+
+			for x in piece_type:
+				for y in pieces[x]:
+					if x == "knight":
+						moves.extend(y.moves(show_data, evaluate_checks=evaluate_checks))
+					elif x == "pawn":
+						moves.extend(y.moves(show_data, evaluate_checks=evaluate_checks))
+					elif x == "bishop":
+						moves.extend(y.moves(show_data, evaluate_checks=evaluate_checks))
+					elif x == "queen":
+						moves.extend(y.moves(show_data, evaluate_checks=evaluate_checks))
+					elif x == "rook":
+						moves.extend(y.moves(show_data, evaluate_checks=evaluate_checks))
+					elif x == "king":
+						moves.extend(y.moves(show_data, evaluate_checks=evaluate_checks))
+		elif piece_type in enums.Piece.all():
+			for i in self.pieceType(piece_type):
+				moves.extend(i.moves(show_data, evaluate_checks=evaluate_checks))
+
+		return moves
 
 	def pieceType(self, piece, color=enums.Color.any):
 		"""Returns all pieces with type `piece` and color `color`"""
-		return [i for i in self.pieces if i.color in (["white", "black"] if color == enums.Color.any else [color]) and i.piece_type == piece]
+		if color == enums.Color.any:
+			color = [enums.Color.white, enums.Color.black]
+		elif color == enums.Color.current:
+			color = [self.turn]
+		else:
+			color = [color]
+
+		return [i for i in self.pieces if i.color in color and i.piece_type == piece]
 
 	def gamePhase(self):
 		"""Returns the current game phase"""
 		if len(self.raw_move_list) // 2 <= 6 or not self.captured_piece:
 			return enums.Phase.opening
+
 		if not self.pieceType(enums.Piece.queen) or [i.piece.piece_type for i in self.raw_move_list].count(enums.Piece.king) > 3:
 			return enums.Phase.endgame
+
 		return enums.Phase.middlegame
 
 	def totalMaterial(self):
@@ -4339,14 +4388,18 @@ class Game:
 		for i in enums.Piece.all():
 			if i == enums.Piece.king:
 				continue
+
 			difference += sum([enums.Piece.value(x) for x in self.pieceType(i, enums.Color.white)]) - sum([enums.Piece.value(x) for x in self.pieceType(i, enums.Color.black)])
+
 		return difference
 
 	def evaluate(self):
 		"""Evaluates the current position"""
 		evaluation_centipawns = (self.materialDifference() * 100) + (0.1 * (len(self.legal_moves(color=enums.Color.white)) - len(self.legal_moves(color=enums.Color.black))))  # Material difference + piece mobility
+
 		for i in self.pieces:
 			evaluation_centipawns += enums.Piece.evaluate_piece_position(i.piece_type, i.position, i.color, self.gamePhase()) / 10
+
 		return round(evaluation_centipawns / 100, 5)
 
 	def pieceAt(self, coordinate):
