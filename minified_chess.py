@@ -4069,7 +4069,9 @@ class Piece:
 		return enums.Piece.value(self.piece_type) <= enums.Piece.value(other)
 
 	def __eq__(self, other):
-		return {x: y for x, y in vars(self).items() if x != "board"} == {x: y for x, y in vars(other).items() if x != "board"}
+		if isinstance(other, Piece):
+			return {x: y for x, y in vars(self).items() if x != "board"} == {x: y for x, y in vars(other).items() if x != "board"}
+		return False
 
 	def __unicode__(self):
 		return self.color.title() + " " + self.piece_type
@@ -4277,7 +4279,7 @@ class Game:
 					self.pieces.remove(self.squares_hashtable[i.new_position])
 					self.squares_hashtable[i.new_position] = False
 					self.captured_piece = True
-				
+
 				self.squares_hashtable[i.piece.position], self.squares_hashtable[i.new_position] = self.squares_hashtable[i.new_position], self.squares_hashtable[i.piece.position]
 				i.piece.position = i.new_position
 				i.piece.moved = True
@@ -4301,14 +4303,14 @@ class Game:
 				if i.double_pawn_move:
 					i.piece.en_passant = True  # Set en_passant variable of moved piece to true
 					self.en_passant_positions = i.new_position[0] + str(int(i.new_position[1]) - (1 if i.piece.color == enums.Color.white else -1))  # Append en passant position to en_passant_positions variable
-				
+
 				# If the move was an en passant capture
 				if i.en_passant:
 					# Remove the captured piece
 					self.pieces.remove(self.squares_hashtable[i.en_passant_position])
 					self.squares_hashtable[i.en_passant_position] = False
 					self.captured_piece = True
-				
+
 				if self.castling_rights is not None and i.piece.piece_type == enums.Piece.king:  # If the piece moved was a king
 					if i.piece.color == enums.Color.white:  # If moved side is white
 						self.castling_rights = self.castling_rights.replace("K", "").replace("Q", "")  # Disable white castling
@@ -4316,7 +4318,7 @@ class Game:
 						self.castling_rights = self.castling_rights.replace("k", "").replace("q", "")  # Disable black castling
 					if self.castling_rights == "":  # If the castling_rights variable is now an empty string
 						self.castling_rights = None  # Set the castling_rights variable to None
-				
+
 				if self.castling_rights is not None and i.piece.piece_type == enums.Piece.rook:  # If the piece moved was a rook
 					if i.old_position == "a1":  # If the rook was on a1
 						self.castling_rights = self.castling_rights.replace("Q", "")  # Disable white queenside castling
@@ -4421,7 +4423,7 @@ class Game:
 		# The game is in the opening phase if there are less than 7 full moves or a piece has not been captured
 		if len(self.raw_move_list) // 2 <= 6 or not self.captured_piece:
 			return enums.Phase.opening
-		
+
 		# If the game is not in the opening phase, it is in the endgame phase if both sides do not have a queen, or if the king moved more than three times
 		if not self.pieceType(enums.Piece.queen) or [i.piece.piece_type for i in self.raw_move_list].count(enums.Piece.king) > 3:
 			return enums.Phase.endgame
@@ -4458,7 +4460,12 @@ class Game:
 
 	def pieceAt(self, coordinate):
 		"""Returns the piece at coordinate if one exists, otherwise return None"""
-		return self.pieces[[i.position for i in self.pieces].index(coordinate)] if coordinate in [i.position for i in self.pieces] else None
+		if not functions.coordinateValid(coordinate):  # If the coordinate is not valid, raise an error and return None
+			self.error(errors.InvalidCoordinate(coordinate))
+			return None
+		if self.squares_hashtable[coordinate]:
+			return self.squares_hashtable[coordinate]
+		return None
 
 	def takeback(self):
 		"""Take backs one move. To take back multiple moves, call the function multiple times."""
@@ -4475,7 +4482,7 @@ class Game:
 			self.squares_hashtable[self.raw_move_list[-1].new_position] = self.pieces[-1]
 
 		self.raw_move_list.pop()  # Remove the last move from the raw move list
-		
+
 		# Remove the last move from the move list
 		if self.move_list.split(" ")[-2][-1] == ".":
 			self.move_list = " ".join(self.move_list.split(" ")[:-2])
@@ -5059,9 +5066,10 @@ class Game:
 
 	def __contains__(self, obj):
 		if isinstance(obj, Piece):
-			return vars(obj) in map(vars, self.pieces)
+			return self.squares_hashtable[obj.position] == obj
 		if isinstance(obj, Square):
 			return vars(obj) in map(vars, self.squares)
+
 		self.error(TypeError("Invalid type: " + str(obj)))
 		return False
 

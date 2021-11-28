@@ -41,7 +41,7 @@ def coordinateToIndex(coordinate):
 	return [abs(int(coordinate[1]) - 8), ("a", "b", "c", "d", "e", "f", "g", "h").index(coordinate[0])]
 
 def coordinateValid(coordinate):
-	"""Returns if the coordinate is valid (e.g. e4 -> True, 4e -> False)"""
+	"""Returns if the coordinate is valid"""
 	return coordinate[0] in ["a", "b", "c", "d", "e", "f", "g", "h"] and coordinate[1] in ["1", "2", "3", "4", "5", "6", "7", "8"]
 
 def toSAN(move, game):
