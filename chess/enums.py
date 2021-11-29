@@ -71,8 +71,10 @@ class Piece:
 	def unicode(piece, color="white"):
 		if not Piece.valid(piece):
 			raise errors.UndefinedPiece(piece)
+			return False
 		if not Color.valid(color):
 			raise errors.UndefinedColor(color)
+			return False
 		return Piece.unicode_dictionary[color + piece]
 
 	@staticmethod
