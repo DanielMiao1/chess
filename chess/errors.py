@@ -55,3 +55,8 @@ class UndefinedPiece(Exception):
 class UndefinedGamePhase(Exception):
 	def __init__(self, phase):
 		super(UndefinedGamePhase, self).__init__("Game phase '" + str(phase) + "' is invalid")
+
+
+class InvalidLineCoordinates(Exception):
+	def __init__(self, start, end):
+		super(InvalidLineCoordinates, self).__init__("The starting position " + str(start) + " and ending position " + str(end) + " do not form a valid line")

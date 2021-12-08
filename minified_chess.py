@@ -3426,6 +3426,67 @@ class openings:
 
 
 """
+Error Classes
+"""
+
+
+class errors:
+	class MoveNotPossible(Exception):
+		def __init__(self, move):
+			super(MoveNotPossible, self).__init__("Move '" + str(move) + "' is not possible")
+
+
+	class InvalidMove(Exception):
+		def __init__(self, move):
+			super(InvalidMove, self).__init__("Move '" + str(move) + "' is invalid")
+
+
+	class InvalidFEN(Exception):
+		def __init__(self, fen):
+			super(InvalidFEN, self).__init__("FEN '" + str(fen) + "' is invalid")
+
+
+	class InvalidCoordinate(Exception):
+		def __init__(self, coordinate):
+			super(InvalidCoordinate, self).__init__("Coordinate '" + str(coordinate) + "' is invalid")
+
+
+	class InvalidColor(Exception):
+		def __init__(self, message):
+			super(InvalidColor, self).__init__(message)
+
+
+	class InvalidPiece(Exception):
+		def __init__(self, piece):
+			super(InvalidPiece, self).__init__("Piece '" + str(piece) + "' is invalid")
+
+
+	class UndefinedColor(Exception):
+		def __init__(self, color):
+			if color.lower() == "w":
+				super(UndefinedColor, self).__init__("Color 'w' is invalid. Maybe you meant 'white'?")
+			elif color.lower() == "b":
+				super(UndefinedColor, self).__init__("Color 'b' is invalid. Maybe you meant 'black'?")
+			else:
+				super(UndefinedColor, self).__init__("Color '" + str(color) + "' is invalid")
+
+
+	class UndefinedPiece(Exception):
+		def __init__(self, piece):
+			super(UndefinedPiece, self).__init__("Piece '" + str(piece) + "' is invalid")
+
+
+	class UndefinedGamePhase(Exception):
+		def __init__(self, phase):
+			super(UndefinedGamePhase, self).__init__("Game phase '" + str(phase) + "' is invalid")
+
+
+	class InvalidLineCoordinates(Exception):
+		def __init__(self, start, end):
+			super(InvalidLineCoordinates, self).__init__("The starting position " + str(start) + " and ending position " + str(end) + " do not form a valid line")
+
+
+"""
 Functions
 """
 
@@ -3538,54 +3599,6 @@ class functions:
 
 
 """
-Error Classes
-"""
-
-
-class errors:
-	class MoveNotPossible(Exception):
-		def __init__(self, move):
-			super(MoveNotPossible, self).__init__("Move '" + str(move) + "' is not possible")
-
-	class InvalidMove(Exception):
-		def __init__(self, move):
-			super(InvalidMove, self).__init__("Move '" + str(move) + "' is invalid")
-
-	class InvalidFEN(Exception):
-		def __init__(self, fen):
-			super(InvalidFEN, self).__init__("FEN '" + str(fen) + "' is invalid")
-
-	class InvalidCoordinate(Exception):
-		def __init__(self, coordinate):
-			super(InvalidCoordinate, self).__init__("Coordinate '" + str(coordinate) + "' is invalid")
-
-	class InvalidColor(Exception):
-		def __init__(self, message):
-			super(InvalidColor, self).__init__(message)
-
-	class InvalidPiece(Exception):
-		def __init__(self, piece):
-			super(InvalidPiece, self).__init__("Piece '" + str(piece) + "' is invalid")
-
-	class UndefinedColor(Exception):
-		def __init__(self, color):
-			if color.lower() == "w":
-				super(UndefinedColor, self).__init__("Color 'w' is invalid. Maybe you meant 'white'?")
-			elif color.lower() == "b":
-				super(UndefinedColor, self).__init__("Color 'b' is invalid. Maybe you meant 'black'?")
-			else:
-				super(UndefinedColor, self).__init__("Color '" + str(color) + "' is invalid")
-
-	class UndefinedPiece(Exception):
-		def __init__(self, piece):
-			super(UndefinedPiece, self).__init__("Piece '" + str(piece) + "' is invalid")
-
-	class UndefinedGamePhase(Exception):
-		def __init__(self, phase):
-			super(UndefinedGamePhase, self).__init__("Game phase '" + str(phase) + "' is invalid")
-
-
-"""
 Type Enumerations
 """
 
@@ -3597,28 +3610,28 @@ class enums:
 
 		@staticmethod
 		def all():
-			return [enums.Color.white, enums.Color.black]
+			return [Color.white, Color.black]
 
 		@staticmethod
 		def invert(color):
-			if not enums.Color.valid(color):
+			if not Color.valid(color):
 				raise errors.UndefinedColor(color)
-			elif enums.Color.isWhite(color):
+			elif Color.isWhite(color):
 				return "black"
 			else:
 				return "white"
 
 		@staticmethod
 		def valid(color):
-			return color in enums.Color.all()
+			return color in Color.all()
 
 		@staticmethod
 		def isWhite(color):
-			return color in [enums.Color.white, "w"]
+			return color in [Color.white, "w"]
 
 		@staticmethod
 		def isBlack(color):
-			return color in [enums.Color.black, "b"]
+			return color in [Color.black, "b"]
 
 
 	class Piece:
@@ -3647,15 +3660,17 @@ class enums:
 
 		@staticmethod
 		def all():
-			return [enums.Piece.pawn, enums.Piece.knight, enums.Piece.bishop, enums.Piece.rook, enums.Piece.queen, enums.Piece.king]
+			return [Piece.pawn, Piece.knight, Piece.bishop, Piece.rook, Piece.queen, Piece.king]
 
 		@staticmethod
 		def unicode(piece, color="white"):
-			if not enums.Piece.valid(piece):
+			if not Piece.valid(piece):
 				raise errors.UndefinedPiece(piece)
-			if not enums.Color.valid(color):
+				return False
+			if not Color.valid(color):
 				raise errors.UndefinedColor(color)
-			return enums.Piece.unicode_dictionary[color + piece]
+				return False
+			return Piece.unicode_dictionary[color + piece]
 
 		@staticmethod
 		def value(piece):
@@ -3663,25 +3678,25 @@ class enums:
 				piece = piece.piece_type
 			except AttributeError:
 				pass
-			if enums.Piece.valid(piece):
-				return enums.Piece.piece_values[piece]
+			if Piece.valid(piece):
+				return Piece.piece_values[piece]
 			raise errors.UndefinedPiece(piece)
 
 		@staticmethod
 		def evaluate_piece_position(piece, position, color, game_phase):
-			if not enums.Phase.valid(game_phase):
+			if not Phase.valid(game_phase):
 				raise errors.UndefinedGamePhase(game_phase)
-			if not enums.Piece.valid(piece):
+			if not Piece.valid(piece):
 				raise errors.UndefinedPiece(piece)
-			if not enums.Color.valid(color):
+			if not Color.valid(color):
 				raise errors.UndefinedColor(color)
-			if color == enums.Color.white:
-				return enums.Piece.piece_square_tables["middlegame" if game_phase in [enums.Phase.opening, enums.Phase.middlegame] else "endgame"][piece][functions.coordinateToIndex(position)[0]][functions.coordinateToIndex(position)[1]]
-			return list(reversed([list(reversed(i)) for i in enums.Piece.piece_square_tables["middlegame" if game_phase in [enums.Phase.opening, enums.Phase.middlegame] else "endgame"][piece]]))[functions.coordinateToIndex(position)[0]][functions.coordinateToIndex(position)[1]]
+			if color == Color.white:
+				return Piece.piece_square_tables["middlegame" if game_phase in [Phase.opening, Phase.middlegame] else "endgame"][piece][functions.coordinateToIndex(position)[0]][functions.coordinateToIndex(position)[1]]
+			return list(reversed([list(reversed(i)) for i in Piece.piece_square_tables["middlegame" if game_phase in [Phase.opening, Phase.middlegame] else "endgame"][piece]]))[functions.coordinateToIndex(position)[0]][functions.coordinateToIndex(position)[1]]
 
 		@staticmethod
 		def valid(piece):
-			return piece in enums.Piece.all()
+			return piece in Piece.all()
 
 
 	class Phase:
@@ -3689,11 +3704,11 @@ class enums:
 
 		@staticmethod
 		def all():
-			return [enums.Phase.opening, enums.Phase.middlegame, enums.Phase.endgame]
+			return [Phase.opening, Phase.middlegame, Phase.endgame]
 
 		@staticmethod
 		def valid(phase):
-			return phase in enums.Phase.all()
+			return phase in Phase.all()
 
 
 	class Castle:
@@ -3701,11 +3716,11 @@ class enums:
 
 		@staticmethod
 		def all():
-			return [enums.Castle.kingside, enums.Castle.queenside]
+			return [Castle.kingside, Castle.queenside]
 
 		@staticmethod
 		def valid(castle):
-			return castle in enums.Castle.all()
+			return castle in Castle.all()
 
 
 	class Stop:
@@ -3713,11 +3728,11 @@ class enums:
 
 		@staticmethod
 		def all():
-			return [enums.Stop.never, enums.Stop.capture_piece, enums.Stop.no_capture, enums.Stop.piece]
+			return [Stop.never, Stop.capture_piece, Stop.no_capture, Stop.piece]
 
 		@staticmethod
 		def valid(stop):
-			return stop in enums.Stop.all()
+			return stop in Stop.all()
 
 
 	class Move:
@@ -3749,8 +3764,8 @@ class enums:
 				squares.append(row)
 			if print_result:
 				print(("---------------------------------\n" if separators else "") + ("\n---------------------------------\n" if separators else "\n").join([("| " if separators else "") + (" | " if separators else " ").join(i) + (" |" if separators else "") for i in squares]) + ("\n---------------------------------" if separators else ""))
-				return
-			return ("---------------------------------\n" if separators else "") + ("\n---------------------------------\n" if separators else "\n").join([("| " if separators else "") + (" | " if separators else " ").join(i) + (" |" if separators else "") for i in squares]) + ("\n---------------------------------" if separators else "")
+			else:
+				return ("---------------------------------\n" if separators else "") + ("\n---------------------------------\n" if separators else "\n").join([("| " if separators else "") + (" | " if separators else " ").join(i) + (" |" if separators else "") for i in squares]) + ("\n---------------------------------" if separators else "")
 
 		__str__ = __repr__ = lambda self: str(self.name)
 
@@ -3758,9 +3773,9 @@ class enums:
 	class MoveSet:
 		def __init__(self, *moves):
 			if len(moves) == 1 and isinstance(moves[0], (list, set, tuple)):
-				self.moves = [i for i in list(moves[0]) if isinstance(i, enums.Move)]
+				self.moves = [i for i in list(moves[0]) if isinstance(i, Move)]
 			else:
-				self.moves = [i for i in moves if isinstance(i, enums.Move)]
+				self.moves = [i for i in moves if isinstance(i, Move)]
 
 		def visualized(self, print_result=False, empty_squares=" ", separators=True, old_position_symbol="□", new_position_symbol="■", capture_symbol="X"):
 			if empty_squares == "":
@@ -3774,8 +3789,8 @@ class enums:
 				squares.append(row)
 			if print_result:
 				print(("---------------------------------\n" if separators else "") + ("\n---------------------------------\n" if separators else "\n").join([("| " if separators else "") + (" | " if separators else " ").join(i) + (" |" if separators else "") for i in squares]) + ("\n---------------------------------" if separators else ""))
-				return
-			return ("---------------------------------\n" if separators else "") + ("\n---------------------------------\n" if separators else "\n").join([("| " if separators else "") + (" | " if separators else " ").join(i) + (" |" if separators else "") for i in squares]) + ("\n---------------------------------" if separators else "")
+			else:
+				return ("---------------------------------\n" if separators else "") + ("\n---------------------------------\n" if separators else "\n").join([("| " if separators else "") + (" | " if separators else " ").join(i) + (" |" if separators else "") for i in squares]) + ("\n---------------------------------" if separators else "")
 
 		def old_positions(self):
 			return [i.old_position for i in self.moves]
@@ -3784,17 +3799,17 @@ class enums:
 			return [i.new_position for i in self.moves]
 
 		def __contains__(self, obj):
-			if isinstance(obj, enums.Move):
+			if isinstance(obj, Move):
 				return obj in self.moves
 			return False
 
 		def __add__(self, other):
-			if isinstance(other, enums.MoveSet):
-				return enums.MoveSet(self.moves + other.moves)
-			if isinstance(other, enums.Move):
-				return enums.MoveSet(self.moves + [other])
+			if isinstance(other, MoveSet):
+				return MoveSet(self.moves + other.moves)
+			if isinstance(other, Move):
+				return MoveSet(self.moves + [other])
 			if isinstance(other, (list, set, tuple)):
-				new_set = enums.MoveSet(self.moves)
+				new_set = MoveSet(self.moves)
 				for i in other:
 					new_set += i
 				return new_set
@@ -3807,16 +3822,16 @@ class enums:
 			return self.__add__(other)
 
 		def __sub__(self, other):
-			if isinstance(other, enums.MoveSet):
-				new_set = enums.MoveSet(self.moves)
+			if isinstance(other, MoveSet):
+				new_set = MoveSet(self.moves)
 				for i in other.moves:
 					if i in self.moves:
 						new_set.moves.remove(i)
 				return new_set
 			if isinstance(other, Move):
-				return enums.MoveSet([i for i in self.moves if i != other])
+				return MoveSet([i for i in self.moves if i != other])
 			if isinstance(other, (list, set, tuple)):
-				new_set = enums.MoveSet(self.moves)
+				new_set = MoveSet(self.moves)
 				for i in other:
 					new_set -= i
 				return new_set
@@ -3829,13 +3844,13 @@ class enums:
 			return self.__sub__(other)
 
 		def __neg__(self):
-			new_set = enums.MoveSet(self.moves)
+			new_set = MoveSet(self.moves)
 			for i in new_set:
 				i.new_position, i.old_position = i.old_position, i.new_position
 			return new_set
 
 		def __pos__(self):
-			return enums.MoveSet(self.moves)
+			return MoveSet(self.moves)
 
 		def __len__(self):
 			return len(self.moves)
@@ -3851,7 +3866,85 @@ class enums:
 			else:
 				raise StopIteration
 
+		def next(self):
+			if self.iter_position < len(self.moves):
+				self.iter_position += 1
+				return self.moves[self.iter_position - 1]
+			else:
+				raise StopIteration
+
 		__str__ = __repr__ = lambda self: ", ".join(map(str, self.moves))
+
+
+	class Line:
+		def __init__(self, start, end, jump=False):
+			self.start_position = start
+			self.end_position = end
+			if not jump:
+				if start[0] == end[0]:
+					self.positions = [start[0] + str(i) for i in range(int(start[1]) + 1, int(end[1]))]
+				elif start[1] == end[1]:
+					self.positions = [("a", "b", "c", "d", "e", "f", "g", "h")[i] + start[1] for i in range({"a": 0, "b": 1, "c": 2, "d": 3, "e": 4, "f": 5, "g": 6, "h": 7}[start[0]] + 1, {"a": 0, "b": 1, "c": 2, "d": 3, "e": 4, "f": 5, "g": 6, "h": 7}[end[0]])]
+				elif int(functions.coordinateToIndex(start)[1]) < int(functions.coordinateToIndex(end)[1]) and int(functions.coordinateToIndex(start)[0]) < int(functions.coordinateToIndex(end)[0]):
+					pos1, pos2 = functions.coordinateToIndex(end)
+					pos1, pos2 = pos1 - 1, pos2 - 1
+					self.positions = []
+					while [pos1, pos2] != functions.coordinateToIndex(start):
+						if pos1 < 0 or 0 > pos2:
+							raise errors.InvalidLineCoordinates(start, end)
+						self.positions.append(functions.indexToCoordinate([pos1, pos2]))
+						pos1, pos2 = pos1 - 1, pos2 - 1
+				elif int(functions.coordinateToIndex(start)[1]) > int(functions.coordinateToIndex(end)[1]) and int(functions.coordinateToIndex(start)[0]) > int(functions.coordinateToIndex(end)[0]):
+					pos1, pos2 = functions.coordinateToIndex(end)
+					pos1, pos2 = pos1 + 1, pos2 + 1
+					self.positions = []
+					while [pos1, pos2] != functions.coordinateToIndex(start):
+						if pos1 >= 8 or 8 <= pos2:
+							raise errors.InvalidLineCoordinates(start, end)
+						self.positions.append(functions.indexToCoordinate([pos1, pos2]))
+						pos1, pos2 = pos1 + 1, pos2 + 1
+				elif int(functions.coordinateToIndex(start)[1]) < int(functions.coordinateToIndex(end)[1]) and int(functions.coordinateToIndex(start)[0]) > int(functions.coordinateToIndex(end)[0]):
+					pos1, pos2 = functions.coordinateToIndex(end)
+					pos1, pos2 = pos1 + 1, pos2 - 1
+					self.positions = []
+					while [pos1, pos2] != functions.coordinateToIndex(start):
+						if pos1 >= 8 or 0 > pos2:
+							raise errors.InvalidLineCoordinates(start, end)
+						self.positions.append(functions.indexToCoordinate([pos1, pos2]))
+						pos1, pos2 = pos1 + 1, pos2 - 1
+				elif int(functions.coordinateToIndex(start)[1]) > int(functions.coordinateToIndex(end)[1]) and int(functions.coordinateToIndex(start)[0]) < int(functions.coordinateToIndex(end)[0]):
+					pos1, pos2 = functions.coordinateToIndex(end)
+					pos1, pos2 = pos1 - 1, pos2 + 1
+					self.positions = []
+					while [pos1, pos2] != functions.coordinateToIndex(start):
+						if pos1 < 0 or 8 <= pos2:
+							raise errors.InvalidLineCoordinates(start, end)
+						self.positions.append(functions.indexToCoordinate([pos1, pos2]))
+						pos1, pos2 = pos1 - 1, pos2 + 1
+				else:
+					raise errors.InvalidLineCoordinates(start, end)
+			else:
+				self.positions = []
+
+		def visualized(self, print_result=False, separators=True, empty_squares=" ", line_symbol="●", start_position_symbol="○", end_position_symbol="◎"):
+			squares = [[empty_squares for x in range(8)] for y in range(8)]
+			for i in self.positions:
+				squares[functions.coordinateToIndex(i)[0]][functions.coordinateToIndex(i)[1]] = line_symbol
+			squares[functions.coordinateToIndex(self.start_position)[0]][functions.coordinateToIndex(self.start_position)[1]] = start_position_symbol
+			squares[functions.coordinateToIndex(self.end_position)[0]][functions.coordinateToIndex(self.end_position)[1]] = end_position_symbol
+			if print_result:
+				print(("---------------------------------\n| " if separators else "") + (" |\n---------------------------------\n| " if separators else "\n").join((" | " if separators else " ").join(i) for i in squares) + (" |\n---------------------------------" if separators else ""))
+			else:
+				return ("---------------------------------\n| " if separators else "") + (" |\n---------------------------------\n| " if separators else "\n").join((" | " if separators else " ").join(i) for i in squares) + (" |\n---------------------------------" if separators else "")
+
+		def __str__(self):
+			return self.visualized()
+
+		def __repr__(self):
+			return str(self.positions)
+
+		def __unicode__(self):
+			return self.visualized()
 
 
 """
@@ -4087,11 +4180,13 @@ class Game:
 		"""Initialize"""
 		if not functions.FENvalid(fen):
 			fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
+		self.tags = {"Result": "*"}
 		self.opening = ""  # Opening
 		self.evaluate_openings = evaluate_openings
 		self.squares, self.pieces = [], []  # Pieces and squares
 		self.squares_hashtable = {(x + str(y)): False for x in "abcdefgh" for y in range(1, 9)}  # Squares hashtable
 		self.in_check = False  # False if neither side is in check, enums.Color.white if white is in check, otherwise enums.Color.black if black is in check
+		self.checking_piece = None  # The piece checking a king, or None
 		self.white_king = self.black_king = None
 		# Append squares
 		for x in range(8):
@@ -4163,6 +4258,14 @@ class Game:
 		fen += " " + str(self.half_moves) + " " + str(self.full_moves)  # Add halfmove and fullmove clock
 		return fen
 
+	def PGN(self, **kwargs):
+		"""Returns the PGN of the game."""
+		pgn = ""
+		for i in kwargs:
+			pgn += "[" + i + " \"" + str(kwargs[i]) + "\"]\n"
+		pgn += ("\n" if kwargs else "") + self.move_list + str(self.tags["Result"])
+		return pgn
+
 	def error(self, error):
 		"""Raises an error if allowed"""
 		if self.raise_errors:
@@ -4177,6 +4280,11 @@ class Game:
 		if color == enums.Color.white:
 			return self.white_king
 		return self.black_king
+
+	def checkLine(self):
+		if not self.in_check:
+			return False
+		return enums.Line(self.checking_piece.position, self.getKing(self.in_check).position, jump=self.checking_piece.piece_type == enums.Piece.knight)
 
 	def move(self, move, evaluate_checks=True, evaluate_opening=True, evaluate_move_checks=True):
 		"""Moves the specified move, if possible"""
@@ -4200,6 +4308,9 @@ class Game:
 					# Move the rook's position to the d-file
 					move.castle_rook.position = "d" + move.castle_rook.position[1]
 					self.squares_hashtable[move.castle_rook.position], self.squares_hashtable["d" + move.castle_rook.position[1]] = self.squares_hashtable["d" + move.castle_rook.position[1]], self.squares_hashtable[move.castle_rook.position]
+
+			# Reset piece giving check
+			self.checking_piece = None
 
 			# Reset en passant positions
 			self.en_passant_positions = None
@@ -4240,6 +4351,7 @@ class Game:
 				if any([True for i in self.legal_moves(show_data=True, color=self.turn, evaluate_checks=evaluate_move_checks) if i.new_position == self.pieceType(enums.Piece.king, color=enums.Color.invert(self.turn))[0].position]):  # If any move can capture the king
 					move.name += "+"  # Append a check symbol to the end of the move name
 					self.in_check = enums.Color.invert(self.turn)  # Set self.in_check variable to the side in check
+					self.checking_piece = move.piece
 				else:  # Otherwise
 					self.in_check = False  # Reset the self.in_check variable
 
@@ -4303,6 +4415,9 @@ class Game:
 				for x in self.pieces:
 					x.en_passant = False
 
+				# Reset piece giving check
+				self.checking_piece = None
+
 				# If the move was a double pawn push
 				if i.double_pawn_move:
 					i.piece.en_passant = True  # Set en_passant variable of moved piece to true
@@ -4344,6 +4459,7 @@ class Game:
 			if any([True for i in self.legal_moves(show_data=True, color=self.turn, evaluate_checks=evaluate_move_checks) if i.new_position == self.pieceType(enums.Piece.king, color=enums.Color.invert(self.turn))[0].position]):  # If the king can be captured
 				move += "+"  # Append a check symbol to the end of the move
 				self.in_check = enums.Color.invert(self.turn)  # Set in_check variable
+				self.checking_piece = move_data.piece
 			else:  # Otherwise
 				self.in_check = False  # Set in_check to False
 

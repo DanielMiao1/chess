@@ -252,11 +252,13 @@ class Game:
 		"""Initialize"""
 		if not functions.FENvalid(fen):
 			fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
+		self.tags = {"Result": "*"}
 		self.opening = ""  # Opening
 		self.evaluate_openings = evaluate_openings
 		self.squares, self.pieces = [], []  # Pieces and squares
 		self.squares_hashtable = {(x + str(y)): False for x in "abcdefgh" for y in range(1, 9)}  # Squares hashtable
 		self.in_check = False  # False if neither side is in check, enums.Color.white if white is in check, otherwise enums.Color.black if black is in check
+		self.checking_piece = None  # The piece checking a king, or None
 		self.white_king = self.black_king = None
 		# Append squares
 		for x in range(8):
@@ -328,6 +330,14 @@ class Game:
 		fen += " " + str(self.half_moves) + " " + str(self.full_moves)  # Add halfmove and fullmove clock
 		return fen
 
+	def PGN(self, **kwargs):
+		"""Returns the PGN of the game."""
+		pgn = ""
+		for i in kwargs:
+			pgn += "[" + i + " \"" + str(kwargs[i]) + "\"]\n"
+		pgn += ("\n" if kwargs else "") + self.move_list + str(self.tags["Result"])
+		return pgn
+
 	def error(self, error):
 		"""Raises an error if allowed"""
 		if self.raise_errors:
@@ -342,6 +352,11 @@ class Game:
 		if color == enums.Color.white:
 			return self.white_king
 		return self.black_king
+
+	def checkLine(self):
+		if not self.in_check:
+			return False
+		return enums.Line(self.checking_piece.position, self.getKing(self.in_check).position, jump=self.checking_piece.piece_type == enums.Piece.knight)
 
 	def move(self, move, evaluate_checks=True, evaluate_opening=True, evaluate_move_checks=True):
 		"""Moves the specified move, if possible"""
@@ -365,6 +380,9 @@ class Game:
 					# Move the rook's position to the d-file
 					move.castle_rook.position = "d" + move.castle_rook.position[1]
 					self.squares_hashtable[move.castle_rook.position], self.squares_hashtable["d" + move.castle_rook.position[1]] = self.squares_hashtable["d" + move.castle_rook.position[1]], self.squares_hashtable[move.castle_rook.position]
+
+			# Reset piece giving check
+			self.checking_piece = None
 
 			# Reset en passant positions
 			self.en_passant_positions = None
@@ -405,6 +423,7 @@ class Game:
 				if any([True for i in self.legal_moves(show_data=True, color=self.turn, evaluate_checks=evaluate_move_checks) if i.new_position == self.pieceType(enums.Piece.king, color=enums.Color.invert(self.turn))[0].position]):  # If any move can capture the king
 					move.name += "+"  # Append a check symbol to the end of the move name
 					self.in_check = enums.Color.invert(self.turn)  # Set self.in_check variable to the side in check
+					self.checking_piece = move.piece
 				else:  # Otherwise
 					self.in_check = False  # Reset the self.in_check variable
 
@@ -468,6 +487,9 @@ class Game:
 				for x in self.pieces:
 					x.en_passant = False
 
+				# Reset piece giving check
+				self.checking_piece = None
+
 				# If the move was a double pawn push
 				if i.double_pawn_move:
 					i.piece.en_passant = True  # Set en_passant variable of moved piece to true
@@ -509,6 +531,7 @@ class Game:
 			if any([True for i in self.legal_moves(show_data=True, color=self.turn, evaluate_checks=evaluate_move_checks) if i.new_position == self.pieceType(enums.Piece.king, color=enums.Color.invert(self.turn))[0].position]):  # If the king can be captured
 				move += "+"  # Append a check symbol to the end of the move
 				self.in_check = enums.Color.invert(self.turn)  # Set in_check variable
+				self.checking_piece = move_data.piece
 			else:  # Otherwise
 				self.in_check = False  # Set in_check to False
 

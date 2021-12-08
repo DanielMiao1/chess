@@ -7,6 +7,7 @@ Type Enumerations
 """
 
 from . import functions
+from . import errors
 
 
 class Color:
@@ -169,8 +170,8 @@ class Move:
 			squares.append(row)
 		if print_result:
 			print(("---------------------------------\n" if separators else "") + ("\n---------------------------------\n" if separators else "\n").join([("| " if separators else "") + (" | " if separators else " ").join(i) + (" |" if separators else "") for i in squares]) + ("\n---------------------------------" if separators else ""))
-			return
-		return ("---------------------------------\n" if separators else "") + ("\n---------------------------------\n" if separators else "\n").join([("| " if separators else "") + (" | " if separators else " ").join(i) + (" |" if separators else "") for i in squares]) + ("\n---------------------------------" if separators else "")
+		else:
+			return ("---------------------------------\n" if separators else "") + ("\n---------------------------------\n" if separators else "\n").join([("| " if separators else "") + (" | " if separators else " ").join(i) + (" |" if separators else "") for i in squares]) + ("\n---------------------------------" if separators else "")
 
 	__str__ = __repr__ = lambda self: str(self.name)
 
@@ -194,8 +195,8 @@ class MoveSet:
 			squares.append(row)
 		if print_result:
 			print(("---------------------------------\n" if separators else "") + ("\n---------------------------------\n" if separators else "\n").join([("| " if separators else "") + (" | " if separators else " ").join(i) + (" |" if separators else "") for i in squares]) + ("\n---------------------------------" if separators else ""))
-			return
-		return ("---------------------------------\n" if separators else "") + ("\n---------------------------------\n" if separators else "\n").join([("| " if separators else "") + (" | " if separators else " ").join(i) + (" |" if separators else "") for i in squares]) + ("\n---------------------------------" if separators else "")
+		else:
+			return ("---------------------------------\n" if separators else "") + ("\n---------------------------------\n" if separators else "\n").join([("| " if separators else "") + (" | " if separators else " ").join(i) + (" |" if separators else "") for i in squares]) + ("\n---------------------------------" if separators else "")
 
 	def old_positions(self):
 		return [i.old_position for i in self.moves]
@@ -279,3 +280,74 @@ class MoveSet:
 			raise StopIteration
 
 	__str__ = __repr__ = lambda self: ", ".join(map(str, self.moves))
+
+
+class Line:
+	def __init__(self, start, end, jump=False):
+		self.start_position = start
+		self.end_position = end
+		if not jump:
+			if start[0] == end[0]:
+				self.positions = [start[0] + str(i) for i in range(int(start[1]) + 1, int(end[1]))]
+			elif start[1] == end[1]:
+				self.positions = [("a", "b", "c", "d", "e", "f", "g", "h")[i] + start[1] for i in range({"a": 0, "b": 1, "c": 2, "d": 3, "e": 4, "f": 5, "g": 6, "h": 7}[start[0]] + 1, {"a": 0, "b": 1, "c": 2, "d": 3, "e": 4, "f": 5, "g": 6, "h": 7}[end[0]])]
+			elif int(functions.coordinateToIndex(start)[1]) < int(functions.coordinateToIndex(end)[1]) and int(functions.coordinateToIndex(start)[0]) < int(functions.coordinateToIndex(end)[0]):
+				pos1, pos2 = functions.coordinateToIndex(end)
+				pos1, pos2 = pos1 - 1, pos2 - 1
+				self.positions = []
+				while [pos1, pos2] != functions.coordinateToIndex(start):
+					if pos1 < 0 or 0 > pos2:
+						raise errors.InvalidLineCoordinates(start, end)
+					self.positions.append(functions.indexToCoordinate([pos1, pos2]))
+					pos1, pos2 = pos1 - 1, pos2 - 1
+			elif int(functions.coordinateToIndex(start)[1]) > int(functions.coordinateToIndex(end)[1]) and int(functions.coordinateToIndex(start)[0]) > int(functions.coordinateToIndex(end)[0]):
+				pos1, pos2 = functions.coordinateToIndex(end)
+				pos1, pos2 = pos1 + 1, pos2 + 1
+				self.positions = []
+				while [pos1, pos2] != functions.coordinateToIndex(start):
+					if pos1 >= 8 or 8 <= pos2:
+						raise errors.InvalidLineCoordinates(start, end)
+					self.positions.append(functions.indexToCoordinate([pos1, pos2]))
+					pos1, pos2 = pos1 + 1, pos2 + 1
+			elif int(functions.coordinateToIndex(start)[1]) < int(functions.coordinateToIndex(end)[1]) and int(functions.coordinateToIndex(start)[0]) > int(functions.coordinateToIndex(end)[0]):
+				pos1, pos2 = functions.coordinateToIndex(end)
+				pos1, pos2 = pos1 + 1, pos2 - 1
+				self.positions = []
+				while [pos1, pos2] != functions.coordinateToIndex(start):
+					if pos1 >= 8 or 0 > pos2:
+						raise errors.InvalidLineCoordinates(start, end)
+					self.positions.append(functions.indexToCoordinate([pos1, pos2]))
+					pos1, pos2 = pos1 + 1, pos2 - 1
+			elif int(functions.coordinateToIndex(start)[1]) > int(functions.coordinateToIndex(end)[1]) and int(functions.coordinateToIndex(start)[0]) < int(functions.coordinateToIndex(end)[0]):
+				pos1, pos2 = functions.coordinateToIndex(end)
+				pos1, pos2 = pos1 - 1, pos2 + 1
+				self.positions = []
+				while [pos1, pos2] != functions.coordinateToIndex(start):
+					if pos1 < 0 or 8 <= pos2:
+						raise errors.InvalidLineCoordinates(start, end)
+					self.positions.append(functions.indexToCoordinate([pos1, pos2]))
+					pos1, pos2 = pos1 - 1, pos2 + 1
+			else:
+				raise errors.InvalidLineCoordinates(start, end)
+		else:
+			self.positions = []
+
+	def visualized(self, print_result=False, separators=True, empty_squares=" ", line_symbol="●", start_position_symbol="○", end_position_symbol="◎"):
+		squares = [[empty_squares for x in range(8)] for y in range(8)]
+		for i in self.positions:
+			squares[functions.coordinateToIndex(i)[0]][functions.coordinateToIndex(i)[1]] = line_symbol
+		squares[functions.coordinateToIndex(self.start_position)[0]][functions.coordinateToIndex(self.start_position)[1]] = start_position_symbol
+		squares[functions.coordinateToIndex(self.end_position)[0]][functions.coordinateToIndex(self.end_position)[1]] = end_position_symbol
+		if print_result:
+			print(("---------------------------------\n| " if separators else "") + (" |\n---------------------------------\n| " if separators else "\n").join((" | " if separators else " ").join(i) for i in squares) + (" |\n---------------------------------" if separators else ""))
+		else:
+			return ("---------------------------------\n| " if separators else "") + (" |\n---------------------------------\n| " if separators else "\n").join((" | " if separators else " ").join(i) for i in squares) + (" |\n---------------------------------" if separators else "")
+
+	def __str__(self):
+		return self.visualized()
+
+	def __repr__(self):
+		return str(self.positions)
+
+	def __unicode__(self):
+		return self.visualized()
