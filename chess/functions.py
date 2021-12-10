@@ -11,6 +11,18 @@ try:
 except NameError:
 	unicode = str
 
+def getMovesFromString(string):
+	"""Returns a list of moves from a move string (e.g. '1. e4 e5 2. Nf3 Nc6 *')"""
+	moves = []
+
+	for i in string.split(" "):
+		if i in ["*", "1-0", "0-1", "1/2-1/2"]:
+			break
+		if i[0].isnumeric():
+			continue
+		moves.append(i)
+
+	return moves
 
 def splitNumbers(string):
 	"""Splits numbers in a string"""
@@ -49,6 +61,10 @@ def toSAN(move, game):
 	extra_characters = ""  # Stores extra characters (e.g +,  #, =Q, =Q+...)
 	if move in ["O-O", "0-0", "O-O-O", "0-0-0"]:
 		return move.replace("0", "O")
+	if move in ["O-O", "O-O-O"]:
+		return move
+	if move in ["o-o", "o-o-o"]:
+		return move.replace("o", "O")
 	if move.endswith("+"):  # If a "+" is found
 		extra_characters = "+"
 		move = move[:-1]

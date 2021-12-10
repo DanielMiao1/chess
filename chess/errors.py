@@ -60,3 +60,13 @@ class UndefinedGamePhase(Exception):
 class InvalidLineCoordinates(Exception):
 	def __init__(self, start, end):
 		super(InvalidLineCoordinates, self).__init__("The starting position " + str(start) + " and ending position " + str(end) + " do not form a valid line")
+
+
+class InvalidPGNLine(Exception):
+	def __init__(self, line, line_number):
+		super(InvalidPGNLine, self).__init__("Invalid PGN (line " + str(line_number) + "):\n  " + line)
+
+
+class InvalidPGNMove(Exception):
+	def __init__(self, move, move_number):
+		super(InvalidPGNMove, self).__init__("Invalid move in PGN:\n  " + str(move_number) + ". " + move)

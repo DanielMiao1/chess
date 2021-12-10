@@ -300,6 +300,34 @@ class Game:
 			self.updateOpening()
 		return True
 
+	def loadPGN(self, pgn=None, file=None, quotes="\""):
+		"""Loads the specified pgn. If the file argument is specified (is not None), loads the text of the file instead."""
+		if file is pgn is None:
+			return
+
+		if file is not None:
+			pgn = open(file).read()
+		self.__init__()
+		for x, y in enumerate(pgn.splitlines()):
+			if y.strip() == "":
+				continue
+			if y.strip().startswith("[") and y.strip().endswith("]"):
+				self.tags[y[1:y.index(quotes) - 1]] = y[y.index(quotes) + 1:-1]
+			if y.startswith("1."):
+				moves = functions.getMovesFromString(y)
+				for x, y in enumerate(moves):
+					try:
+						if x == len(moves) - 1:
+							self.move(y)
+						else:
+							self.move(y, evaluate_checks=False, evaluate_opening=False)
+					except:
+						self.error(errors.InvalidPGNMove(y, x))
+						return False
+			else:
+				self.error(errors.InvalidPGNLine(y, x + 1))
+				return False
+
 	def loadOpening(self, opening_name):
 		"""Load an opening"""
 		for i in openings.openings:
