@@ -58,6 +58,23 @@ class Piece:
 		self.moved = False
 		self.en_passant = False
 
+	def moveTo(self, position, override_pieces=True, evaluate_opening=True, evaluate_checks=True):
+		"""Move the piece to a position"""
+		if self.board.pieceAt(position) and override_pieces:
+			self.board.pieces.remove(self.board.pieceAt(position))
+			self.board.squares_hashtable[position] = False
+		elif not override_pieces and self.board.pieceAt(position):
+			self.board.pieceAt(position).position = self.position
+		self.board.squares_hashtable[self.position], self.board.squares_hashtable[position] = self.board.squares_hashtable[position], self.board.squares_hashtable[self.position]
+		self.position = position
+		if evaluate_checks:
+			for i in self.moves(show_data=True, evaluate_checks=False):
+				if i.new_position == self.board.getKing(enums.Color.invert(self.color)).position:
+					self.board.in_check = enums.Color.invert(self.color)
+					break
+		if evaluate_opening:
+			self.board.updateOpening()
+
 	def moves(self, show_data=False, evaluate_checks=True):
 		"""Legal moves of the piece"""
 		moves = []
