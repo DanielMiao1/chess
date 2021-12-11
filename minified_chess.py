@@ -4336,6 +4336,11 @@ class Game:
 		if self.raise_errors:
 			raise error
 
+	def placePiece(self, coordinate, color, piece_type):
+		"""Places a piece with the specified properties at position `coordinate`, overriding any existing pieces on the coordinate."""
+		self.pieces.append(Piece(coordinate, piece_type, color, self))
+		self.squares_hashtable[coordinate] = self.pieces[-1]
+
 	def getKing(self, color):
 		"""Get the king of color `color`"""
 		if not enums.Color.valid(color):
