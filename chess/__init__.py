@@ -77,6 +77,8 @@ class Piece:
 
 	def moves(self, show_data=False, evaluate_checks=True):
 		"""Legal moves of the piece"""
+		if self.board.game_over:
+			return []
 		moves = []
 		if self.piece_type == enums.Piece.pawn:  # Pawn moves
 			moves.extend(self.board.generatePawnCaptures(self.position, self.color, piece=self))
@@ -277,6 +279,10 @@ class Game:
 		self.squares, self.pieces = [], []  # Pieces and squares
 		self.squares_hashtable = {(x + str(y)): False for x in "abcdefgh" for y in range(1, 9)}  # Squares hashtable
 		self.in_check = False  # False if neither side is in check, enums.Color.white if white is in check, otherwise enums.Color.black if black is in check
+		self.game_over = False
+		self.is_checkmate = False
+		self.is_stalemate = False
+		self.drawn = False
 		self.checking_piece = None  # The piece checking a king, or None
 		self.white_king = self.black_king = None
 		# Append squares
@@ -318,7 +324,7 @@ class Game:
 		if evaluate_opening:
 			self.updateOpening()
 		if evaluate_checks:
-			in_check = [self.pieceAt(i.new_position) for i in self.legal_moves(show_data=True, color=self.turn, evaluate_checks=False) if i.new_position == self.pieceType(enums.Piece.king, color=enums.Color.invert(self.turn))[0].position]
+			in_check = [self.pieceAt(i.new_position) for i in self.legal_moves(show_data=True, color=self.turn, evaluate_checks=False, evaluate_checkmate=False) if i.new_position == self.pieceType(enums.Piece.king, color=enums.Color.invert(self.turn))[0].position]
 			if in_check:
 				self.in_check = in_check[0]
 			else:
@@ -398,6 +404,8 @@ class Game:
 
 	def placePiece(self, coordinate, color, piece_type):
 		"""Places a piece with the specified properties at position `coordinate`, overriding any existing pieces on the coordinate."""
+		if self.pieceAt(coordinate):
+			self.pieces.remove(self.pieceAt(coordinate))
 		self.pieces.append(Piece(coordinate, piece_type, color, self))
 		self.squares_hashtable[coordinate] = self.pieces[-1]
 
@@ -416,7 +424,7 @@ class Game:
 			return False
 		return enums.Line(self.checking_piece.position, self.getKing(self.in_check).position, jump=self.checking_piece.piece_type == enums.Piece.knight)
 
-	def move(self, move, evaluate_checks=True, evaluate_opening=True, evaluate_move_checks=True):
+	def move(self, move, evaluate_checks=True, evaluate_opening=True, evaluate_move_checks=True, evaluate_move_checkmate=True):
 		"""Moves the specified move, if possible"""
 		if isinstance(move, enums.Move):  # If move is a enums.Move object
 			if move.is_capture:  # If the move is a capture
@@ -484,7 +492,7 @@ class Game:
 				self.checking_piece = None
 			else:  # Otherwise
 				if evaluate_checks:  # If the evaluate_checks parameter is True
-					if any([True for i in self.legal_moves(show_data=True, color=self.turn, evaluate_checks=evaluate_move_checks) if i.new_position == self.pieceType(enums.Piece.king, color=enums.Color.invert(self.turn))[0].position]):  # If the king can be captured
+					if any([True for i in self.legal_moves(show_data=True, color=self.turn, evaluate_checks=evaluate_move_checks, evaluate_checkmate=evaluate_move_checkmate) if i.new_position == self.pieceType(enums.Piece.king, color=enums.Color.invert(self.turn))[0].position]):  # If the king can be captured
 						move.name += "+"  # Append a check symbol to the end of the move
 						self.in_check = enums.Color.invert(self.turn)  # Set in_check variable
 						self.checking_piece = move.piece
@@ -513,6 +521,17 @@ class Game:
 			# Get opening
 			if evaluate_opening:
 				self.updateOpening()
+
+			if not self.legal_moves(evaluate_checks=evaluate_move_checks, evaluate_checkmate=evaluate_move_checkmate):
+				self.game_over = True
+				if self.in_check:
+					self.is_checkmate = True
+					self.tags["Result"] = "1-0" if self.turn == enums.Color.black else "0-1"
+				else:
+					self.drawn = True
+					self.is_stalemate = True
+					self.tags["Result"] = "1/2-1/2"
+
 			return move  # Return the applied move
 
 		if not isinstance(move, str):  # If move is not a string, raise an error and return False
@@ -525,7 +544,7 @@ class Game:
 			move = move.split(" ")[-1]
 
 		move = functions.toSAN(move, self)  # Convert to SAN
-		legal_moves = self.legal_moves(show_data=True, evaluate_checks=evaluate_move_checks)  # Store legal moves in legal_moves variable
+		legal_moves = self.legal_moves(show_data=True, evaluate_checks=evaluate_move_checks, evaluate_checkmate=evaluate_move_checkmate)  # Store legal moves in legal_moves variable
 		move_data = None
 
 		# Iterate through the legal moves
@@ -599,8 +618,7 @@ class Game:
 			self.checking_piece = None
 		else:  # Otherwise
 			if evaluate_checks:  # If the evaluate_checks parameter is True
-				if any([True for i in self.legal_moves(show_data=True, color=self.turn, evaluate_checks=evaluate_move_checks) if i.new_position == self.pieceType(enums.Piece.king, color=enums.Color.invert(self.turn))[0].position]):  # If the king can be captured
-					move.name += "+"  # Append a check symbol to the end of the move
+				if any([True for i in self.legal_moves(show_data=True, color=self.turn, evaluate_checks=evaluate_move_checks, evaluate_checkmate=evaluate_move_checkmate) if i.new_position == self.pieceType(enums.Piece.king, color=enums.Color.invert(self.turn))[0].position]):  # If the king can be captured
 					self.in_check = enums.Color.invert(self.turn)  # Set in_check variable
 					self.checking_piece = move_data.piece
 				else:  # Otherwise
@@ -633,9 +651,19 @@ class Game:
 		if evaluate_opening:  # If the evaluate_opening parameter is True
 			self.updateOpening()  # Update the opening using the updateOpening function
 
+		if not self.legal_moves(evaluate_checks=evaluate_move_checks, evaluate_checkmate=evaluate_move_checkmate):
+			self.game_over = True
+			if self.in_check:
+				self.is_checkmate = True
+				self.tags["Result"] = "1-0" if self.turn == enums.Color.black else "0-1"
+			else:
+				self.drawn = True
+				self.is_stalemate = True
+				self.tags["Result"] = "1/2-1/2"
+
 		return move_data  # Return the move data (enums.Move object)
 
-	def legal_moves(self, show_data=False, color=enums.Color.current, evaluate_checks=True, piece_type=enums.Piece.all()):
+	def legal_moves(self, show_data=False, color=enums.Color.current, evaluate_checks=True, evaluate_checkmate=True, piece_type=enums.Piece.all()):
 		"""Returns all legal moves by pieces of type(s) piece_type"""
 		moves = []  # Define empty moves list
 
@@ -651,11 +679,11 @@ class Game:
 
 			for x in piece_type:  # Iterate through the piece types
 				for y in pieces[x]:  # Iterate through the pieces of this type
-					moves.extend(y.moves(show_data, evaluate_checks=evaluate_checks))  # Append the piece moves
+					moves.extend(y.moves(show_data, evaluate_checks=evaluate_checks, evaluate_checkmate=evaluate_checkmate))  # Append the piece moves
 		elif piece_type in enums.Piece.all():  # If the piece type is a single type
 			for i in self.pieceType(piece_type):  # Iterate through the pieces of the specified type
 				if color == enums.Color.any or i.color == color:  # If the specified color(s) includes the piece color
-					moves.extend(i.moves(show_data, evaluate_checks=evaluate_checks))  # Append the piece moves
+					moves.extend(i.moves(show_data, evaluate_checks=evaluate_checks, evaluate_checkmate=evaluate_checkmate))  # Append the piece moves
 
 		return moves  # Return result
 
