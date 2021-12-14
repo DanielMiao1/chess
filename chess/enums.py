@@ -351,3 +351,6 @@ class Line:
 
 	def __unicode__(self):
 		return self.visualized()
+
+	def __contains__(self, item):
+		return item in self.positions

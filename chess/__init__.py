@@ -47,7 +47,7 @@ class Square:
 
 	__add__ = __radd__ = __sub__ = __rsub__ = __mul__ = __rmul__ = __div__ = __rdiv__ = __truediv__ = __rtruediv__ = __floordiv__ = __rfloordiv__ = __mod__ = __rmod__ = __divmod__ = __rdivmod__ = __pow__ = __rpow__ = __lshift__ = __rlshift__ = __rshift__ = __rrshift__ = __and__ = __rand__ = __or__ = __ror__ = __xor__ = __rxor__ = __iadd__ = __isub__ = __imul__ = __idiv__ = __itruediv__ = __ifloordiv__ = __imod__ = __ipow__ = __iand__ = __ior__ = __ixor__ = __ilshift__ = __irshift__ = __neg__ = __pos__ = __abs__ = __invert__ = __int__ = __long__ = __float__ = __complex__ = __oct__ = __hex__ = __coerce__ = lambda self, *args: self.error(ArithmeticError("Cannot perform arithmetic operations on Square object"))
 
-	__getitem__ = __setitem__ = __delitem__ = __getslice__ = __setslice__ = __delslice__ = __contains__ = lambda self, *args: self.error(IndexError("Cannot perform operation on Square"))
+	__getitem__ = __setitem__ = __delitem__ = __getslice__ = __setslice__ = __delslice__ = __contains__ = lambda self, *args: self.board.error(IndexError("Cannot perform operation on Square"))
 
 
 class Piece:
@@ -211,35 +211,37 @@ class Piece:
 							else:
 								valid = True
 								continue
-		if evaluate_checks:
-			for x in range(len(moves)):
-				for y in self.board.pieces:
-					if y.piece_type == enums.Piece.pawn:
-						if self.board.getKing(enums.Color.invert(self.color)).position in [z.new_position for z in self.board.generatePawnCaptures(moves[x].new_position, self.color)]:
-							moves[x].name += "+"
-							moves[x].check = True
-							break
-					elif y.piece_type == enums.Piece.knight:
-						if self.board.getKing(enums.Color.invert(self.color)).position in [z.new_position for z in self.board.generateKnightMoves(moves[x].new_position, self.color)]:
-							moves[x].name += "+"
-							moves[x].check = True
-							break
-					elif y.piece_type == enums.Piece.bishop:
-						if self.board.getKing(enums.Color.invert(self.color)).position in [z.new_position for z in self.board.generateBishopMoves(moves[x].new_position, self.color)]:
-							moves[x].name += "+"
-							moves[x].check = True
-							break
-					elif y.piece_type == enums.Piece.rook:
-						if self.board.getKing(enums.Color.invert(self.color)).position in [z.new_position for z in self.board.generateRookMoves(moves[x].new_position, self.color)]:
-							moves[x].name += "+"
-							moves[x].check = True
-							break
-					elif y.piece_type == enums.Piece.queen:
-						if self.board.getKing(enums.Color.invert(self.color)).position in [z.new_position for z in self.board.generateQueenMoves(moves[x].new_position, self.color)]:
-							moves[x].name += "+"
-							moves[x].check = True
-							break
-		return moves if show_data else [i.name for i in moves]
+		check_line = self.board.checkLine()
+		new_moves = []
+		for x in moves:
+			if self.board.in_check and self.piece_type != enums.Piece.king and x.new_position not in check_line.positions + [check_line.start_position]:
+				continue
+			if evaluate_checks:
+				if self.piece_type == enums.Piece.pawn:
+					if self.board.getKing(enums.Color.invert(self.color)).position in [z.new_position for z in self.board.generatePawnCaptures(x.new_position, self.color)]:
+						x.name += "+"
+						x.check = True
+				elif self.piece_type == enums.Piece.knight:
+					if self.board.getKing(enums.Color.invert(self.color)).position in [z.new_position for z in self.board.generateKnightMoves(x.new_position, self.color)]:
+						x.name += "+"
+						x.check = True
+				elif self.piece_type == enums.Piece.bishop:
+					if self.board.getKing(enums.Color.invert(self.color)).position in [z.new_position for z in self.board.generateBishopMoves(x.new_position, self.color)]:
+						x.name += "+"
+						x.check = True
+				elif self.piece_type == enums.Piece.rook:
+					if self.board.getKing(enums.Color.invert(self.color)).position in [z.new_position for z in self.board.generateRookMoves(x.new_position, self.color)]:
+						x.name += "+"
+						x.check = True
+				elif self.piece_type == enums.Piece.queen:
+					if self.board.getKing(enums.Color.invert(self.color)).position in [z.new_position for z in self.board.generateQueenMoves(x.new_position, self.color)]:
+						x.name += "+"
+						x.check = True
+			if show_data:
+				new_moves.append(x)
+			else:
+				new_moves.append(x.name)
+		return new_moves
 
 	def __str__(self):
 		return self.color.title() + " " + self.piece_type + " at " + self.position
@@ -260,7 +262,7 @@ class Piece:
 
 	__add__ = __radd__ = __sub__ = __rsub__ = __mul__ = __rmul__ = __div__ = __rdiv__ = __truediv__ = __rtruediv__ = __floordiv__ = __rfloordiv__ = __mod__ = __rmod__ = __divmod__ = __rdivmod__ = __pow__ = __rpow__ = __lshift__ = __rlshift__ = __rshift__ = __rrshift__ = __and__ = __rand__ = __or__ = __ror__ = __xor__ = __rxor__ = __iadd__ = __isub__ = __imul__ = __idiv__ = __itruediv__ = __ifloordiv__ = __imod__ = __ipow__ = __iand__ = __ior__ = __ixor__ = __ilshift__ = __irshift__ = __neg__ = __pos__ = __abs__ = __invert__ = __int__ = __long__ = __float__ = __complex__ = __oct__ = __hex__ = __coerce__ = lambda self, *args: self.error(ArithmeticError("Cannot perform arithmetic operations on Piece object"))
 
-	__getitem__ = __setitem__ = __delitem__ = __getslice__ = __setslice__ = __delslice__ = __contains__ = lambda self, *args: self.error(IndexError("Cannot perform operation on Piece"))
+	__getitem__ = __setitem__ = __delitem__ = __getslice__ = __setslice__ = __delslice__ = __contains__ = lambda self, *args: self.board.error(IndexError("Cannot perform operation on Piece"))
 
 
 class Game:
@@ -284,7 +286,7 @@ class Game:
 		# Load FEN-specific values
 		self.loadFEN(fen, evaluate_opening=fen != "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1")
 
-	def loadFEN(self, fen, evaluate_opening=True):
+	def loadFEN(self, fen, evaluate_opening=True, evaluate_checks=True):
 		"""Load/Reload with the specified FEN. Returns True if the FEN loaded successfully, otherwise False."""
 		self.move_list, self.raw_move_list = "", []  # Move lists
 		if not functions.FENvalid(fen):
@@ -315,6 +317,12 @@ class Game:
 		# Load opening
 		if evaluate_opening:
 			self.updateOpening()
+		if evaluate_checks:
+			in_check = [self.pieceAt(i.new_position) for i in self.legal_moves(show_data=True, color=self.turn, evaluate_checks=False) if i.new_position == self.pieceType(enums.Piece.king, color=enums.Color.invert(self.turn))[0].position]
+			if in_check:
+				self.in_check = in_check[0]
+			else:
+				self.in_check = False
 		return True
 
 	def loadPGN(self, pgn=None, file=None, quotes="\""):
@@ -416,8 +424,8 @@ class Game:
 				self.squares_hashtable[move.new_position] = False  # Remove the hash of the captured piece from the hashes list
 				self.captured_piece = True  # Set captured piece to True
 
-			move.piece.position = move.new_position  # Move the position of the piece to the new position
 			self.squares_hashtable[move.piece.position], self.squares_hashtable[move.new_position] = self.squares_hashtable[move.new_position], self.squares_hashtable[move.piece.position]  # Move the piece in the hashtable
+			move.piece.position = move.new_position  # Move the position of the piece to the new position
 			move.piece.moved = True
 
 			if move.castle_rook:  # If the move is a castle
@@ -469,13 +477,20 @@ class Game:
 					self.castling_rights = self.castling_rights.replace("k", "")  # Disable black kingside castling
 
 			self.raw_move_list.append(move)  # Append move to the raw move list
-			if evaluate_checks:  # If the evaluate_checks parameter is True
-				if any([True for i in self.legal_moves(show_data=True, color=self.turn, evaluate_checks=evaluate_move_checks) if i.new_position == self.pieceType(enums.Piece.king, color=enums.Color.invert(self.turn))[0].position]):  # If any move can capture the king
-					move.name += "+"  # Append a check symbol to the end of the move name
-					self.in_check = enums.Color.invert(self.turn)  # Set self.in_check variable to the side in check
-					self.checking_piece = move.piece
-				else:  # Otherwise
-					self.in_check = False  # Reset the self.in_check variable
+
+			if self.in_check:  # If a king was in check before this move
+				# This move must have gotten out of check
+				self.in_check = False
+				self.checking_piece = None
+			else:  # Otherwise
+				if evaluate_checks:  # If the evaluate_checks parameter is True
+					if any([True for i in self.legal_moves(show_data=True, color=self.turn, evaluate_checks=evaluate_move_checks) if i.new_position == self.pieceType(enums.Piece.king, color=enums.Color.invert(self.turn))[0].position]):  # If the king can be captured
+						move.name += "+"  # Append a check symbol to the end of the move
+						self.in_check = enums.Color.invert(self.turn)  # Set in_check variable
+						self.checking_piece = move.piece
+					else:  # Otherwise
+						self.in_check = False  # Set in_check to False
+						self.checking_piece = None # Reset piece giving check
 
 			if self.turn == enums.Color.white:  # If white moved
 				# Add move to move list
@@ -503,6 +518,11 @@ class Game:
 		if not isinstance(move, str):  # If move is not a string, raise an error and return False
 			self.error(errors.InvalidMove(move))
 			return False
+
+		if " " in move:
+			for i in move.split(" ")[:-1]:
+				self.move(i, evaluate_checks=False, evaluate_move_checks=False, evaluate_opening=False)
+			move = move.split(" ")[-1]
 
 		move = functions.toSAN(move, self)  # Convert to SAN
 		legal_moves = self.legal_moves(show_data=True, evaluate_checks=evaluate_move_checks)  # Store legal moves in legal_moves variable
@@ -536,9 +556,6 @@ class Game:
 				self.en_passant_positions = None
 				for x in self.pieces:
 					x.en_passant = False
-
-				# Reset piece giving check
-				self.checking_piece = None
 
 				# If the move was a double pawn push
 				if i.double_pawn_move:
@@ -576,14 +593,19 @@ class Game:
 		if move_data is None:  # If move_data is None (no move was found), raise an error and return False
 			self.error(errors.MoveNotPossible(move))
 			return False
-
-		if evaluate_checks:  # If the evaluate_checks parameter is True
-			if any([True for i in self.legal_moves(show_data=True, color=self.turn, evaluate_checks=evaluate_move_checks) if i.new_position == self.pieceType(enums.Piece.king, color=enums.Color.invert(self.turn))[0].position]):  # If the king can be captured
-				move += "+"  # Append a check symbol to the end of the move
-				self.in_check = enums.Color.invert(self.turn)  # Set in_check variable
-				self.checking_piece = move_data.piece
-			else:  # Otherwise
-				self.in_check = False  # Set in_check to False
+		if self.in_check:  # If a king was in check before this move
+			# This move must have gotten out of check
+			self.in_check = False
+			self.checking_piece = None
+		else:  # Otherwise
+			if evaluate_checks:  # If the evaluate_checks parameter is True
+				if any([True for i in self.legal_moves(show_data=True, color=self.turn, evaluate_checks=evaluate_move_checks) if i.new_position == self.pieceType(enums.Piece.king, color=enums.Color.invert(self.turn))[0].position]):  # If the king can be captured
+					move.name += "+"  # Append a check symbol to the end of the move
+					self.in_check = enums.Color.invert(self.turn)  # Set in_check variable
+					self.checking_piece = move_data.piece
+				else:  # Otherwise
+					self.in_check = False  # Set in_check to False
+					self.checking_piece = None # Reset piece giving check
 
 		# Add move to move list and increase fullmove counter if necessary
 		if self.turn == enums.Color.white:  # If white moved

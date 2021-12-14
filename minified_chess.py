@@ -3501,121 +3501,128 @@ Functions
 """
 
 
-class functions:
-	def getMovesFromString(string):
-		"""Returns a list of moves from a move string (e.g. '1. e4 e5 2. Nf3 Nc6 *')"""
-		moves = []
+def getMovesFromString(string):
+	"""Returns a list of moves from a move string (e.g. '1. e4 e5 2. Nf3 Nc6 *')"""
+	moves = []
 
-		for i in string.split(" "):
-			if i in ["*", "1-0", "0-1", "1/2-1/2"]:
-				break
-			if i[0].isnumeric():
-				continue
-			moves.append(i)
+	for i in string.split(" "):
+		if i in ["*", "1-0", "0-1", "1/2-1/2"]:
+			break
+		if i[0].isnumeric():
+			continue
+		moves.append(i)
 
-		return moves
+	return moves
 
-	def splitNumbers(string):
-		"""Splits numbers in a string"""
-		return "".join(["1" * int(i) if unicode(i).isnumeric() else i for i in string])
+def splitNumbers(string):
+	"""Splits numbers in a string"""
+	return "".join(["1" * int(i) if unicode(i).isnumeric() else i for i in string])
 
-	def combineNumbers(string):
-		"""Combine numbers in a string"""
-		if "1" not in string:
-			return string
-		if unicode(string).isnumeric():
-			return sum(map(int, string))
-		new_string = ""
-		index = 0
-		for i in range(len(string)):
-			if not unicode(string[i]).isnumeric():
-				new_string += str(combineNumbers(string[index:i])) + string[i]
-				index = i + 1
-		if unicode(string[-1]).isnumeric():
-			new_string += str(combineNumbers(string[index:]))
-		return new_string
+def combineNumbers(string):
+	"""Combine numbers in a string"""
+	if "1" not in string:
+		return string
+	if unicode(string).isnumeric():
+		return sum(map(int, string))
+	new_string = ""
+	index = 0
+	for i in range(len(string)):
+		if not unicode(string[i]).isnumeric():
+			new_string += str(combineNumbers(string[index:i])) + string[i]
+			index = i + 1
+	if unicode(string[-1]).isnumeric():
+		new_string += str(combineNumbers(string[index:]))
+	return new_string
 
-	def indexToCoordinate(index):
-		"""Return a board coordinate (e.g. e4) from index (e.g. [4, 4])"""
-		return ("a", "b", "c", "d", "e", "f", "g", "h")[index[1]] + str(abs(index[0] - 8))
+def indexToCoordinate(index):
+	"""Return a board coordinate (e.g. e4) from index (e.g. [4, 4])"""
+	return ("a", "b", "c", "d", "e", "f", "g", "h")[index[1]] + str(abs(index[0] - 8))
 
-	def coordinateToIndex(coordinate):
-		"""Return a raw index (e.g [4, 4]) from board coordinate (e.g. e4)"""
-		return [abs(int(coordinate[1]) - 8), ("a", "b", "c", "d", "e", "f", "g", "h").index(coordinate[0])]
+def coordinateToIndex(coordinate):
+	"""Return a raw index (e.g [4, 4]) from board coordinate (e.g. e4)"""
+	return [abs(int(coordinate[1]) - 8), ("a", "b", "c", "d", "e", "f", "g", "h").index(coordinate[0])]
 
-	def coordinateValid(coordinate):
-		"""Returns if the coordinate is valid"""
-		return coordinate[0] in ["a", "b", "c", "d", "e", "f", "g", "h"] and coordinate[1] in ["1", "2", "3", "4", "5", "6", "7", "8"]
+def coordinateValid(coordinate):
+	"""Returns if the coordinate is valid"""
+	return coordinate[0] in ["a", "b", "c", "d", "e", "f", "g", "h"] and coordinate[1] in ["1", "2", "3", "4", "5", "6", "7", "8"]
 
-	def toSAN(move, game):
-		"""Return the move in standard algebraic notation (e.g. e2e4 -> e4, g1f3 -> Nf3, e4 -> e4)"""
-		extra_characters = ""  # Stores extra characters (e.g +,  #, =Q, =Q+...)
-		if move in ["O-O", "0-0", "O-O-O", "0-0-0"]:
-			return move.replace("0", "O")
-		if move in ["O-O", "O-O-O"]:
-			return move
-		if move in ["o-o", "o-o-o"]:
-			return move.replace("o", "O")
-		if move.endswith("+"):  # If a "+" is found
-			extra_characters = "+"
-			move = move[:-1]
-		if move.endswith("#"):  # If a "#" is found
-			extra_characters = "#"
-			move = move[:-1]
-		if len(move) > 1:  # Check for "=N/B/R/Q"
-			if move[-2] == "=" and move[-1] in ["N", "B", "R", "Q"]:
-				extra_characters = move[-2:] + extra_characters
-				move = move[:-2]
-		if len(move) == 5:
-			# Remove the hyphen if one is present (e2-e4 -> e2e4)
-			if move[2] == "-":
-				move = move[:2] + move[3:]
-			# Check if the move is a capture (e.g. e4xd5)
-			# If the middle character (move[2]) is "x", and the first two (move[:2]) and last two (move[3:])
-			# characters are coordinates
-			if move[2] == "x" and coordinateValid(move[:2].lower()) and coordinateValid(move[3:].lower()):
-				if game.pieceAt(move[:2].lower()) is None:  # If the piece is not found, return move
-					return move + extra_characters
-				if game.pieceAt(move[:2].lower()).piece_type[0] == "pawn":  # If the piece is a pawn
-					return move[0] + "x" + move[3:] + extra_characters
-				else:
-					return {"knight": "N", "bishop": "B", "rook": "R", "queen": "Q", "king": "K"}[game.pieceAt(move[:2].lower()).piece_type[0]] + "x" + move[3:] + extra_characters
-		if len(move) == 4:  # Check if the move is not a capture (e.g. e2e4)
-			# If the first two (move[:2]) and last two (move[2:]) characters are coordinates
-			if coordinateValid(move[:2].lower()) and coordinateValid(move[2:].lower()):
-				if game.pieceAt(move[:2].lower()) is None:  # If the piece is not found, return move
-					return move + extra_characters
-				if game.pieceAt(move[:2].lower()).piece_type[0] == "pawn":  # If the piece is a pawn
-					return move[2:] + extra_characters
-				else:  # Otherwise
-					return {"knight": "N", "bishop": "B", "rook": "R", "queen": "Q", "king": "K"}[game.pieceAt(move[:2].lower()).piece_type[0]] + move[2:] + extra_characters
+def toSAN(move, game):
+	"""Return the move in standard algebraic notation (e.g. e2e4 -> e4, g1f3 -> Nf3, e4 -> e4)"""
+	extra_characters = ""  # Stores extra characters (e.g +,  #, =Q, =Q+...)
+	if move in ["O-O", "0-0", "O-O-O", "0-0-0"]:
+		return move.replace("0", "O")
+	if move in ["O-O", "O-O-O"]:
+		return move
+	if move in ["o-o", "o-o-o"]:
+		return move.replace("o", "O")
+	if move.endswith("+"):  # If a "+" is found
+		extra_characters = "+"
+		move = move[:-1]
+	if move.endswith("#"):  # If a "#" is found
+		extra_characters = "#"
+		move = move[:-1]
+	if len(move) > 1:  # Check for "=N/B/R/Q"
+		if move[-2] == "=" and move[-1] in ["N", "B", "R", "Q"]:
+			extra_characters = move[-2:] + extra_characters
+			move = move[:-2]
+	if len(move) == 5:
+		# Remove the hyphen if one is present (e2-e4 -> e2e4)
+		if move[2] == "-":
+			move = move[:2] + move[3:]
+		# Check if the move is a capture (e.g. e4xd5)
+		# If the middle character (move[2]) is "x", and the first two (move[:2]) and last two (move[3:])
+		# characters are coordinates
+		if move[2] == "x" and coordinateValid(move[:2].lower()) and coordinateValid(move[3:].lower()):
+			if game.pieceAt(move[:2].lower()) is None:  # If the piece is not found, return move
+				return move + extra_characters
+			if game.pieceAt(move[:2].lower()).piece_type[0] == "pawn":  # If the piece is a pawn
+				return move[0] + "x" + move[3:] + extra_characters
+			else:
+				return {"knight": "N", "bishop": "B", "rook": "R", "queen": "Q", "king": "K"}[game.pieceAt(move[:2].lower()).piece_type[0]] + "x" + move[3:] + extra_characters
+	if len(move) == 4:  # Check if the move is not a capture (e.g. e2e4)
+		# If the first two (move[:2]) and last two (move[2:]) characters are coordinates
+		if coordinateValid(move[:2].lower()) and coordinateValid(move[2:].lower()):
+			if game.pieceAt(move[:2].lower()) is None:  # If the piece is not found, return move
+				return move + extra_characters
+			if game.pieceAt(move[:2].lower()).piece_type[0] == "pawn":  # If the piece is a pawn
+				return move[2:] + extra_characters
+			else:  # Otherwise
+				return {"knight": "N", "bishop": "B", "rook": "R", "queen": "Q", "king": "K"}[game.pieceAt(move[:2].lower()).piece_type[0]] + move[2:] + extra_characters
 
-		return move + extra_characters
+	return move + extra_characters
 
-	def FENvalid(fen):
-		if len(fen.split(" ")) < 6:
+def FENvalid(fen):
+	"""Check if the FEN is valid"""
+	if len(fen.split(" ")) < 6:  # If there are more that 6 space-seperated entries
+		return False
+	if fen.split(" ")[0].count("/") != 7:  # If there is not exactly 7 "/" seperators
+		return False
+	# Check the number of kings
+	kings = []
+	for x in fen.split(" ")[0].split("/"):
+		if not all([y.lower() in "pnbrqk" or (unicode(y).isnumeric() and int(y) < 9) for y in x]) or len(splitNumbers(x)) != 8:
 			return False
-		if fen.split(" ")[0].count("/") != 7:
-			return False
-		kings = []
-		for x in fen.split(" ")[0].split("/"):
-			if not all([y.lower() in "pnbrqk" or (unicode(y).isnumeric() and int(y) < 9) for y in x]) or len(splitNumbers(x)) != 8:
-				return False
-			if "k" in x:
-				if x.count("k") > 1:
-					kings.append("k")
+		if "k" in x:
+			if x.count("k") > 1:
 				kings.append("k")
-			if "K" in x:
-				if x.count("K") > 1:
-					kings.append("k")
-				kings.append("K")
-		if len(kings) > 2 or "k" not in kings or "K" not in kings:
-			return False
-		if fen.split(" ")[1] not in "wb":
-			return False
-		if (fen.split(" ")[2] != "-" and (not all([i.lower() in "kq" for i in fen.split(" ")[2]]) or len(set(fen.split(" ")[2])) != len(fen.split(" ")[2]))) or (fen.split(" ")[3] != "-" and not coordinateValid(fen.split(" ")[3])) or not unicode(fen.split(" ")[4]).isnumeric() or not unicode(fen.split(" ")[5]).isnumeric():
-			return False
+			kings.append("k")
+		if "K" in x:
+			if x.count("K") > 1:
+				kings.append("k")
+			kings.append("K")
+	if len(kings) > 2 or "k" not in kings or "K" not in kings:  # If there are more than two kings, or if there is more than one king of each color
+		return False
+	if fen.split(" ")[1] not in "wb":  # If the side to move is invalid
+		return False
+	if (fen.split(" ")[2] != "-" and (not all([i.lower() in "kq" for i in fen.split(" ")[2]]) or len(set(fen.split(" ")[2])) != len(fen.split(" ")[2]))) or (fen.split(" ")[3] != "-" and not coordinateValid(fen.split(" ")[3])) or not unicode(fen.split(" ")[4]).isnumeric() or not unicode(fen.split(" ")[5]).isnumeric():  # If the en passant squares or castling rights are invalid
+		return False
+	return True  # If all the checks pass, the FEN is valid
+
+def isLine(pos1, pos2):
+	"""Check if pos1 and pos2 form a horizontal, vertical, or diagonal line"""
+	if pos1[0] == pos2[0] or pos1[1] == pos2[1]:  # If pos1 and pos2 form a vertical or horizontal line
 		return True
+	return abs(functions.coordinateToIndex(pos1)[0] - functions.coordinateToIndex(pos2)[0]) == abs(functions.coordinateToIndex(pos1)[1] - functions.coordinateToIndex(pos2)[1])  # If the distance between the files of pos1 and pos2 is equal to the distance between the ranks of pos1 and pos2, pos1 and pos2 form a diagonal line.
 
 
 """
@@ -3995,7 +4002,7 @@ class Square:
 
 	__add__ = __radd__ = __sub__ = __rsub__ = __mul__ = __rmul__ = __div__ = __rdiv__ = __truediv__ = __rtruediv__ = __floordiv__ = __rfloordiv__ = __mod__ = __rmod__ = __divmod__ = __rdivmod__ = __pow__ = __rpow__ = __lshift__ = __rlshift__ = __rshift__ = __rrshift__ = __and__ = __rand__ = __or__ = __ror__ = __xor__ = __rxor__ = __iadd__ = __isub__ = __imul__ = __idiv__ = __itruediv__ = __ifloordiv__ = __imod__ = __ipow__ = __iand__ = __ior__ = __ixor__ = __ilshift__ = __irshift__ = __neg__ = __pos__ = __abs__ = __invert__ = __int__ = __long__ = __float__ = __complex__ = __oct__ = __hex__ = __coerce__ = lambda self, *args: self.error(ArithmeticError("Cannot perform arithmetic operations on Square object"))
 
-	__getitem__ = __setitem__ = __delitem__ = __getslice__ = __setslice__ = __delslice__ = __contains__ = lambda self, *args: self.error(IndexError("Cannot perform operation on Square"))
+	__getitem__ = __setitem__ = __delitem__ = __getslice__ = __setslice__ = __delslice__ = __contains__ = lambda self, *args: self.board.error(IndexError("Cannot perform operation on Square"))
 
 
 class Piece:
@@ -4159,35 +4166,37 @@ class Piece:
 							else:
 								valid = True
 								continue
-		if evaluate_checks:
-			for x in range(len(moves)):
-				for y in self.board.pieces:
-					if y.piece_type == enums.Piece.pawn:
-						if self.board.getKing(enums.Color.invert(self.color)).position in [z.new_position for z in self.board.generatePawnCaptures(moves[x].new_position, self.color)]:
-							moves[x].name += "+"
-							moves[x].check = True
-							break
-					elif y.piece_type == enums.Piece.knight:
-						if self.board.getKing(enums.Color.invert(self.color)).position in [z.new_position for z in self.board.generateKnightMoves(moves[x].new_position, self.color)]:
-							moves[x].name += "+"
-							moves[x].check = True
-							break
-					elif y.piece_type == enums.Piece.bishop:
-						if self.board.getKing(enums.Color.invert(self.color)).position in [z.new_position for z in self.board.generateBishopMoves(moves[x].new_position, self.color)]:
-							moves[x].name += "+"
-							moves[x].check = True
-							break
-					elif y.piece_type == enums.Piece.rook:
-						if self.board.getKing(enums.Color.invert(self.color)).position in [z.new_position for z in self.board.generateRookMoves(moves[x].new_position, self.color)]:
-							moves[x].name += "+"
-							moves[x].check = True
-							break
-					elif y.piece_type == enums.Piece.queen:
-						if self.board.getKing(enums.Color.invert(self.color)).position in [z.new_position for z in self.board.generateQueenMoves(moves[x].new_position, self.color)]:
-							moves[x].name += "+"
-							moves[x].check = True
-							break
-		return moves if show_data else [i.name for i in moves]
+		check_line = self.board.checkLine()
+		new_moves = []
+		for x in moves:
+			if self.board.in_check and self.piece_type != enums.Piece.king and x.new_position not in check_line.positions + [check_line.start_position]:
+				continue
+			if evaluate_checks:
+				if self.piece_type == enums.Piece.pawn:
+					if self.board.getKing(enums.Color.invert(self.color)).position in [z.new_position for z in self.board.generatePawnCaptures(x.new_position, self.color)]:
+						x.name += "+"
+						x.check = True
+				elif self.piece_type == enums.Piece.knight:
+					if self.board.getKing(enums.Color.invert(self.color)).position in [z.new_position for z in self.board.generateKnightMoves(x.new_position, self.color)]:
+						x.name += "+"
+						x.check = True
+				elif self.piece_type == enums.Piece.bishop:
+					if self.board.getKing(enums.Color.invert(self.color)).position in [z.new_position for z in self.board.generateBishopMoves(x.new_position, self.color)]:
+						x.name += "+"
+						x.check = True
+				elif self.piece_type == enums.Piece.rook:
+					if self.board.getKing(enums.Color.invert(self.color)).position in [z.new_position for z in self.board.generateRookMoves(x.new_position, self.color)]:
+						x.name += "+"
+						x.check = True
+				elif self.piece_type == enums.Piece.queen:
+					if self.board.getKing(enums.Color.invert(self.color)).position in [z.new_position for z in self.board.generateQueenMoves(x.new_position, self.color)]:
+						x.name += "+"
+						x.check = True
+			if show_data:
+				new_moves.append(x)
+			else:
+				new_moves.append(x.name)
+		return new_moves
 
 	def __str__(self):
 		return self.color.title() + " " + self.piece_type + " at " + self.position
@@ -4208,7 +4217,7 @@ class Piece:
 
 	__add__ = __radd__ = __sub__ = __rsub__ = __mul__ = __rmul__ = __div__ = __rdiv__ = __truediv__ = __rtruediv__ = __floordiv__ = __rfloordiv__ = __mod__ = __rmod__ = __divmod__ = __rdivmod__ = __pow__ = __rpow__ = __lshift__ = __rlshift__ = __rshift__ = __rrshift__ = __and__ = __rand__ = __or__ = __ror__ = __xor__ = __rxor__ = __iadd__ = __isub__ = __imul__ = __idiv__ = __itruediv__ = __ifloordiv__ = __imod__ = __ipow__ = __iand__ = __ior__ = __ixor__ = __ilshift__ = __irshift__ = __neg__ = __pos__ = __abs__ = __invert__ = __int__ = __long__ = __float__ = __complex__ = __oct__ = __hex__ = __coerce__ = lambda self, *args: self.error(ArithmeticError("Cannot perform arithmetic operations on Piece object"))
 
-	__getitem__ = __setitem__ = __delitem__ = __getslice__ = __setslice__ = __delslice__ = __contains__ = lambda self, *args: self.error(IndexError("Cannot perform operation on Piece"))
+	__getitem__ = __setitem__ = __delitem__ = __getslice__ = __setslice__ = __delslice__ = __contains__ = lambda self, *args: self.board.error(IndexError("Cannot perform operation on Piece"))
 
 
 class Game:
@@ -4232,7 +4241,7 @@ class Game:
 		# Load FEN-specific values
 		self.loadFEN(fen, evaluate_opening=fen != "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1")
 
-	def loadFEN(self, fen, evaluate_opening=True):
+	def loadFEN(self, fen, evaluate_opening=True, evaluate_checks=True):
 		"""Load/Reload with the specified FEN. Returns True if the FEN loaded successfully, otherwise False."""
 		self.move_list, self.raw_move_list = "", []  # Move lists
 		if not functions.FENvalid(fen):
@@ -4263,6 +4272,12 @@ class Game:
 		# Load opening
 		if evaluate_opening:
 			self.updateOpening()
+		if evaluate_checks:
+			in_check = [self.pieceAt(i.new_position) for i in self.legal_moves(show_data=True, color=self.turn, evaluate_checks=False) if i.new_position == self.pieceType(enums.Piece.king, color=enums.Color.invert(self.turn))[0].position]
+			if in_check:
+				self.in_check = in_check[0]
+			else:
+				self.in_check = False
 		return True
 
 	def loadPGN(self, pgn=None, file=None, quotes="\""):
@@ -4364,8 +4379,8 @@ class Game:
 				self.squares_hashtable[move.new_position] = False  # Remove the hash of the captured piece from the hashes list
 				self.captured_piece = True  # Set captured piece to True
 
-			move.piece.position = move.new_position  # Move the position of the piece to the new position
 			self.squares_hashtable[move.piece.position], self.squares_hashtable[move.new_position] = self.squares_hashtable[move.new_position], self.squares_hashtable[move.piece.position]  # Move the piece in the hashtable
+			move.piece.position = move.new_position  # Move the position of the piece to the new position
 			move.piece.moved = True
 
 			if move.castle_rook:  # If the move is a castle
@@ -4417,13 +4432,20 @@ class Game:
 					self.castling_rights = self.castling_rights.replace("k", "")  # Disable black kingside castling
 
 			self.raw_move_list.append(move)  # Append move to the raw move list
-			if evaluate_checks:  # If the evaluate_checks parameter is True
-				if any([True for i in self.legal_moves(show_data=True, color=self.turn, evaluate_checks=evaluate_move_checks) if i.new_position == self.pieceType(enums.Piece.king, color=enums.Color.invert(self.turn))[0].position]):  # If any move can capture the king
-					move.name += "+"  # Append a check symbol to the end of the move name
-					self.in_check = enums.Color.invert(self.turn)  # Set self.in_check variable to the side in check
-					self.checking_piece = move.piece
-				else:  # Otherwise
-					self.in_check = False  # Reset the self.in_check variable
+
+			if self.in_check:  # If a king was in check before this move
+				# This move must have gotten out of check
+				self.in_check = False
+				self.checking_piece = None
+			else:  # Otherwise
+				if evaluate_checks:  # If the evaluate_checks parameter is True
+					if any([True for i in self.legal_moves(show_data=True, color=self.turn, evaluate_checks=evaluate_move_checks) if i.new_position == self.pieceType(enums.Piece.king, color=enums.Color.invert(self.turn))[0].position]):  # If the king can be captured
+						move.name += "+"  # Append a check symbol to the end of the move
+						self.in_check = enums.Color.invert(self.turn)  # Set in_check variable
+						self.checking_piece = move.piece
+					else:  # Otherwise
+						self.in_check = False  # Set in_check to False
+						self.checking_piece = None # Reset piece giving check
 
 			if self.turn == enums.Color.white:  # If white moved
 				# Add move to move list
@@ -4451,6 +4473,11 @@ class Game:
 		if not isinstance(move, str):  # If move is not a string, raise an error and return False
 			self.error(errors.InvalidMove(move))
 			return False
+
+		if " " in move:
+			for i in move.split(" ")[:-1]:
+				self.move(i, evaluate_checks=False, evaluate_move_checks=False, evaluate_opening=False)
+			move = move.split(" ")[-1]
 
 		move = functions.toSAN(move, self)  # Convert to SAN
 		legal_moves = self.legal_moves(show_data=True, evaluate_checks=evaluate_move_checks)  # Store legal moves in legal_moves variable
@@ -4484,9 +4511,6 @@ class Game:
 				self.en_passant_positions = None
 				for x in self.pieces:
 					x.en_passant = False
-
-				# Reset piece giving check
-				self.checking_piece = None
 
 				# If the move was a double pawn push
 				if i.double_pawn_move:
@@ -4524,14 +4548,19 @@ class Game:
 		if move_data is None:  # If move_data is None (no move was found), raise an error and return False
 			self.error(errors.MoveNotPossible(move))
 			return False
-
-		if evaluate_checks:  # If the evaluate_checks parameter is True
-			if any([True for i in self.legal_moves(show_data=True, color=self.turn, evaluate_checks=evaluate_move_checks) if i.new_position == self.pieceType(enums.Piece.king, color=enums.Color.invert(self.turn))[0].position]):  # If the king can be captured
-				move += "+"  # Append a check symbol to the end of the move
-				self.in_check = enums.Color.invert(self.turn)  # Set in_check variable
-				self.checking_piece = move_data.piece
-			else:  # Otherwise
-				self.in_check = False  # Set in_check to False
+		if self.in_check:  # If a king was in check before this move
+			# This move must have gotten out of check
+			self.in_check = False
+			self.checking_piece = None
+		else:  # Otherwise
+			if evaluate_checks:  # If the evaluate_checks parameter is True
+				if any([True for i in self.legal_moves(show_data=True, color=self.turn, evaluate_checks=evaluate_move_checks) if i.new_position == self.pieceType(enums.Piece.king, color=enums.Color.invert(self.turn))[0].position]):  # If the king can be captured
+					move.name += "+"  # Append a check symbol to the end of the move
+					self.in_check = enums.Color.invert(self.turn)  # Set in_check variable
+					self.checking_piece = move_data.piece
+				else:  # Otherwise
+					self.in_check = False  # Set in_check to False
+					self.checking_piece = None # Reset piece giving check
 
 		# Add move to move list and increase fullmove counter if necessary
 		if self.turn == enums.Color.white:  # If white moved
