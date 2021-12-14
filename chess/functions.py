@@ -102,10 +102,12 @@ def toSAN(move, game):
 	return move + extra_characters
 
 def FENvalid(fen):
-	if len(fen.split(" ")) < 6:
+	"""Check if the FEN is valid"""
+	if len(fen.split(" ")) < 6:  # If there are more that 6 space-seperated entries
 		return False
-	if fen.split(" ")[0].count("/") != 7:
+	if fen.split(" ")[0].count("/") != 7:  # If there is not exactly 7 "/" seperators
 		return False
+	# Check the number of kings
 	kings = []
 	for x in fen.split(" ")[0].split("/"):
 		if not all([y.lower() in "pnbrqk" or (unicode(y).isnumeric() and int(y) < 9) for y in x]) or len(splitNumbers(x)) != 8:
@@ -118,10 +120,16 @@ def FENvalid(fen):
 			if x.count("K") > 1:
 				kings.append("k")
 			kings.append("K")
-	if len(kings) > 2 or "k" not in kings or "K" not in kings:
+	if len(kings) > 2 or "k" not in kings or "K" not in kings:  # If there are more than two kings, or if there is more than one king of each color
 		return False
-	if fen.split(" ")[1] not in "wb":
+	if fen.split(" ")[1] not in "wb":  # If the side to move is invalid
 		return False
-	if (fen.split(" ")[2] != "-" and (not all([i.lower() in "kq" for i in fen.split(" ")[2]]) or len(set(fen.split(" ")[2])) != len(fen.split(" ")[2]))) or (fen.split(" ")[3] != "-" and not coordinateValid(fen.split(" ")[3])) or not unicode(fen.split(" ")[4]).isnumeric() or not unicode(fen.split(" ")[5]).isnumeric():
+	if (fen.split(" ")[2] != "-" and (not all([i.lower() in "kq" for i in fen.split(" ")[2]]) or len(set(fen.split(" ")[2])) != len(fen.split(" ")[2]))) or (fen.split(" ")[3] != "-" and not coordinateValid(fen.split(" ")[3])) or not unicode(fen.split(" ")[4]).isnumeric() or not unicode(fen.split(" ")[5]).isnumeric():  # If the en passant squares or castling rights are invalid
 		return False
-	return True
+	return True  # If all the checks pass, the FEN is valid
+
+def isLine(pos1, pos2):
+	"""Check if pos1 and pos2 form a horizontal, vertical, or diagonal line"""
+	if pos1[0] == pos2[0] or pos1[1] == pos2[1]:  # If pos1 and pos2 form a vertical or horizontal line
+		return True
+	return abs(functions.coordinateToIndex(pos1)[0] - functions.coordinateToIndex(pos2)[0]) == abs(functions.coordinateToIndex(pos1)[1] - functions.coordinateToIndex(pos2)[1])  # If the distance between the files of pos1 and pos2 is equal to the distance between the ranks of pos1 and pos2, pos1 and pos2 form a diagonal line.
