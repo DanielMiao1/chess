@@ -1,11 +1,5 @@
 # -*- coding: utf-8 -*-
 
-
-"""
-openings.py
-Openings
-"""
-
 openings = [
 	{"name": "Alekhine Defense", "eco": "B02", "fen": "rnbqkb1r/pppppppp/5n2/8/4P3/8/PPPP1PPP/RNBQKBNR w KQkq", "moves": "1. e4 Nf6", "position": "rnbqkb1r/pppppppp/5n2/8/4P3/8/PPPP1PPP/RNBQKBNR"},
 	{"name": "Alekhine Defense, 2. e5 Nd5 3. d4", "eco": "B03", "fen": "rnbqkb1r/pppppppp/8/3nP3/3P4/8/PPP2PPP/RNBQKBNR b KQkq", "moves": "1. e4 Nf6 2. e5 Nd5 3. d4", "position": "rnbqkb1r/pppppppp/8/3nP3/3P4/8/PPP2PPP/RNBQKBNR"},
