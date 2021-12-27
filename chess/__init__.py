@@ -762,10 +762,13 @@ class Game:
 		if isinstance(move, Move):  # If move is a Move object
 			if move.is_capture:  # If the move is a capture
 				self.pieces.remove(self.squares_hashtable[move.new_position])  # Remove the captured piece from the list of pieces
-				self.squares_hashtable[move.new_position] = False  # Remove the hash of the captured piece from the hashes list
-				self.captured_piece = True  # Set captured piece to True
-
-			self.squares_hashtable[move.piece.position], self.squares_hashtable[move.new_position] = self.squares_hashtable[move.new_position], self.squares_hashtable[move.piece.position]  # Move the piece in the hashtable
+				# Update the hashtable
+				self.squares_hashtable[move.new_position] = move.piece
+				self.squares_hashtable[move.old_position] = False
+				if not self.captured_piece:
+					self.captured_piece = True  # Set captured piece to True
+			else:
+				self.squares_hashtable[move.piece.position], self.squares_hashtable[move.new_position] = self.squares_hashtable[move.new_position], self.squares_hashtable[move.piece.position]  # Move the piece in the hashtable
 			move.piece.position = move.new_position  # Move the position of the piece to the new position
 			move.piece.moved = True
 
@@ -773,12 +776,12 @@ class Game:
 				move.castle_rook.moved = True
 				if move.castle == Castle.kingside:  # Kingside castling
 					# Move the rook's position to the f-file
-					move.castle_rook.position = "f" + move.castle_rook.position[1]
 					self.squares_hashtable[move.castle_rook.position], self.squares_hashtable["f" + move.castle_rook.position[1]] = self.squares_hashtable["f" + move.castle_rook.position[1]], self.squares_hashtable[move.castle_rook.position]
+					move.castle_rook.position = "f" + move.castle_rook.position[1]
 				else:  # Queenside castling
 					# Move the rook's position to the d-file
-					move.castle_rook.position = "d" + move.castle_rook.position[1]
 					self.squares_hashtable[move.castle_rook.position], self.squares_hashtable["d" + move.castle_rook.position[1]] = self.squares_hashtable["d" + move.castle_rook.position[1]], self.squares_hashtable[move.castle_rook.position]
+					move.castle_rook.position = "d" + move.castle_rook.position[1]
 
 			# Reset piece giving check
 			self.checking_piece = None
@@ -897,12 +900,12 @@ class Game:
 					i.castle_rook.moved = True
 					if i.castle == Castle.kingside:  # Kingside castling
 						# Move the rook's position to the f-file
-						i.castle_rook.position = "f" + i.castle_rook.position[1]
 						self.squares_hashtable[i.castle_rook.position], self.squares_hashtable["f" + i.castle_rook.position[1]] = self.squares_hashtable["f" + i.castle_rook.position[1]], self.squares_hashtable[i.castle_rook.position]
+						i.castle_rook.position = "f" + i.castle_rook.position[1]
 					else:  # Queenside castling
 						# Move the rook's position to the d-file
-						i.castle_rook.position = "d" + i.castle_rook.position[1]
 						self.squares_hashtable[i.castle_rook.position], self.squares_hashtable["d" + i.castle_rook.position[1]] = self.squares_hashtable["d" + i.castle_rook.position[1]], self.squares_hashtable[i.castle_rook.position]
+						i.castle_rook.position = "d" + i.castle_rook.position[1]
 
 				# Clear en passant positions
 				self.en_passant_positions = None
@@ -984,7 +987,7 @@ class Game:
 		if evaluate_opening:  # If the evaluate_opening parameter is True
 			self.updateOpening()  # Update the opening using the updateOpening function
 
-		if not self.legal_moves(evaluate_checks=evaluate_move_checks, evaluate_checkmate=evaluate_move_checkmate):
+		if not self.legal_moves(evaluate_checks=False, evaluate_checkmate=False):
 			self.game_over = True
 			if self.in_check:
 				self.is_checkmate = True
@@ -1082,6 +1085,7 @@ class Game:
 
 	def takeback(self):
 		"""Take backs one move. To take back multiple moves, call the function multiple times."""
+		# TODO: update fullmove and halfmove counters
 		if not self.raw_move_list:  # If there has not been any moves, return
 			return
 
@@ -1093,6 +1097,14 @@ class Game:
 			# Bring back the captured piece
 			self.pieces.append(Piece(self.raw_move_list[-1].new_position, self.raw_move_list[-1].captured_piece.piece_type, self.raw_move_list[-1].captured_piece.color, self))
 			self.squares_hashtable[self.raw_move_list[-1].new_position] = self.pieces[-1]
+
+		# Reset the castle rook's position if the last move was a castle
+		if self.raw_move_list[-1].castle == Castle.kingside:  # If the last move was a kingside castle
+			self.squares_hashtable[self.raw_move_list[-1].castle_rook.position], self.squares_hashtable["h" + self.raw_move_list[-1].castle_rook.position[1]] = self.squares_hashtable["h" + self.raw_move_list[-1].castle_rook.position[1]], self.squares_hashtable[self.raw_move_list[-1].castle_rook.position]
+			self.raw_move_list[-1].castle_rook.position = "h" + self.raw_move_list[-1].castle_rook.position[1]
+		elif self.raw_move_list[-1].castle == Castle.queenside:  # If the last move was a queenside castle
+			self.squares_hashtable[self.raw_move_list[-1].castle_rook.position], self.squares_hashtable["f" + self.raw_move_list[-1].castle_rook.position[1]] = self.squares_hashtable["f" + self.raw_move_list[-1].castle_rook.position[1]], self.squares_hashtable[self.raw_move_list[-1].castle_rook.position]
+			self.raw_move_list[-1].castle_rook.position = "f" + self.raw_move_list[-1].castle_rook.position[1]
 
 		self.raw_move_list.pop()  # Remove the last move from the raw move list
 

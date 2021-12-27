@@ -1,11 +1,5 @@
 # -*- coding: utf-8 -*-
 
-
-"""
-functions.py
-Functions
-"""
-
 try:
 	unicode
 except NameError:
