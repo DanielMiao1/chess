@@ -5,6 +5,7 @@ try:
 except NameError:
 	unicode = str
 
+
 def getMovesFromString(string):
 	"""Returns a list of moves from a move string (e.g. '1. e4 e5 2. Nf3 Nc6 *')"""
 	moves = []
@@ -18,9 +19,11 @@ def getMovesFromString(string):
 
 	return moves
 
+
 def splitNumbers(string):
 	"""Splits numbers in a string"""
 	return "".join(["1" * int(i) if unicode(i).isnumeric() else i for i in string])
+
 
 def combineNumbers(string):
 	"""Combine numbers in a string"""
@@ -38,17 +41,21 @@ def combineNumbers(string):
 		new_string += str(combineNumbers(string[index:]))
 	return new_string
 
+
 def indexToCoordinate(index):
 	"""Return a board coordinate (e.g. e4) from index (e.g. [4, 4])"""
 	return ("a", "b", "c", "d", "e", "f", "g", "h")[index[1]] + str(abs(index[0] - 8))
+
 
 def coordinateToIndex(coordinate):
 	"""Return a raw index (e.g [4, 4]) from board coordinate (e.g. e4)"""
 	return [abs(int(coordinate[1]) - 8), ("a", "b", "c", "d", "e", "f", "g", "h").index(coordinate[0])]
 
+
 def coordinateValid(coordinate):
 	"""Returns if the coordinate is valid"""
 	return coordinate[0] in ["a", "b", "c", "d", "e", "f", "g", "h"] and coordinate[1] in ["1", "2", "3", "4", "5", "6", "7", "8"]
+
 
 def toSAN(move, game):
 	"""Return the move in standard algebraic notation (e.g. e2e4 -> e4, g1f3 -> Nf3, e4 -> e4)"""
@@ -95,11 +102,12 @@ def toSAN(move, game):
 
 	return move + extra_characters
 
+
 def FENvalid(fen):
 	"""Check if the FEN is valid"""
-	if len(fen.split(" ")) < 6:  # If there are more that 6 space-seperated entries
+	if len(fen.split(" ")) < 6:  # If there are more that 6 space-separated entries
 		return False
-	if fen.split(" ")[0].count("/") != 7:  # If there is not exactly 7 "/" seperators
+	if fen.split(" ")[0].count("/") != 7:  # If there is not exactly 7 "/" separators
 		return False
 	# Check the number of kings
 	kings = []
@@ -122,8 +130,9 @@ def FENvalid(fen):
 		return False
 	return True  # If all the checks pass, the FEN is valid
 
+
 def isLine(pos1, pos2):
 	"""Check if pos1 and pos2 form a horizontal, vertical, or diagonal line"""
 	if pos1[0] == pos2[0] or pos1[1] == pos2[1]:  # If pos1 and pos2 form a vertical or horizontal line
 		return True
-	return abs(functions.coordinateToIndex(pos1)[0] - functions.coordinateToIndex(pos2)[0]) == abs(functions.coordinateToIndex(pos1)[1] - functions.coordinateToIndex(pos2)[1])  # If the distance between the files of pos1 and pos2 is equal to the distance between the ranks of pos1 and pos2, pos1 and pos2 form a diagonal line.
+	return abs(coordinateToIndex(pos1)[0] - coordinateToIndex(pos2)[0]) == abs(coordinateToIndex(pos1)[1] - coordinateToIndex(pos2)[1])  # If the distance between the files of pos1 and pos2 is equal to the distance between the ranks of pos1 and pos2, pos1 and pos2 form a diagonal line.
