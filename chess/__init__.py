@@ -426,119 +426,8 @@ class Piece:
 		elif self.piece_type == PieceEnum.queen:  # Queen moves
 			moves.extend(self.board.generateQueenMoves(self.position, self.color, piece=self))
 		elif self.piece_type == PieceEnum.king:
-			if self.position[0] != "h" and self.position[1] != "1":
-				if self.board.pieceAt(functions.indexToCoordinate([functions.coordinateToIndex(self.position)[0] + 1, functions.coordinateToIndex(self.position)[1] + 1])):
-					valid = not self.board.protectors(self.board.pieceAt(functions.indexToCoordinate([functions.coordinateToIndex(self.position)[0] + 1, functions.coordinateToIndex(self.position)[1] + 1])))
-				else:
-					valid = not self.board.attackers(functions.indexToCoordinate([functions.coordinateToIndex(self.position)[0] + 1, functions.coordinateToIndex(self.position)[1] + 1]), Color.invert(self.color))
-				if valid:
-					if self.board.pieceAt(functions.indexToCoordinate([functions.coordinateToIndex(self.position)[0] + 1, functions.coordinateToIndex(self.position)[1] + 1])):
-						if self.board.pieceAt(functions.indexToCoordinate([functions.coordinateToIndex(self.position)[0] + 1, functions.coordinateToIndex(self.position)[1] + 1])).color != self.color:
-							moves.append(Move(name="Kx" + functions.indexToCoordinate([functions.coordinateToIndex(self.position)[0] + 1, functions.coordinateToIndex(self.position)[1] + 1]), old_position=self.position, new_position=functions.indexToCoordinate([functions.coordinateToIndex(self.position)[0] + 1, functions.coordinateToIndex(self.position)[1] + 1]), piece=self, is_capture=True))
-					else:
-						moves.append(Move(name="K" + functions.indexToCoordinate([functions.coordinateToIndex(self.position)[0] + 1, functions.coordinateToIndex(self.position)[1] + 1]), old_position=self.position, new_position=functions.indexToCoordinate([functions.coordinateToIndex(self.position)[0] + 1, functions.coordinateToIndex(self.position)[1] + 1]), piece=self))
-			if self.position[0] != "a" and self.position[1] != "8":
-				if self.board.pieceAt(functions.indexToCoordinate([functions.coordinateToIndex(self.position)[0] - 1, functions.coordinateToIndex(self.position)[1] - 1])):
-					valid = not self.board.protectors(self.board.pieceAt(functions.indexToCoordinate([functions.coordinateToIndex(self.position)[0] - 1, functions.coordinateToIndex(self.position)[1] - 1])))
-				else:
-					valid = not self.board.attackers(functions.indexToCoordinate([functions.coordinateToIndex(self.position)[0] - 1, functions.coordinateToIndex(self.position)[1] - 1]), Color.invert(self.color))
-				if valid:
-					if self.board.pieceAt(functions.indexToCoordinate([functions.coordinateToIndex(self.position)[0] - 1, functions.coordinateToIndex(self.position)[1] - 1])):
-						if self.board.pieceAt(functions.indexToCoordinate([functions.coordinateToIndex(self.position)[0] - 1, functions.coordinateToIndex(self.position)[1] - 1])).color != self.color:
-							moves.append(Move(name="Kx" + functions.indexToCoordinate([functions.coordinateToIndex(self.position)[0] - 1, functions.coordinateToIndex(self.position)[1] - 1]), old_position=self.position, new_position=functions.indexToCoordinate([functions.coordinateToIndex(self.position)[0] - 1, functions.coordinateToIndex(self.position)[1] - 1]), piece=self, is_capture=True))
-					else:
-						moves.append(Move(name="K" + functions.indexToCoordinate([functions.coordinateToIndex(self.position)[0] - 1, functions.coordinateToIndex(self.position)[1] - 1]), old_position=self.position, new_position=functions.indexToCoordinate([functions.coordinateToIndex(self.position)[0] - 1, functions.coordinateToIndex(self.position)[1] - 1]), piece=self))
-			if self.position[0] != "a" and self.position[1] != "1":
-				if self.board.pieceAt(functions.indexToCoordinate([functions.coordinateToIndex(self.position)[0] + 1, functions.coordinateToIndex(self.position)[1] - 1])):
-					valid = not self.board.protectors(self.board.pieceAt(functions.indexToCoordinate([functions.coordinateToIndex(self.position)[0] + 1, functions.coordinateToIndex(self.position)[1] - 1])))
-				else:
-					valid = not self.board.attackers(functions.indexToCoordinate([functions.coordinateToIndex(self.position)[0] + 1, functions.coordinateToIndex(self.position)[1] - 1]), Color.invert(self.color))
-				if valid:
-					if self.board.pieceAt(functions.indexToCoordinate([functions.coordinateToIndex(self.position)[0] + 1, functions.coordinateToIndex(self.position)[1] - 1])):
-						if self.board.pieceAt(functions.indexToCoordinate([functions.coordinateToIndex(self.position)[0] + 1, functions.coordinateToIndex(self.position)[1] - 1])).color != self.color:
-							moves.append(Move(name="Kx" + functions.indexToCoordinate([functions.coordinateToIndex(self.position)[0] + 1, functions.coordinateToIndex(self.position)[1] - 1]), old_position=self.position, new_position=functions.indexToCoordinate([functions.coordinateToIndex(self.position)[0] + 1, functions.coordinateToIndex(self.position)[1] - 1]), piece=self, is_capture=True))
-					else:
-						moves.append(Move(name="K" + functions.indexToCoordinate([functions.coordinateToIndex(self.position)[0] + 1, functions.coordinateToIndex(self.position)[1] - 1]), old_position=self.position, new_position=functions.indexToCoordinate([functions.coordinateToIndex(self.position)[0] + 1, functions.coordinateToIndex(self.position)[1] - 1]), piece=self))
-			if self.position[0] != "h" and self.position[1] != "8":
-				if self.board.pieceAt(functions.indexToCoordinate([functions.coordinateToIndex(self.position)[0] - 1, functions.coordinateToIndex(self.position)[1] + 1])):
-					valid = not self.board.protectors(self.board.pieceAt(functions.indexToCoordinate([functions.coordinateToIndex(self.position)[0] - 1, functions.coordinateToIndex(self.position)[1] + 1])))
-				else:
-					valid = not self.board.attackers(functions.indexToCoordinate([functions.coordinateToIndex(self.position)[0] - 1, functions.coordinateToIndex(self.position)[1] + 1]), Color.invert(self.color))
-				if valid:
-					if self.board.pieceAt(functions.indexToCoordinate([functions.coordinateToIndex(self.position)[0] - 1, functions.coordinateToIndex(self.position)[1] + 1])):
-						if self.board.pieceAt(functions.indexToCoordinate([functions.coordinateToIndex(self.position)[0] - 1, functions.coordinateToIndex(self.position)[1] + 1])).color != self.color:
-							moves.append(Move(name="Kx" + functions.indexToCoordinate([functions.coordinateToIndex(self.position)[0] - 1, functions.coordinateToIndex(self.position)[1] + 1]), old_position=self.position, new_position=functions.indexToCoordinate([functions.coordinateToIndex(self.position)[0] - 1, functions.coordinateToIndex(self.position)[1] + 1]), piece=self, is_capture=True))
-					else:
-						moves.append(Move(name="K" + functions.indexToCoordinate([functions.coordinateToIndex(self.position)[0] - 1, functions.coordinateToIndex(self.position)[1] + 1]), old_position=self.position, new_position=functions.indexToCoordinate([functions.coordinateToIndex(self.position)[0] - 1, functions.coordinateToIndex(self.position)[1] + 1]), piece=self))
-			if self.position[0] != "a":
-				if self.board.pieceAt(functions.indexToCoordinate([functions.coordinateToIndex(self.position)[0], functions.coordinateToIndex(self.position)[1] - 1])):
-					valid = not self.board.protectors(self.board.pieceAt(functions.indexToCoordinate([functions.coordinateToIndex(self.position)[0], functions.coordinateToIndex(self.position)[1] - 1])))
-				else:
-					valid = not self.board.attackers(functions.indexToCoordinate([functions.coordinateToIndex(self.position)[0], functions.coordinateToIndex(self.position)[1] - 1]), Color.invert(self.color))
-				if valid:
-					if self.board.pieceAt(functions.indexToCoordinate([functions.coordinateToIndex(self.position)[0], functions.coordinateToIndex(self.position)[1] - 1])):
-						if self.board.pieceAt(functions.indexToCoordinate([functions.coordinateToIndex(self.position)[0], functions.coordinateToIndex(self.position)[1] - 1])).color != self.color:
-							moves.append(Move(name="Kx" + functions.indexToCoordinate([functions.coordinateToIndex(self.position)[0], functions.coordinateToIndex(self.position)[1] - 1]), old_position=self.position, new_position=functions.indexToCoordinate([functions.coordinateToIndex(self.position)[0], functions.coordinateToIndex(self.position)[1] - 1]), piece=self, is_capture=True))
-					else:
-						moves.append(Move(name="K" + functions.indexToCoordinate([functions.coordinateToIndex(self.position)[0], functions.coordinateToIndex(self.position)[1] - 1]), old_position=self.position, new_position=functions.indexToCoordinate([functions.coordinateToIndex(self.position)[0], functions.coordinateToIndex(self.position)[1] - 1]), piece=self))
-			if self.position[0] != "h":
-				if self.board.pieceAt(functions.indexToCoordinate([functions.coordinateToIndex(self.position)[0], functions.coordinateToIndex(self.position)[1] + 1])):
-					valid = not self.board.protectors(self.board.pieceAt(functions.indexToCoordinate([functions.coordinateToIndex(self.position)[0], functions.coordinateToIndex(self.position)[1] + 1])))
-				else:
-					valid = not self.board.attackers(functions.indexToCoordinate([functions.coordinateToIndex(self.position)[0], functions.coordinateToIndex(self.position)[1] + 1]), Color.invert(self.color))
-				if valid:
-					if self.board.pieceAt(functions.indexToCoordinate([functions.coordinateToIndex(self.position)[0], functions.coordinateToIndex(self.position)[1] + 1])):
-						if self.board.pieceAt(functions.indexToCoordinate([functions.coordinateToIndex(self.position)[0], functions.coordinateToIndex(self.position)[1] + 1])).color != self.color:
-							moves.append(Move(name="Kx" + functions.indexToCoordinate([functions.coordinateToIndex(self.position)[0], functions.coordinateToIndex(self.position)[1] + 1]), old_position=self.position, new_position=functions.indexToCoordinate([functions.coordinateToIndex(self.position)[0], functions.coordinateToIndex(self.position)[1] + 1]), piece=self, is_capture=True))
-					else:
-						moves.append(Move(name="K" + functions.indexToCoordinate([functions.coordinateToIndex(self.position)[0], functions.coordinateToIndex(self.position)[1] + 1]), old_position=self.position, new_position=functions.indexToCoordinate([functions.coordinateToIndex(self.position)[0], functions.coordinateToIndex(self.position)[1] + 1]), piece=self))
-			if self.position[1] != "1":
-				if self.board.pieceAt(functions.indexToCoordinate([functions.coordinateToIndex(self.position)[0] + 1, functions.coordinateToIndex(self.position)[1]])):
-					valid = not self.board.protectors(self.board.pieceAt(functions.indexToCoordinate([functions.coordinateToIndex(self.position)[0] + 1, functions.coordinateToIndex(self.position)[1]])))
-				else:
-					valid = not self.board.attackers(functions.indexToCoordinate([functions.coordinateToIndex(self.position)[0] + 1, functions.coordinateToIndex(self.position)[1]]), Color.invert(self.color))
-				if valid:
-					if self.board.pieceAt(functions.indexToCoordinate([functions.coordinateToIndex(self.position)[0] + 1, functions.coordinateToIndex(self.position)[1]])):
-						if self.board.pieceAt(functions.indexToCoordinate([functions.coordinateToIndex(self.position)[0] + 1, functions.coordinateToIndex(self.position)[1]])).color != self.color:
-							moves.append(Move(name="Kx" + functions.indexToCoordinate([functions.coordinateToIndex(self.position)[0] + 1, functions.coordinateToIndex(self.position)[1]]), old_position=self.position, new_position=functions.indexToCoordinate([functions.coordinateToIndex(self.position)[0] + 1, functions.coordinateToIndex(self.position)[1]]), piece=self, is_capture=True))
-					else:
-						moves.append(Move(name="K" + functions.indexToCoordinate([functions.coordinateToIndex(self.position)[0] + 1, functions.coordinateToIndex(self.position)[1]]), old_position=self.position, new_position=functions.indexToCoordinate([functions.coordinateToIndex(self.position)[0] + 1, functions.coordinateToIndex(self.position)[1]]), piece=self))
-			if self.position[1] != "8":
-				if self.board.pieceAt(functions.indexToCoordinate([functions.coordinateToIndex(self.position)[0] - 1, functions.coordinateToIndex(self.position)[1]])):
-					valid = not self.board.protectors(self.board.pieceAt(functions.indexToCoordinate([functions.coordinateToIndex(self.position)[0] - 1, functions.coordinateToIndex(self.position)[1]])))
-				else:
-					valid = not self.board.attackers(functions.indexToCoordinate([functions.coordinateToIndex(self.position)[0] - 1, functions.coordinateToIndex(self.position)[1]]), Color.invert(self.color))
-				if valid:
-					if self.board.pieceAt(functions.indexToCoordinate([functions.coordinateToIndex(self.position)[0] - 1, functions.coordinateToIndex(self.position)[1]])):
-						if self.board.pieceAt(functions.indexToCoordinate([functions.coordinateToIndex(self.position)[0] - 1, functions.coordinateToIndex(self.position)[1]])).color != self.color:
-							moves.append(Move(name="Kx" + functions.indexToCoordinate([functions.coordinateToIndex(self.position)[0] - 1, functions.coordinateToIndex(self.position)[1]]), old_position=self.position, new_position=functions.indexToCoordinate([functions.coordinateToIndex(self.position)[0] - 1, functions.coordinateToIndex(self.position)[1]]), piece=self, is_capture=True))
-					else:
-						moves.append(Move(name="K" + functions.indexToCoordinate([functions.coordinateToIndex(self.position)[0] - 1, functions.coordinateToIndex(self.position)[1]]), old_position=self.position, new_position=functions.indexToCoordinate([functions.coordinateToIndex(self.position)[0] - 1, functions.coordinateToIndex(self.position)[1]]), piece=self))
-			# Castling
-			if self.board.castling_rights is not None and not self.moved and self.board.in_check != self.color:
-				valid = True
-				for x in self.board.pieceType(PieceEnum.rook, self.color):
-					if x.position[1] == self.position[1] and not x.moved:
-						if functions.coordinateToIndex(self.position)[1] < functions.coordinateToIndex(x.position)[1] and ((self.color == "white" and "K" in self.board.castling_rights) or (self.color == "black" and "k" in self.board.castling_rights)):
-							for y in range(functions.coordinateToIndex(self.position)[1] + 1, functions.coordinateToIndex(x.position)[1]):
-								if self.board.attackers(functions.indexToCoordinate([functions.coordinateToIndex(self.position)[0], y]), Color.invert(self.color)) or self.board.pieceAt(functions.indexToCoordinate([functions.coordinateToIndex(self.position)[0], y])):
-									valid = False
-									break
-							if valid:
-								moves.append(Move("O-O", self.position, "g" + self.position[1], piece=self, castle=Castle.kingside, castle_rook=x))
-							else:
-								valid = True
-								continue
-						elif functions.coordinateToIndex(self.position)[1] > functions.coordinateToIndex(x.position)[1] and ((self.color == "white" and "Q" in self.board.castling_rights) or (self.color == "black" and "q" in self.board.castling_rights)):
-							for y in range(functions.coordinateToIndex(x.position)[1] + 1, functions.coordinateToIndex(self.position)[1]):
-								if self.board.attackers(functions.indexToCoordinate([functions.coordinateToIndex(self.position)[0], y]), Color.invert(self.color)) or self.board.pieceAt(functions.indexToCoordinate([functions.coordinateToIndex(self.position)[0], y])):
-									valid = False
-									break
-							if valid:
-								moves.append(Move("O-O-O", self.position, "c" + self.position[1], piece=self, castle=Castle.queenside, castle_rook=x))
-							else:
-								valid = True
-								continue
+			moves.extend(self.board.generateKingMoves(self.position, self.color, piece=self))
+			moves.extend(self.board.generateKingCastles(self.position, piece=self))
 		check_line = self.board.checkLine()
 		new_moves = []
 		for x in moves:
@@ -595,11 +484,15 @@ class Piece:
 
 class Game:
 	"""Game class"""
-	def __init__(self, raise_errors=True, fen="rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1", evaluate_openings=False):
+	def __init__(self, raise_errors=True, fen="rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1", evaluate_openings=False, pieces=Piece):
 		"""Initialize"""
 		if not functions.FENvalid(fen):
 			fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
 		self.tags = {"Result": "*"}
+		self.properties = {
+			"promotions": {"N": PieceEnum.knight, "B": PieceEnum.bishop, "R": PieceEnum.rook, "Q": PieceEnum.queen}
+		}
+		self.pieces_class = pieces
 		self.opening = ""  # Opening
 		self.evaluate_openings = evaluate_openings
 		self.squares, self.pieces = [], []  # Pieces and squares
@@ -639,7 +532,7 @@ class Game:
 			for x, y in enumerate(j):
 				if unicode(y).isnumeric():
 					continue
-				self.pieces.append(Piece(functions.indexToCoordinate([i, x]), PieceEnum.pawn if y.lower() == "p" else PieceEnum.knight if y.lower() == "n" else PieceEnum.bishop if y.lower() == "b" else PieceEnum.rook if y.lower() == "r" else PieceEnum.queen if y.lower() == "q" else PieceEnum.king, Color.white if y.isupper() else Color.black, self))
+				self.pieces.append(self.pieces_class(functions.indexToCoordinate([i, x]), PieceEnum.pawn if y.lower() == "p" else PieceEnum.knight if y.lower() == "n" else PieceEnum.bishop if y.lower() == "b" else PieceEnum.rook if y.lower() == "r" else PieceEnum.queen if y.lower() == "q" else PieceEnum.king, Color.white if y.isupper() else Color.black, self))
 				self.squares_hashtable[functions.indexToCoordinate([i, x])] = self.pieces[-1]
 				if self.pieces[-1].piece_type == PieceEnum.king:
 					if self.pieces[-1].color == Color.white:
@@ -733,7 +626,7 @@ class Game:
 		"""Places a piece with the specified properties at position `coordinate`, overriding any existing pieces on the coordinate."""
 		if self.pieceAt(coordinate):
 			self.pieces.remove(self.pieceAt(coordinate))
-		self.pieces.append(Piece(coordinate, piece_type, color, self))
+		self.pieces.append(self.pieces_class(coordinate, piece_type, color, self))
 		self.squares_hashtable[coordinate] = self.pieces[-1]
 
 	def getKing(self, color):
@@ -814,8 +707,8 @@ class Game:
 				elif move.old_position == "h8":  # If the rook was on h8
 					self.castling_rights = self.castling_rights.replace("k", "")  # Disable black kingside castling
 
-			if i.promotion:
-				i.piece.piece_type = {"N": PieceEnum.knight, "B": PieceEnum.bishop, "R": PieceEnum.rook, "Q": PieceEnum.queen}[i.promotion]
+			if move.promotion:
+				move.piece.piece_type = self.properties["promotions"][move.promotion]
 
 			self.raw_move_list.append(move)  # Append move to the raw move list
 
@@ -940,7 +833,7 @@ class Game:
 						self.castling_rights = self.castling_rights.replace("k", "")  # Disable black kingside castling
 
 				if i.promotion:
-					i.piece.piece_type = {"N": PieceEnum.knight, "B": PieceEnum.bishop, "R": PieceEnum.rook, "Q": PieceEnum.queen}[i.promotion]
+					i.piece.piece_type = self.properties["promotions"][i.promotion]
 
 				self.raw_move_list.append(i)  # Append the move to the raw_move_list list
 				break  # Break from the loop
@@ -1001,6 +894,9 @@ class Game:
 
 	def legal_moves(self, show_data=False, color=Color.current, evaluate_checks=True, evaluate_checkmate=True, piece_type=PieceEnum.all()):
 		"""Returns all legal moves by pieces of type(s) piece_type"""
+		if self.game_over:
+			return []
+
 		moves = []  # Define empty moves list
 
 		if color == Color.current:
@@ -1096,7 +992,7 @@ class Game:
 
 		if self.raw_move_list[-1].is_capture:  # If the last move was a capture
 			# Bring back the captured piece
-			self.pieces.append(Piece(self.raw_move_list[-1].new_position, self.raw_move_list[-1].captured_piece.piece_type, self.raw_move_list[-1].captured_piece.color, self))
+			self.pieces.append(self.pieces_class(self.raw_move_list[-1].new_position, self.raw_move_list[-1].captured_piece.piece_type, self.raw_move_list[-1].captured_piece.color, self))
 			self.squares_hashtable[self.raw_move_list[-1].new_position] = self.pieces[-1]
 
 		# Reset the castle rook's position if the last move was a castle
@@ -1224,7 +1120,7 @@ class Game:
 				else:
 					moves = [Move(functions.indexToCoordinate([functions.coordinateToIndex(position)[0] - 1, functions.coordinateToIndex(position)[1]]), position, functions.indexToCoordinate([functions.coordinateToIndex(position)[0] - 1, functions.coordinateToIndex(position)[1]]), piece)]
 			if position[1] == "7" and not self.pieceAt(position[0] + "8"):
-				moves.extend([Move(position[0] + "8=" + i, position, position[0] + "8", piece, promotion=i) for i in ["N", "B", "R", "Q"]])
+				return [Move(position[0] + "8=" + i, position, position[0] + "8", piece, promotion=i) for i in list(self.properties["promotions"])]
 			return moves
 		elif Color.isBlack(color):
 			if return_all:
@@ -1237,7 +1133,7 @@ class Game:
 				else:
 					moves = [Move(functions.indexToCoordinate([functions.coordinateToIndex(position)[0] + 1, functions.coordinateToIndex(position)[1]]), position, functions.indexToCoordinate([functions.coordinateToIndex(position)[0] + 1, functions.coordinateToIndex(position)[1]]), piece)]
 			if position[1] == "2" and not self.pieceAt(position[0] + "1"):
-				moves.extend([Move(position[0] + "1=" + i, position, position[0] + "1", piece, promotion=i) for i in ["N", "B", "R", "Q"]])
+				return [Move(position[0] + "1=" + i, position, position[0] + "1", piece, promotion=i) for i in list(self.properties["promotions"])]
 			return moves
 		else:
 			self.error(errors.UndefinedColor(color))
@@ -1254,32 +1150,32 @@ class Game:
 		if Color.isWhite(color):
 			if position[0] not in "ah" and (return_all or (self.pieceAt(functions.indexToCoordinate([functions.coordinateToIndex(position)[0] - 1, functions.coordinateToIndex(position)[1] + 1])) and self.pieceAt(functions.indexToCoordinate([functions.coordinateToIndex(position)[0] - 1, functions.coordinateToIndex(position)[1] - 1])) and self.pieceAt(functions.indexToCoordinate([functions.coordinateToIndex(position)[0] - 1, functions.coordinateToIndex(position)[1] + 1])).color != color and self.pieceAt(functions.indexToCoordinate([functions.coordinateToIndex(position)[0] - 1, functions.coordinateToIndex(position)[1] - 1])).color != color)):
 				if position[1] == "7":
-					return [Move(position[0] + "x" + functions.indexToCoordinate([functions.coordinateToIndex(position)[0] - 1, functions.coordinateToIndex(position)[1] + 1]) + "=" + i, position, functions.indexToCoordinate([functions.coordinateToIndex(position)[0] - 1, functions.coordinateToIndex(position)[1] + 1]), piece, is_capture=True, promotion=i) for i in ["N", "B", "R", "Q"]] + [Move(position[0] + "x" + functions.indexToCoordinate([functions.coordinateToIndex(position)[0] - 1, functions.coordinateToIndex(position)[1] - 1]) + "=" + i, position, functions.indexToCoordinate([functions.coordinateToIndex(position)[0] - 1, functions.coordinateToIndex(position)[1] - 1]), piece, is_capture=True, promotion=i) for i in ["N", "B", "R", "Q"]]
+					return [Move(position[0] + "x" + functions.indexToCoordinate([functions.coordinateToIndex(position)[0] - 1, functions.coordinateToIndex(position)[1] + 1]) + "=" + i, position, functions.indexToCoordinate([functions.coordinateToIndex(position)[0] - 1, functions.coordinateToIndex(position)[1] + 1]), piece, is_capture=True, promotion=i) for i in list(self.properties["promotions"])] + [Move(position[0] + "x" + functions.indexToCoordinate([functions.coordinateToIndex(position)[0] - 1, functions.coordinateToIndex(position)[1] - 1]) + "=" + i, position, functions.indexToCoordinate([functions.coordinateToIndex(position)[0] - 1, functions.coordinateToIndex(position)[1] - 1]), piece, is_capture=True, promotion=i) for i in list(self.properties["promotions"])]
 				return [Move(position[0] + "x" + functions.indexToCoordinate([functions.coordinateToIndex(position)[0] - 1, functions.coordinateToIndex(position)[1] + 1]), position, functions.indexToCoordinate([functions.coordinateToIndex(position)[0] - 1, functions.coordinateToIndex(position)[1] + 1]), piece, is_capture=True), Move(position[0] + "x" + functions.indexToCoordinate([functions.coordinateToIndex(position)[0] - 1, functions.coordinateToIndex(position)[1] - 1]), position, functions.indexToCoordinate([functions.coordinateToIndex(position)[0] - 1, functions.coordinateToIndex(position)[1] - 1]), piece, is_capture=True)]
 
 			if position[0] != "h" and self.pieceAt(functions.indexToCoordinate([functions.coordinateToIndex(position)[0] - 1, functions.coordinateToIndex(position)[1] + 1])) and self.pieceAt(functions.indexToCoordinate([functions.coordinateToIndex(position)[0] - 1, functions.coordinateToIndex(position)[1] + 1])).color != color:
 				if position[1] == "7":
-					return [Move(position[0] + "x" + functions.indexToCoordinate([functions.coordinateToIndex(position)[0] - 1, functions.coordinateToIndex(position)[1] + 1]) + "=" + i, position, functions.indexToCoordinate([functions.coordinateToIndex(position)[0] - 1, functions.coordinateToIndex(position)[1] + 1]), piece, is_capture=True, promotion=i) for i in ["N", "B", "R", "Q"]]
+					return [Move(position[0] + "x" + functions.indexToCoordinate([functions.coordinateToIndex(position)[0] - 1, functions.coordinateToIndex(position)[1] + 1]) + "=" + i, position, functions.indexToCoordinate([functions.coordinateToIndex(position)[0] - 1, functions.coordinateToIndex(position)[1] + 1]), piece, is_capture=True, promotion=i) for i in list(self.properties["promotions"])]
 				return [Move(position[0] + "x" + functions.indexToCoordinate([functions.coordinateToIndex(position)[0] - 1, functions.coordinateToIndex(position)[1] + 1]), position, functions.indexToCoordinate([functions.coordinateToIndex(position)[0] - 1, functions.coordinateToIndex(position)[1] + 1]), piece, is_capture=True)]
 
 			if position[0] != "a" and self.pieceAt(functions.indexToCoordinate([functions.coordinateToIndex(position)[0] - 1, functions.coordinateToIndex(position)[1] - 1])) and self.pieceAt(functions.indexToCoordinate([functions.coordinateToIndex(position)[0] - 1, functions.coordinateToIndex(position)[1] - 1])).color != color:
 				if position[1] == "7":
-					return [Move(position[0] + "x" + functions.indexToCoordinate([functions.coordinateToIndex(position)[0] - 1, functions.coordinateToIndex(position)[1] - 1]) + "=" + i, position, functions.indexToCoordinate([functions.coordinateToIndex(position)[0] - 1, functions.coordinateToIndex(position)[1] - 1]), piece, is_capture=True, promotion=i) for i in ["N", "B", "R", "Q"]]
+					return [Move(position[0] + "x" + functions.indexToCoordinate([functions.coordinateToIndex(position)[0] - 1, functions.coordinateToIndex(position)[1] - 1]) + "=" + i, position, functions.indexToCoordinate([functions.coordinateToIndex(position)[0] - 1, functions.coordinateToIndex(position)[1] - 1]), piece, is_capture=True, promotion=i) for i in list(self.properties["promotions"])]
 				return [Move(position[0] + "x" + functions.indexToCoordinate([functions.coordinateToIndex(position)[0] - 1, functions.coordinateToIndex(position)[1] - 1]), position, functions.indexToCoordinate([functions.coordinateToIndex(position)[0] - 1, functions.coordinateToIndex(position)[1] - 1]), piece, is_capture=True)]
 		elif Color.isBlack(color):
 			if position[0] not in "ah" and (return_all or (self.pieceAt(functions.indexToCoordinate([functions.coordinateToIndex(position)[0] + 1, functions.coordinateToIndex(position)[1] + 1])) and self.pieceAt(functions.indexToCoordinate([functions.coordinateToIndex(position)[0] + 1, functions.coordinateToIndex(position)[1] - 1])) and self.pieceAt(functions.indexToCoordinate([functions.coordinateToIndex(position)[0] + 1, functions.coordinateToIndex(position)[1] + 1])).color != color and self.pieceAt(functions.indexToCoordinate([functions.coordinateToIndex(position)[0] + 1, functions.coordinateToIndex(position)[1] - 1])).color != color)):
 				if position[1] == "2":
-					return [Move(position[0] + "x" + functions.indexToCoordinate([functions.coordinateToIndex(position)[0] + 1, functions.coordinateToIndex(position)[1] + 1]) + "=" + i, position, functions.indexToCoordinate([functions.coordinateToIndex(position)[0] + 1, functions.coordinateToIndex(position)[1] + 1]), piece, is_capture=True, promotion=i) for i in ["N", "B", "R", "Q"]] + [Move(position[0] + "x" + functions.indexToCoordinate([functions.coordinateToIndex(position)[0] + 1, functions.coordinateToIndex(position)[1] - 1]) + "=" + i, position, functions.indexToCoordinate([functions.coordinateToIndex(position)[0] + 1, functions.coordinateToIndex(position)[1] - 1]), piece, is_capture=True, promotion=i) for i in ["N", "B", "R", "Q"]]
+					return [Move(position[0] + "x" + functions.indexToCoordinate([functions.coordinateToIndex(position)[0] + 1, functions.coordinateToIndex(position)[1] + 1]) + "=" + i, position, functions.indexToCoordinate([functions.coordinateToIndex(position)[0] + 1, functions.coordinateToIndex(position)[1] + 1]), piece, is_capture=True, promotion=i) for i in list(self.properties["promotions"])] + [Move(position[0] + "x" + functions.indexToCoordinate([functions.coordinateToIndex(position)[0] + 1, functions.coordinateToIndex(position)[1] - 1]) + "=" + i, position, functions.indexToCoordinate([functions.coordinateToIndex(position)[0] + 1, functions.coordinateToIndex(position)[1] - 1]), piece, is_capture=True, promotion=i) for i in list(self.properties["promotions"])]
 				return [Move(position[0] + "x" + functions.indexToCoordinate([functions.coordinateToIndex(position)[0] + 1, functions.coordinateToIndex(position)[1] + 1]), position, functions.indexToCoordinate([functions.coordinateToIndex(position)[0] + 1, functions.coordinateToIndex(position)[1] + 1]), piece, is_capture=True), Move(position[0] + "x" + functions.indexToCoordinate([functions.coordinateToIndex(position)[0] + 1, functions.coordinateToIndex(position)[1] - 1]), position, functions.indexToCoordinate([functions.coordinateToIndex(position)[0] + 1, functions.coordinateToIndex(position)[1] - 1]), piece, is_capture=True)]
 
 			if position[0] != "h" and self.pieceAt(functions.indexToCoordinate([functions.coordinateToIndex(position)[0] + 1, functions.coordinateToIndex(position)[1] + 1])) and self.pieceAt(functions.indexToCoordinate([functions.coordinateToIndex(position)[0] + 1, functions.coordinateToIndex(position)[1] + 1])).color != color:
 				if position[1] == "2":
-					return [Move(position[0] + "x" + functions.indexToCoordinate([functions.coordinateToIndex(position)[0] + 1, functions.coordinateToIndex(position)[1] + 1]) + "=" + i, position, functions.indexToCoordinate([functions.coordinateToIndex(position)[0] + 1, functions.coordinateToIndex(position)[1] + 1]), piece, is_capture=True, promotion=i) for i in ["N", "B", "R", "Q"]]
+					return [Move(position[0] + "x" + functions.indexToCoordinate([functions.coordinateToIndex(position)[0] + 1, functions.coordinateToIndex(position)[1] + 1]) + "=" + i, position, functions.indexToCoordinate([functions.coordinateToIndex(position)[0] + 1, functions.coordinateToIndex(position)[1] + 1]), piece, is_capture=True, promotion=i) for i in list(self.properties["promotions"])]
 				return [Move(position[0] + "x" + functions.indexToCoordinate([functions.coordinateToIndex(position)[0] + 1, functions.coordinateToIndex(position)[1] + 1]), position, functions.indexToCoordinate([functions.coordinateToIndex(position)[0] + 1, functions.coordinateToIndex(position)[1] + 1]), piece, is_capture=True)]
 
 			if position[0] != "a" and self.pieceAt(functions.indexToCoordinate([functions.coordinateToIndex(position)[0] + 1, functions.coordinateToIndex(position)[1] - 1])) and self.pieceAt(functions.indexToCoordinate([functions.coordinateToIndex(position)[0] + 1, functions.coordinateToIndex(position)[1] - 1])).color != color:
 				if position[1] == "2":
-					return [Move(position[0] + "x" + functions.indexToCoordinate([functions.coordinateToIndex(position)[0] + 1, functions.coordinateToIndex(position)[1] - 1]) + "=" + i, position, functions.indexToCoordinate([functions.coordinateToIndex(position)[0] + 1, functions.coordinateToIndex(position)[1] - 1]), piece, is_capture=True, promotion=i) for i in ["N", "B", "R", "Q"]]
+					return [Move(position[0] + "x" + functions.indexToCoordinate([functions.coordinateToIndex(position)[0] + 1, functions.coordinateToIndex(position)[1] - 1]) + "=" + i, position, functions.indexToCoordinate([functions.coordinateToIndex(position)[0] + 1, functions.coordinateToIndex(position)[1] - 1]), piece, is_capture=True, promotion=i) for i in list(self.properties["promotions"])]
 				return [Move(position[0] + "x" + functions.indexToCoordinate([functions.coordinateToIndex(position)[0] + 1, functions.coordinateToIndex(position)[1] - 1]), position, functions.indexToCoordinate([functions.coordinateToIndex(position)[0] + 1, functions.coordinateToIndex(position)[1] - 1]), piece, is_capture=True)]
 		else:
 			self.error(errors.UndefinedColor(color))
@@ -1710,6 +1606,130 @@ class Game:
 				moves.append(Move("Q" + functions.indexToCoordinate([functions.coordinateToIndex(position)[0], x]), position, functions.indexToCoordinate([functions.coordinateToIndex(position)[0], x]), piece))
 		return moves
 
+	def generateKingMoves(self, position, color, piece=None):
+		moves = []
+		if position[0] != "h" and position[1] != "1":
+			if self.pieceAt(functions.indexToCoordinate([functions.coordinateToIndex(position)[0] + 1, functions.coordinateToIndex(position)[1] + 1])):
+				valid = not self.protectors(self.pieceAt(functions.indexToCoordinate([functions.coordinateToIndex(position)[0] + 1, functions.coordinateToIndex(position)[1] + 1])))
+			else:
+				valid = not self.attackers(functions.indexToCoordinate([functions.coordinateToIndex(position)[0] + 1, functions.coordinateToIndex(position)[1] + 1]), Color.invert(color))
+			if valid:
+				if self.pieceAt(functions.indexToCoordinate([functions.coordinateToIndex(position)[0] + 1, functions.coordinateToIndex(position)[1] + 1])):
+					if self.pieceAt(functions.indexToCoordinate([functions.coordinateToIndex(position)[0] + 1, functions.coordinateToIndex(position)[1] + 1])).color != color:
+						moves.append(Move(name="Kx" + functions.indexToCoordinate([functions.coordinateToIndex(position)[0] + 1, functions.coordinateToIndex(position)[1] + 1]), old_position=position, new_position=functions.indexToCoordinate([functions.coordinateToIndex(position)[0] + 1, functions.coordinateToIndex(position)[1] + 1]), piece=piece, is_capture=True))
+				else:
+					moves.append(Move(name="K" + functions.indexToCoordinate([functions.coordinateToIndex(position)[0] + 1, functions.coordinateToIndex(position)[1] + 1]), old_position=position, new_position=functions.indexToCoordinate([functions.coordinateToIndex(position)[0] + 1, functions.coordinateToIndex(position)[1] + 1]), piece=piece))
+		if position[0] != "a" and position[1] != "8":
+			if self.pieceAt(functions.indexToCoordinate([functions.coordinateToIndex(position)[0] - 1, functions.coordinateToIndex(position)[1] - 1])):
+				valid = not self.protectors(self.pieceAt(functions.indexToCoordinate([functions.coordinateToIndex(position)[0] - 1, functions.coordinateToIndex(position)[1] - 1])))
+			else:
+				valid = not self.attackers(functions.indexToCoordinate([functions.coordinateToIndex(position)[0] - 1, functions.coordinateToIndex(position)[1] - 1]), Color.invert(color))
+			if valid:
+				if self.pieceAt(functions.indexToCoordinate([functions.coordinateToIndex(position)[0] - 1, functions.coordinateToIndex(position)[1] - 1])):
+					if self.pieceAt(functions.indexToCoordinate([functions.coordinateToIndex(position)[0] - 1, functions.coordinateToIndex(position)[1] - 1])).color != color:
+						moves.append(Move(name="Kx" + functions.indexToCoordinate([functions.coordinateToIndex(position)[0] - 1, functions.coordinateToIndex(position)[1] - 1]), old_position=position, new_position=functions.indexToCoordinate([functions.coordinateToIndex(position)[0] - 1, functions.coordinateToIndex(position)[1] - 1]), piece=piece, is_capture=True))
+				else:
+					moves.append(Move(name="K" + functions.indexToCoordinate([functions.coordinateToIndex(position)[0] - 1, functions.coordinateToIndex(position)[1] - 1]), old_position=position, new_position=functions.indexToCoordinate([functions.coordinateToIndex(position)[0] - 1, functions.coordinateToIndex(position)[1] - 1]), piece=piece))
+		if position[0] != "a" and position[1] != "1":
+			if self.pieceAt(functions.indexToCoordinate([functions.coordinateToIndex(position)[0] + 1, functions.coordinateToIndex(position)[1] - 1])):
+				valid = not self.protectors(self.pieceAt(functions.indexToCoordinate([functions.coordinateToIndex(position)[0] + 1, functions.coordinateToIndex(position)[1] - 1])))
+			else:
+				valid = not self.attackers(functions.indexToCoordinate([functions.coordinateToIndex(position)[0] + 1, functions.coordinateToIndex(position)[1] - 1]), Color.invert(color))
+			if valid:
+				if self.pieceAt(functions.indexToCoordinate([functions.coordinateToIndex(position)[0] + 1, functions.coordinateToIndex(position)[1] - 1])):
+					if self.pieceAt(functions.indexToCoordinate([functions.coordinateToIndex(position)[0] + 1, functions.coordinateToIndex(position)[1] - 1])).color != color:
+						moves.append(Move(name="Kx" + functions.indexToCoordinate([functions.coordinateToIndex(position)[0] + 1, functions.coordinateToIndex(position)[1] - 1]), old_position=position, new_position=functions.indexToCoordinate([functions.coordinateToIndex(position)[0] + 1, functions.coordinateToIndex(position)[1] - 1]), piece=piece, is_capture=True))
+				else:
+					moves.append(Move(name="K" + functions.indexToCoordinate([functions.coordinateToIndex(position)[0] + 1, functions.coordinateToIndex(position)[1] - 1]), old_position=position, new_position=functions.indexToCoordinate([functions.coordinateToIndex(position)[0] + 1, functions.coordinateToIndex(position)[1] - 1]), piece=piece))
+		if position[0] != "h" and position[1] != "8":
+			if self.pieceAt(functions.indexToCoordinate([functions.coordinateToIndex(position)[0] - 1, functions.coordinateToIndex(position)[1] + 1])):
+				valid = not self.protectors(self.pieceAt(functions.indexToCoordinate([functions.coordinateToIndex(position)[0] - 1, functions.coordinateToIndex(position)[1] + 1])))
+			else:
+				valid = not self.attackers(functions.indexToCoordinate([functions.coordinateToIndex(position)[0] - 1, functions.coordinateToIndex(position)[1] + 1]), Color.invert(color))
+			if valid:
+				if self.pieceAt(functions.indexToCoordinate([functions.coordinateToIndex(position)[0] - 1, functions.coordinateToIndex(position)[1] + 1])):
+					if self.pieceAt(functions.indexToCoordinate([functions.coordinateToIndex(position)[0] - 1, functions.coordinateToIndex(position)[1] + 1])).color != color:
+						moves.append(Move(name="Kx" + functions.indexToCoordinate([functions.coordinateToIndex(position)[0] - 1, functions.coordinateToIndex(position)[1] + 1]), old_position=position, new_position=functions.indexToCoordinate([functions.coordinateToIndex(position)[0] - 1, functions.coordinateToIndex(position)[1] + 1]), piece=piece, is_capture=True))
+				else:
+					moves.append(Move(name="K" + functions.indexToCoordinate([functions.coordinateToIndex(position)[0] - 1, functions.coordinateToIndex(position)[1] + 1]), old_position=position, new_position=functions.indexToCoordinate([functions.coordinateToIndex(position)[0] - 1, functions.coordinateToIndex(position)[1] + 1]), piece=piece))
+		if position[0] != "a":
+			if self.pieceAt(functions.indexToCoordinate([functions.coordinateToIndex(position)[0], functions.coordinateToIndex(position)[1] - 1])):
+				valid = not self.protectors(self.pieceAt(functions.indexToCoordinate([functions.coordinateToIndex(position)[0], functions.coordinateToIndex(position)[1] - 1])))
+			else:
+				valid = not self.attackers(functions.indexToCoordinate([functions.coordinateToIndex(position)[0], functions.coordinateToIndex(position)[1] - 1]), Color.invert(color))
+			if valid:
+				if self.pieceAt(functions.indexToCoordinate([functions.coordinateToIndex(position)[0], functions.coordinateToIndex(position)[1] - 1])):
+					if self.pieceAt(functions.indexToCoordinate([functions.coordinateToIndex(position)[0], functions.coordinateToIndex(position)[1] - 1])).color != color:
+						moves.append(Move(name="Kx" + functions.indexToCoordinate([functions.coordinateToIndex(position)[0], functions.coordinateToIndex(position)[1] - 1]), old_position=position, new_position=functions.indexToCoordinate([functions.coordinateToIndex(position)[0], functions.coordinateToIndex(position)[1] - 1]), piece=piece, is_capture=True))
+				else:
+					moves.append(Move(name="K" + functions.indexToCoordinate([functions.coordinateToIndex(position)[0], functions.coordinateToIndex(position)[1] - 1]), old_position=position, new_position=functions.indexToCoordinate([functions.coordinateToIndex(position)[0], functions.coordinateToIndex(position)[1] - 1]), piece=piece))
+		if position[0] != "h":
+			if self.pieceAt(functions.indexToCoordinate([functions.coordinateToIndex(position)[0], functions.coordinateToIndex(position)[1] + 1])):
+				valid = not self.protectors(self.pieceAt(functions.indexToCoordinate([functions.coordinateToIndex(position)[0], functions.coordinateToIndex(position)[1] + 1])))
+			else:
+				valid = not self.attackers(functions.indexToCoordinate([functions.coordinateToIndex(position)[0], functions.coordinateToIndex(position)[1] + 1]), Color.invert(color))
+			if valid:
+				if self.pieceAt(functions.indexToCoordinate([functions.coordinateToIndex(position)[0], functions.coordinateToIndex(position)[1] + 1])):
+					if self.pieceAt(functions.indexToCoordinate([functions.coordinateToIndex(position)[0], functions.coordinateToIndex(position)[1] + 1])).color != color:
+						moves.append(Move(name="Kx" + functions.indexToCoordinate([functions.coordinateToIndex(position)[0], functions.coordinateToIndex(position)[1] + 1]), old_position=position, new_position=functions.indexToCoordinate([functions.coordinateToIndex(position)[0], functions.coordinateToIndex(position)[1] + 1]), piece=piece, is_capture=True))
+				else:
+					moves.append(Move(name="K" + functions.indexToCoordinate([functions.coordinateToIndex(position)[0], functions.coordinateToIndex(position)[1] + 1]), old_position=position, new_position=functions.indexToCoordinate([functions.coordinateToIndex(position)[0], functions.coordinateToIndex(position)[1] + 1]), piece=piece))
+		if position[1] != "1":
+			if self.pieceAt(functions.indexToCoordinate([functions.coordinateToIndex(position)[0] + 1, functions.coordinateToIndex(position)[1]])):
+				valid = not self.protectors(self.pieceAt(functions.indexToCoordinate([functions.coordinateToIndex(position)[0] + 1, functions.coordinateToIndex(position)[1]])))
+			else:
+				valid = not self.attackers(functions.indexToCoordinate([functions.coordinateToIndex(position)[0] + 1, functions.coordinateToIndex(position)[1]]), Color.invert(color))
+			if valid:
+				if self.pieceAt(functions.indexToCoordinate([functions.coordinateToIndex(position)[0] + 1, functions.coordinateToIndex(position)[1]])):
+					if self.pieceAt(functions.indexToCoordinate([functions.coordinateToIndex(position)[0] + 1, functions.coordinateToIndex(position)[1]])).color != color:
+						moves.append(Move(name="Kx" + functions.indexToCoordinate([functions.coordinateToIndex(position)[0] + 1, functions.coordinateToIndex(position)[1]]), old_position=position, new_position=functions.indexToCoordinate([functions.coordinateToIndex(position)[0] + 1, functions.coordinateToIndex(position)[1]]), piece=piece, is_capture=True))
+				else:
+					moves.append(Move(name="K" + functions.indexToCoordinate([functions.coordinateToIndex(position)[0] + 1, functions.coordinateToIndex(position)[1]]), old_position=position, new_position=functions.indexToCoordinate([functions.coordinateToIndex(position)[0] + 1, functions.coordinateToIndex(position)[1]]), piece=piece))
+		if position[1] != "8":
+			if self.pieceAt(functions.indexToCoordinate([functions.coordinateToIndex(position)[0] - 1, functions.coordinateToIndex(position)[1]])):
+				valid = not self.protectors(self.pieceAt(functions.indexToCoordinate([functions.coordinateToIndex(position)[0] - 1, functions.coordinateToIndex(position)[1]])))
+			else:
+				valid = not self.attackers(functions.indexToCoordinate([functions.coordinateToIndex(position)[0] - 1, functions.coordinateToIndex(position)[1]]), Color.invert(color))
+			if valid:
+				if self.pieceAt(functions.indexToCoordinate([functions.coordinateToIndex(position)[0] - 1, functions.coordinateToIndex(position)[1]])):
+					if self.pieceAt(functions.indexToCoordinate([functions.coordinateToIndex(position)[0] - 1, functions.coordinateToIndex(position)[1]])).color != color:
+						moves.append(Move(name="Kx" + functions.indexToCoordinate([functions.coordinateToIndex(position)[0] - 1, functions.coordinateToIndex(position)[1]]), old_position=position, new_position=functions.indexToCoordinate([functions.coordinateToIndex(position)[0] - 1, functions.coordinateToIndex(position)[1]]), piece=piece, is_capture=True))
+				else:
+					moves.append(Move(name="K" + functions.indexToCoordinate([functions.coordinateToIndex(position)[0] - 1, functions.coordinateToIndex(position)[1]]), old_position=position, new_position=functions.indexToCoordinate([functions.coordinateToIndex(position)[0] - 1, functions.coordinateToIndex(position)[1]]), piece=piece))
+		return moves
+
+	def generateKingCastles(self, position, piece=None):
+		if piece is None:
+			piece = self.pieceAt(position)
+
+		moves = []
+		if self.castling_rights is not None and not piece.moved and self.in_check != piece.color:
+			valid = True
+			for x in self.pieceType(PieceEnum.rook, piece.color):
+				if x.position[1] == position[1] and not x.moved:
+					if functions.coordinateToIndex(position)[1] < functions.coordinateToIndex(x.position)[1] and ((piece.color == "white" and "K" in self.castling_rights) or (piece.color == "black" and "k" in self.castling_rights)):
+						for y in range(functions.coordinateToIndex(position)[1] + 1, functions.coordinateToIndex(x.position)[1]):
+							if self.attackers(functions.indexToCoordinate([functions.coordinateToIndex(position)[0], y]), Color.invert(piece.color)) or self.pieceAt(functions.indexToCoordinate([functions.coordinateToIndex(position)[0], y])):
+								valid = False
+								break
+						if valid:
+							moves.append(Move("O-O", position, "g" + position[1], piece=piece, castle=Castle.kingside, castle_rook=x))
+						else:
+							valid = True
+							continue
+					elif functions.coordinateToIndex(position)[1] > functions.coordinateToIndex(x.position)[1] and ((piece.color == "white" and "Q" in self.castling_rights) or (piece.color == "black" and "q" in self.castling_rights)):
+						for y in range(functions.coordinateToIndex(x.position)[1] + 1, functions.coordinateToIndex(position)[1]):
+							if self.attackers(functions.indexToCoordinate([functions.coordinateToIndex(position)[0], y]), Color.invert(piece.color)) or self.pieceAt(functions.indexToCoordinate([functions.coordinateToIndex(position)[0], y])):
+								valid = False
+								break
+						if valid:
+							moves.append(Move("O-O-O", position, "c" + position[1], piece=self, castle=Castle.queenside, castle_rook=x))
+						else:
+							valid = True
+							continue
+
+		return moves
+
 	def __str__(self):
 		return "Chess Game with FEN " + self.FEN()
 
@@ -1737,3 +1757,133 @@ class Game:
 	__add__ = __radd__ = __sub__ = __rsub__ = __mul__ = __rmul__ = __div__ = __rdiv__ = __truediv__ = __rtruediv__ = __floordiv__ = __rfloordiv__ = __mod__ = __rmod__ = __divmod__ = __rdivmod__ = __pow__ = __rpow__ = __lshift__ = __rlshift__ = __rshift__ = __rrshift__ = __and__ = __rand__ = __or__ = __ror__ = __xor__ = __rxor__ = __iadd__ = __isub__ = __imul__ = __idiv__ = __itruediv__ = __ifloordiv__ = __imod__ = __ipow__ = __iand__ = __ior__ = __ixor__ = __ilshift__ = __irshift__ = __neg__ = __pos__ = __abs__ = __invert__ = __int__ = __long__ = __float__ = __complex__ = __oct__ = __hex__ = __coerce__ = lambda self, *args: self.error(ArithmeticError("Cannot perform arithmetic operations on Game object"))
 
 	__getitem__ = __setitem__ = __delitem__ = __getslice__ = __setslice__ = __delslice__ = lambda self, *args: self.error(IndexError("Cannot perform operation on Game object"))
+
+
+class Antichess(Game):
+	class AntichessPiece(Piece):
+		def moves(self, show_data=False, evaluate_checks=False):
+			if self.board.game_over:
+				return []
+			moves = []
+			if self.piece_type == PieceEnum.pawn:  # Pawn moves
+				moves.extend(self.board.generatePawnCaptures(self.position, self.color, piece=self))
+				moves.extend(self.board.generatePawnMoves(self.position, self.color, piece=self))
+			elif self.piece_type == PieceEnum.knight:  # Knight moves
+				moves.extend(self.board.generateKnightMoves(self.position, self.color, piece=self))
+			elif self.piece_type == PieceEnum.bishop:  # Bishop moves
+				moves.extend(self.board.generateBishopMoves(self.position, self.color, piece=self))
+			if self.piece_type == PieceEnum.rook:  # Rook moves
+				moves.extend(self.board.generateRookMoves(self.position, self.color, piece=self))
+			elif self.piece_type == PieceEnum.queen:  # Queen moves
+				moves.extend(self.board.generateQueenMoves(self.position, self.color, piece=self))
+			elif self.piece_type == PieceEnum.king:
+				moves.extend(self.board.generateKingMoves(self.position, self.color, piece=self))
+			captures, non_captures = [], []
+			for i in moves:
+				if i.is_capture:
+					if show_data:
+						captures.append(i)
+					else:
+						captures.append(i.name)
+				else:
+					if not captures:
+						if show_data:
+							non_captures.append(i)
+						else:
+							non_captures.append(i.name)
+			if captures:
+				return captures
+			return non_captures
+
+	def __init__(self, fen="rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1", raise_errors=True):
+		super(Antichess, self).__init__(fen=fen, raise_errors=raise_errors, pieces=Antichess.AntichessPiece)
+		self.properties["promotions"]["K"] = PieceEnum.king
+
+	def legal_moves(self, show_data=False, color=Color.current, evaluate_checks=True, evaluate_checkmate=True, piece_type=PieceEnum.all()):
+		moves = super(Antichess, self).legal_moves(show_data=True, color=color, evaluate_checks=False, evaluate_checkmate=False, piece_type=piece_type)
+		captures, non_captures = [], []
+		for i in moves:
+			if i.is_capture:
+				if show_data:
+					captures.append(i)
+				else:
+					captures.append(i.name)
+			else:
+				if not captures:
+					if show_data:
+						non_captures.append(i)
+					else:
+						non_captures.append(i.name)
+
+		if captures:
+			return captures
+		return non_captures
+
+	def move(self, move, evaluate_checks=True, evaluate_opening=True, evaluate_move_checks=True, evaluate_move_checkmate=True):
+		move = super(Antichess, self).move(move, evaluate_checks=False, evaluate_opening=evaluate_opening, evaluate_move_checks=False, evaluate_move_checkmate=False)
+		if self.in_check:
+			self.in_check = False
+
+		if self.legal_moves() == []:
+			self.game_over = True
+			self.tags["Result"] = "1-0" if self.turn == Color.white else "0-1"
+			if self.drawn:
+				self.drawn = False
+				self.stalemate = False
+
+		return move
+
+	def generateKingMoves(self, position, color, piece=None):
+		moves = []
+		if position[0] != "h" and position[1] != "1":
+			if self.pieceAt(functions.indexToCoordinate([functions.coordinateToIndex(position)[0] + 1, functions.coordinateToIndex(position)[1] + 1])):
+				if self.pieceAt(functions.indexToCoordinate([functions.coordinateToIndex(position)[0] + 1, functions.coordinateToIndex(position)[1] + 1])).color != color:
+					moves.append(Move(name="Kx" + functions.indexToCoordinate([functions.coordinateToIndex(position)[0] + 1, functions.coordinateToIndex(position)[1] + 1]), old_position=position, new_position=functions.indexToCoordinate([functions.coordinateToIndex(position)[0] + 1, functions.coordinateToIndex(position)[1] + 1]), piece=piece, is_capture=True))
+			else:
+				moves.append(Move(name="K" + functions.indexToCoordinate([functions.coordinateToIndex(position)[0] + 1, functions.coordinateToIndex(position)[1] + 1]), old_position=position, new_position=functions.indexToCoordinate([functions.coordinateToIndex(position)[0] + 1, functions.coordinateToIndex(position)[1] + 1]), piece=piece))
+		if position[0] != "a" and position[1] != "8":
+			if self.pieceAt(functions.indexToCoordinate([functions.coordinateToIndex(position)[0] - 1, functions.coordinateToIndex(position)[1] - 1])):
+				if self.pieceAt(functions.indexToCoordinate([functions.coordinateToIndex(position)[0] - 1, functions.coordinateToIndex(position)[1] - 1])).color != color:
+					moves.append(Move(name="Kx" + functions.indexToCoordinate([functions.coordinateToIndex(position)[0] - 1, functions.coordinateToIndex(position)[1] - 1]), old_position=position, new_position=functions.indexToCoordinate([functions.coordinateToIndex(position)[0] - 1, functions.coordinateToIndex(position)[1] - 1]), piece=piece, is_capture=True))
+			else:
+				moves.append(Move(name="K" + functions.indexToCoordinate([functions.coordinateToIndex(position)[0] - 1, functions.coordinateToIndex(position)[1] - 1]), old_position=position, new_position=functions.indexToCoordinate([functions.coordinateToIndex(position)[0] - 1, functions.coordinateToIndex(position)[1] - 1]), piece=piece))
+		if position[0] != "a" and position[1] != "1":
+			if self.pieceAt(functions.indexToCoordinate([functions.coordinateToIndex(position)[0] + 1, functions.coordinateToIndex(position)[1] - 1])):
+				if self.pieceAt(functions.indexToCoordinate([functions.coordinateToIndex(position)[0] + 1, functions.coordinateToIndex(position)[1] - 1])).color != color:
+					moves.append(Move(name="Kx" + functions.indexToCoordinate([functions.coordinateToIndex(position)[0] + 1, functions.coordinateToIndex(position)[1] - 1]), old_position=position, new_position=functions.indexToCoordinate([functions.coordinateToIndex(position)[0] + 1, functions.coordinateToIndex(position)[1] - 1]), piece=piece, is_capture=True))
+			else:
+				moves.append(Move(name="K" + functions.indexToCoordinate([functions.coordinateToIndex(position)[0] + 1, functions.coordinateToIndex(position)[1] - 1]), old_position=position, new_position=functions.indexToCoordinate([functions.coordinateToIndex(position)[0] + 1, functions.coordinateToIndex(position)[1] - 1]), piece=piece))
+		if position[0] != "h" and position[1] != "8":
+			if self.pieceAt(functions.indexToCoordinate([functions.coordinateToIndex(position)[0] - 1, functions.coordinateToIndex(position)[1] + 1])):
+				if self.pieceAt(functions.indexToCoordinate([functions.coordinateToIndex(position)[0] - 1, functions.coordinateToIndex(position)[1] + 1])).color != color:
+					moves.append(Move(name="Kx" + functions.indexToCoordinate([functions.coordinateToIndex(position)[0] - 1, functions.coordinateToIndex(position)[1] + 1]), old_position=position, new_position=functions.indexToCoordinate([functions.coordinateToIndex(position)[0] - 1, functions.coordinateToIndex(position)[1] + 1]), piece=piece, is_capture=True))
+			else:
+				moves.append(Move(name="K" + functions.indexToCoordinate([functions.coordinateToIndex(position)[0] - 1, functions.coordinateToIndex(position)[1] + 1]), old_position=position, new_position=functions.indexToCoordinate([functions.coordinateToIndex(position)[0] - 1, functions.coordinateToIndex(position)[1] + 1]), piece=piece))
+		if position[0] != "a":
+			if self.pieceAt(functions.indexToCoordinate([functions.coordinateToIndex(position)[0], functions.coordinateToIndex(position)[1] - 1])):
+				if self.pieceAt(functions.indexToCoordinate([functions.coordinateToIndex(position)[0], functions.coordinateToIndex(position)[1] - 1])).color != color:
+					moves.append(Move(name="Kx" + functions.indexToCoordinate([functions.coordinateToIndex(position)[0], functions.coordinateToIndex(position)[1] - 1]), old_position=position, new_position=functions.indexToCoordinate([functions.coordinateToIndex(position)[0], functions.coordinateToIndex(position)[1] - 1]), piece=piece, is_capture=True))
+			else:
+				moves.append(Move(name="K" + functions.indexToCoordinate([functions.coordinateToIndex(position)[0], functions.coordinateToIndex(position)[1] - 1]), old_position=position, new_position=functions.indexToCoordinate([functions.coordinateToIndex(position)[0], functions.coordinateToIndex(position)[1] - 1]), piece=piece))
+		if position[0] != "h":
+			if self.pieceAt(functions.indexToCoordinate([functions.coordinateToIndex(position)[0], functions.coordinateToIndex(position)[1] + 1])):
+				if self.pieceAt(functions.indexToCoordinate([functions.coordinateToIndex(position)[0], functions.coordinateToIndex(position)[1] + 1])).color != color:
+					moves.append(Move(name="Kx" + functions.indexToCoordinate([functions.coordinateToIndex(position)[0], functions.coordinateToIndex(position)[1] + 1]), old_position=position, new_position=functions.indexToCoordinate([functions.coordinateToIndex(position)[0], functions.coordinateToIndex(position)[1] + 1]), piece=piece, is_capture=True))
+			else:
+				moves.append(Move(name="K" + functions.indexToCoordinate([functions.coordinateToIndex(position)[0], functions.coordinateToIndex(position)[1] + 1]), old_position=position, new_position=functions.indexToCoordinate([functions.coordinateToIndex(position)[0], functions.coordinateToIndex(position)[1] + 1]), piece=piece))
+		if position[1] != "1":
+			if self.pieceAt(functions.indexToCoordinate([functions.coordinateToIndex(position)[0] + 1, functions.coordinateToIndex(position)[1]])):
+				if self.pieceAt(functions.indexToCoordinate([functions.coordinateToIndex(position)[0] + 1, functions.coordinateToIndex(position)[1]])).color != color:
+					moves.append(Move(name="Kx" + functions.indexToCoordinate([functions.coordinateToIndex(position)[0] + 1, functions.coordinateToIndex(position)[1]]), old_position=position, new_position=functions.indexToCoordinate([functions.coordinateToIndex(position)[0] + 1, functions.coordinateToIndex(position)[1]]), piece=piece, is_capture=True))
+			else:
+				moves.append(Move(name="K" + functions.indexToCoordinate([functions.coordinateToIndex(position)[0] + 1, functions.coordinateToIndex(position)[1]]), old_position=position, new_position=functions.indexToCoordinate([functions.coordinateToIndex(position)[0] + 1, functions.coordinateToIndex(position)[1]]), piece=piece))
+		if position[1] != "8":
+			if self.pieceAt(functions.indexToCoordinate([functions.coordinateToIndex(position)[0] - 1, functions.coordinateToIndex(position)[1]])):
+				if self.pieceAt(functions.indexToCoordinate([functions.coordinateToIndex(position)[0] - 1, functions.coordinateToIndex(position)[1]])).color != color:
+					moves.append(Move(name="Kx" + functions.indexToCoordinate([functions.coordinateToIndex(position)[0] - 1, functions.coordinateToIndex(position)[1]]), old_position=position, new_position=functions.indexToCoordinate([functions.coordinateToIndex(position)[0] - 1, functions.coordinateToIndex(position)[1]]), piece=piece, is_capture=True))
+			else:
+				moves.append(Move(name="K" + functions.indexToCoordinate([functions.coordinateToIndex(position)[0] - 1, functions.coordinateToIndex(position)[1]]), old_position=position, new_position=functions.indexToCoordinate([functions.coordinateToIndex(position)[0] - 1, functions.coordinateToIndex(position)[1]]), piece=piece))
+		return moves
+
+	def generateKingCastles(self, *args, **kwargs):
+		return []
