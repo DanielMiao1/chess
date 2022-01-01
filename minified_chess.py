@@ -4322,8 +4322,8 @@ class Game:
 				elif move.old_position == "h8":  # If the rook was on h8
 					self.castling_rights = self.castling_rights.replace("k", "")  # Disable black kingside castling
 
-			if i.promotion:
-				i.piece.piece_type = self.properties["promotions"][i.promotion]
+			if move.promotion:
+				move.piece.piece_type = self.properties["promotions"][move.promotion]
 
 			self.raw_move_list.append(move)  # Append move to the raw move list
 
@@ -5502,3 +5502,23 @@ class Antichess(Game):
 
 	def generateKingCastles(self, *args, **kwargs):
 		return []
+
+
+class ThreeCheck(Game):
+	def __init__(self, fen="rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1", raise_errors=True):
+		super(ThreeCheck, self).__init__(fen=fen, raise_errors=raise_errors)
+		self.white_checks = self.black_checks = 0
+
+	def move(self, move, evaluate_checks=True, evaluate_opening=True, evaluate_move_checks=True, evaluate_move_checkmate=True):
+		if super(ThreeCheck, self).move(move=move, evaluate_checks=evaluate_checks, evaluate_opening=evaluate_opening, evaluate_move_checks=evaluate_move_checks, evaluate_move_checkmate=evaluate_move_checkmate).check:
+			if self.turn == Color.white:
+				self.black_checks += 1
+			else:
+				self.white_checks += 1
+
+			if self.white_checks == 3:
+				self.game_over = True
+				self.tags["Result"] = "1-0"
+			elif self.black_checks == 3:
+				self.game_over = True
+				self.tags["Result"] = "0-1"
