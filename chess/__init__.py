@@ -97,8 +97,12 @@ class PieceEnum:
 		if not Color.valid(color):
 			raise errors.UndefinedColor(color)
 		if color == Color.white:
-			return PieceEnum.piece_square_tables["middlegame" if game_phase in [Phase.opening, Phase.middlegame] else "endgame"][piece][functions.coordinateToIndex(position)[0]][functions.coordinateToIndex(position)[1]]
-		return list(reversed([list(reversed(i)) for i in PieceEnum.piece_square_tables["middlegame" if game_phase in [Phase.opening, Phase.middlegame] else "endgame"][piece]]))[functions.coordinateToIndex(position)[0]][functions.coordinateToIndex(position)[1]]
+			if game_phase in [Phase.opening, Phase.middlegame]:
+				return PieceEnum.piece_square_tables["middlegame"][piece][functions.coordinateToIndex(position)[0]][functions.coordinateToIndex(position)[1]]
+			return PieceEnum.piece_square_tables["endgame"][piece][functions.coordinateToIndex(position)[0]][functions.coordinateToIndex(position)[1]]
+		if game_phase in [Phase.opening, Phase.middlegame]:
+			return list(reversed([list(reversed(i)) for i in PieceEnum.piece_square_tables["middlegame"][piece]]))[functions.coordinateToIndex(position)[0]][functions.coordinateToIndex(position)[1]]
+		return list(reversed([list(reversed(i)) for i in PieceEnum.piece_square_tables["endgame"][piece]]))[functions.coordinateToIndex(position)[0]][functions.coordinateToIndex(position)[1]]
 
 	@staticmethod
 	def valid(piece):
@@ -164,46 +168,113 @@ class Move:
 			empty_squares = " "
 		empty_squares = empty_squares[0]
 		squares = []
+		string = ""
 		for x in range(8):
-			row = []
+			string += "\n"
+			if separators:
+				string += "---------------------------------\n"
 			for y in range(8):
-				row.append(old_position_symbol if functions.coordinateToIndex(self.old_position) == [x, y] else capture_symbol if functions.coordinateToIndex(self.new_position) == [x, y] and self.is_capture else new_position_symbol if functions.coordinateToIndex(self.new_position) == [x, y] else empty_squares)
-			squares.append(row)
+				if functions.coordinateToIndex(self.old_position) == [x, y]:
+					if separators:
+						string += "| " + old_position_symbol + " "
+					else:
+						string += old_position_symbol + " "
+				elif functions.coordinateToIndex(self.new_position) == [x, y] and self.is_capture:
+					if separators:
+						string += "| " + capture_symbol + " "
+					else:
+						string += capture_symbol + " "
+				elif functions.coordinateToIndex(self.new_position) == [x, y]:
+					if separators:
+						string += "| " + new_position_symbol + " "
+					else:
+						string += new_position_symbol + " "
+				else:
+					if separators:
+						string += "| " + empty_squares + " "
+					else:
+						string += empty_squares + " "
+			if separators:
+				string += "|"
+		if separators:
+			string += "\n---------------------------------"
 		if print_result:
-			print(("---------------------------------\n" if separators else "") + ("\n---------------------------------\n" if separators else "\n").join([("| " if separators else "") + (" | " if separators else " ").join(i) + (" |" if separators else "") for i in squares]) + ("\n---------------------------------" if separators else ""))
+			print(string)
 		else:
-			return ("---------------------------------\n" if separators else "") + ("\n---------------------------------\n" if separators else "\n").join([("| " if separators else "") + (" | " if separators else " ").join(i) + (" |" if separators else "") for i in squares]) + ("\n---------------------------------" if separators else "")
+			return string
 
-	__str__ = __repr__ = lambda self: str(self.name)
+	def __str__(self, *args, **kwargs):
+		return str(self.name)
+
+	def __repr__(self, *args, **kwargs):
+		return str(self.name)
 
 
 class MoveSet:
 	def __init__(self, *moves):
 		if len(moves) == 1 and isinstance(moves[0], (list, set, tuple)):
-			self.moves = [i for i in list(moves[0]) if isinstance(i, Move)]
+			self.moves = []
+			for i in list(moves[0]):
+				if isinstance(i, Move):
+					self.moves.append(i)
 		else:
-			self.moves = [i for i in moves if isinstance(i, Move)]
+			self.moves = []
+			for i in moves:
+				if isinstance(i, Move):
+					self.moves.append(i)
 
 	def visualized(self, print_result=False, empty_squares=" ", separators=True, old_position_symbol="□", new_position_symbol="■", capture_symbol="X"):
 		if empty_squares == "":
 			empty_squares = " "
 		empty_squares = empty_squares[0]
 		squares = []
+		string = ""
 		for x in range(8):
-			row = []
+			string += "\n"
+			if separators:
+				string += "---------------------------------\n"
 			for y in range(8):
-				row.append(old_position_symbol if [x, y] in map(functions.coordinateToIndex, self.old_positions()) else capture_symbol if [x, y] in [i.new_position for i in self.moves if i.is_capture] else new_position_symbol if [x, y] in map(functions.coordinateToIndex, self.new_positions()) else empty_squares)
-			squares.append(row)
+				if separators:
+					character = "| " + empty_squares + " "
+				else:
+					character = empty_squares + " "
+				for z in self.moves:
+					if functions.coordinateToIndex(z.old_position) == [x, y]:
+						if separators:
+							character = "| " + old_position_symbol + " "
+						else:
+							character = old_position_symbol + " "
+					elif functions.coordinateToIndex(z.new_position) == [x, y] and z.is_capture:
+						if separators:
+							character = "| " + capture_symbol + " "
+						else:
+							character = capture_symbol + " "
+					elif functions.coordinateToIndex(z.new_position) == [x, y]:
+						if separators:
+							character = "| " + new_position_symbol + " "
+						else:
+							character = new_position_symbol + " "
+				string += character
+			if separators:
+				string += "|"
+		if separators:
+			string += "\n---------------------------------"
 		if print_result:
-			print(("---------------------------------\n" if separators else "") + ("\n---------------------------------\n" if separators else "\n").join([("| " if separators else "") + (" | " if separators else " ").join(i) + (" |" if separators else "") for i in squares]) + ("\n---------------------------------" if separators else ""))
+			print(string)
 		else:
-			return ("---------------------------------\n" if separators else "") + ("\n---------------------------------\n" if separators else "\n").join([("| " if separators else "") + (" | " if separators else " ").join(i) + (" |" if separators else "") for i in squares]) + ("\n---------------------------------" if separators else "")
+			return string
 
 	def old_positions(self):
-		return [i.old_position for i in self.moves]
+		positions = []
+		for i in self.moves:
+			positions.append(i.old_position)
+		return positions
 
 	def new_positions(self):
-		return [i.new_position for i in self.moves]
+		positions = []
+		for i in self.moves:
+			positions.append(i.new_position)
+		return positions
 
 	def __contains__(self, obj):
 		if isinstance(obj, Move):
@@ -236,7 +307,11 @@ class MoveSet:
 					new_set.moves.remove(i)
 			return new_set
 		if isinstance(other, Move):
-			return MoveSet([i for i in self.moves if i != other])
+			moves = []
+			for i in self.moves:
+				if i != other:
+					moves.append(i)
+			return MoveSet(moves)
 		if isinstance(other, (list, set, tuple)):
 			new_set = MoveSet(self.moves)
 			for i in other:
@@ -289,9 +364,13 @@ class Line:
 		self.end_position = end
 		if not jump:
 			if start[0] == end[0]:
-				self.positions = [start[0] + str(i) for i in range(int(start[1]) + 1, int(end[1]))]
+				self.positions = []
+				for i in range(int(start[1]) + 1, int(end[1])):
+					self.positions.append(start[0] + str(i))
 			elif start[1] == end[1]:
-				self.positions = [("a", "b", "c", "d", "e", "f", "g", "h")[i] + start[1] for i in range({"a": 0, "b": 1, "c": 2, "d": 3, "e": 4, "f": 5, "g": 6, "h": 7}[start[0]] + 1, {"a": 0, "b": 1, "c": 2, "d": 3, "e": 4, "f": 5, "g": 6, "h": 7}[end[0]])]
+				self.positions = []
+				for i in range({"a": 0, "b": 1, "c": 2, "d": 3, "e": 4, "f": 5, "g": 6, "h": 7}[start[0]] + 1, {"a": 0, "b": 1, "c": 2, "d": 3, "e": 4, "f": 5, "g": 6, "h": 7}[end[0]]):
+					self.positions.append(("a", "b", "c", "d", "e", "f", "g", "h")[i] + start[1])
 			elif int(functions.coordinateToIndex(start)[1]) < int(functions.coordinateToIndex(end)[1]) and int(functions.coordinateToIndex(start)[0]) < int(functions.coordinateToIndex(end)[0]):
 				pos1, pos2 = functions.coordinateToIndex(end)
 				pos1, pos2 = pos1 - 1, pos2 - 1
@@ -334,15 +413,44 @@ class Line:
 			self.positions = []
 
 	def visualized(self, print_result=False, separators=True, empty_squares=" ", line_symbol="●", start_position_symbol="○", end_position_symbol="◎"):
-		squares = [[empty_squares for _ in range(8)] for _ in range(8)]
-		for i in self.positions:
-			squares[functions.coordinateToIndex(i)[0]][functions.coordinateToIndex(i)[1]] = line_symbol
-		squares[functions.coordinateToIndex(self.start_position)[0]][functions.coordinateToIndex(self.start_position)[1]] = start_position_symbol
-		squares[functions.coordinateToIndex(self.end_position)[0]][functions.coordinateToIndex(self.end_position)[1]] = end_position_symbol
+		if empty_squares == "":
+			empty_squares = " "
+		empty_squares = empty_squares[0]
+		squares = []
+		string = ""
+		for x in range(8):
+			string += "\n"
+			if separators:
+				string += "---------------------------------\n"
+			for y in range(8):
+				if functions.coordinateToIndex(self.start_position) == [x, y]:
+					if separators:
+						string += "| " + start_position_symbol + " "
+					else:
+						string += start_position_symbol + " "
+				elif functions.coordinateToIndex(self.end_position) == [x, y]:
+					if separators:
+						string += "| " + end_position_symbol + " "
+					else:
+						string += end_position_symbol + " "
+				elif functions.indexToCoordinate([x, y]) in self.positions:
+					if separators:
+						string += "| " + line_symbol + " "
+					else:
+						string += line_symbol + " "
+				else:
+					if separators:
+						string += "| " + empty_squares + " "
+					else:
+						string += empty_squares + " "
+			if separators:
+				string += "|"
+		if separators:
+			string += "\n---------------------------------"
 		if print_result:
-			print(("---------------------------------\n| " if separators else "") + (" |\n---------------------------------\n| " if separators else "\n").join((" | " if separators else " ").join(i) for i in squares) + (" |\n---------------------------------" if separators else ""))
+			print(string)
 		else:
-			return ("---------------------------------\n| " if separators else "") + (" |\n---------------------------------\n| " if separators else "\n").join((" | " if separators else " ").join(i) for i in squares) + (" |\n---------------------------------" if separators else "")
+			return string
 
 	def __str__(self):
 		return self.visualized()
@@ -387,7 +495,10 @@ class Square:
 class Piece:
 	def __init__(self, position, piece_type, color, board):
 		"""Initialize the piece"""
-		self.position = position if isinstance(position, str) else functions.indexToCoordinate(position)
+		if isinstance(position, str):
+			self.position = position
+		else:
+			self.position = functions.indexToCoordinate(position)
 		self.piece_type, self.color, self.board = piece_type, color, board
 		self.moved = False
 		self.en_passant = False
@@ -435,23 +546,38 @@ class Piece:
 				continue
 			if evaluate_checks:
 				if self.piece_type == PieceEnum.pawn:
-					if self.board.getKing(Color.invert(self.color)).position in [z.new_position for z in self.board.generatePawnCaptures(x.new_position, self.color)]:
+					moves_ = []
+					for z in self.board.generatePawnCaptures(x.new_position, self.color):
+						moves_.append(z.new_position)
+					if self.board.getKing(Color.invert(self.color)).position in moves_:
 						x.name += "+"
 						x.check = True
 				elif self.piece_type == PieceEnum.knight:
-					if self.board.getKing(Color.invert(self.color)).position in [z.new_position for z in self.board.generateKnightMoves(x.new_position, self.color)]:
+					moves_ = []
+					for z in self.board.generateKnightMoves(x.new_position, self.color):
+						moves_.append(z.new_position)
+					if self.board.getKing(Color.invert(self.color)).position in moves_:
 						x.name += "+"
 						x.check = True
 				elif self.piece_type == PieceEnum.bishop:
-					if self.board.getKing(Color.invert(self.color)).position in [z.new_position for z in self.board.generateBishopMoves(x.new_position, self.color)]:
+					moves_ = []
+					for z in self.board.generateBishopMoves(x.new_position, self.color):
+						moves_.append(z.new_position)
+					if self.board.getKing(Color.invert(self.color)).position in moves_:
 						x.name += "+"
 						x.check = True
 				elif self.piece_type == PieceEnum.rook:
-					if self.board.getKing(Color.invert(self.color)).position in [z.new_position for z in self.board.generateRookMoves(x.new_position, self.color)]:
+					moves_ = []
+					for z in self.board.generateRookMoves(x.new_position, self.color):
+						moves_.append(z.new_position)
+					if self.board.getKing(Color.invert(self.color)).position in moves_:
 						x.name += "+"
 						x.check = True
 				elif self.piece_type == PieceEnum.queen:
-					if self.board.getKing(Color.invert(self.color)).position in [z.new_position for z in self.board.generateQueenMoves(x.new_position, self.color)]:
+					moves_ = []
+					for z in self.board.generateQueenMoves(x.new_position, self.color):
+						moves_.append(z.new_position)
+					if self.board.getKing(Color.invert(self.color)).position in moves_:
 						x.name += "+"
 						x.check = True
 			if show_data:
@@ -471,7 +597,15 @@ class Piece:
 
 	def __eq__(self, other):
 		if isinstance(other, Piece):
-			return {x: y for x, y in vars(self).items() if x != "board"} == {x: y for x, y in vars(other).items() if x != "board"}
+			other_vars = {}
+			for x, y in vars(other).items():
+				if x != "board":
+					other_vars[x] = y
+			this_vars = {}
+			for x, y in vars(self).items():
+				if x != "board":
+					this_vars[x] = y
+			return other_vars == this_vars
 		return False
 
 	def __unicode__(self):
@@ -496,7 +630,10 @@ class Game:
 		self.opening = ""  # Opening
 		self.evaluate_openings = evaluate_openings
 		self.squares, self.pieces = [], []  # Pieces and squares
-		self.squares_hashtable = {(x + str(y)): False for x in "abcdefgh" for y in range(1, 9)}  # Squares hashtable
+		self.squares_hashtable = {}  # Squares hashtable
+		for x in "abcdefgh":
+			for y in range(1, 9):
+				self.squares_hashtable[x + str(y)] = False
 		self.in_check = False  # False if neither side is in check, Color.white if white is in check, otherwise Color.black if black is in check
 		self.game_over = False
 		self.is_checkmate = False
@@ -506,7 +643,8 @@ class Game:
 		self.white_king = self.black_king = None
 		# Append squares
 		for x in range(8):
-			self.squares.append([Square([x, y], self) for y in range(8)])
+			for y in range(8):
+				self.squares.append(Square([x, y], self))
 		self.raise_errors = raise_errors  # Raise errors
 		# Load FEN-specific values
 		self.loadFEN(fen, evaluate_opening=fen != "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1")
@@ -517,16 +655,34 @@ class Game:
 		if not functions.FENvalid(fen):
 			self.error(errors.InvalidFEN(fen))
 			return False
+		self.positions = [fen]  # Set positions variable
 		self.starting_fen = fen  # Set the starting FEN
 		# Reset self.pieces
 		if self.pieces:
 			self.pieces = []
-		self.captured_piece = sum([int(not unicode(y).isnumeric()) for x in fen.split(" ")[0].split("/") for y in x]) < 32  # If a piece has been captured
-		self.turn = Color.white if fen.split(" ")[-5].lower() == "w" else Color.black  # The side to move
+		# If a piece has been captured
+		captured_piece = 0
+		for x in fen.split(" ")[0].split("/"):
+			for y in x:
+				captured_piece += int(not unicode(y).isnumeric())
+		self.captured_piece = captured_piece < 32
+		# The side to move
+		if fen.split(" ")[-5].lower() == "w":
+			self.turn = Color.white
+		else:
+			self.turn = Color.black
 		self.half_moves = int(fen.split(" ")[-2])  # Halfmove clock
 		self.full_moves = int(fen.split(" ")[-1])  # Fullmove clock
-		self.castling_rights = fen.split(" ")[2] if fen.split(" ")[2] != "-" else None  # Castling rights
-		self.en_passant_positions = fen.split(" ")[3] if fen.split(" ")[3] != "-" else None  # En passant pawns
+		# Castling rights
+		if fen.split(" ")[2] != "-":
+			self.castling_rights = fen.split(" ")[2]
+		else:
+			self.castling_rights = None
+		# En passant pawns
+		if fen.split(" ")[3] != "-":
+			self.en_passant_positions = fen.split(" ")[3]
+		else:
+			self.en_passant_positions = None
 		# Add pieces
 		for i, j in enumerate(functions.splitNumbers(fen.split(" ")[0]).split("/")):
 			for x, y in enumerate(j):
@@ -758,6 +914,8 @@ class Game:
 					self.is_stalemate = True
 					self.tags["Result"] = "1/2-1/2"
 
+			self.positions.append(self.FEN())  # Append the current FEN to the positions list
+
 			return move  # Return the applied move
 
 		if not isinstance(move, str):  # If move is not a string, raise an error and return False
@@ -889,6 +1047,8 @@ class Game:
 				self.drawn = True
 				self.is_stalemate = True
 				self.tags["Result"] = "1/2-1/2"
+
+		self.positions.append(self.FEN())  # Append the current FEN to the positions list
 
 		return move_data  # Return the move data (Move object)
 
@@ -1023,6 +1183,9 @@ class Game:
 		else:
 			self.updateOpening()
 
+		# Update self.positions list
+		self.positions.pop()
+
 	def updateOpening(self):
 		"""Updates the opening if evaluate_openings is True"""
 		if self.evaluate_openings:
@@ -1099,10 +1262,49 @@ class Game:
 		if empty_squares == "":
 			empty_squares = " "
 		empty_squares = empty_squares[0]
+		squares = []
+		string = ""
+		for x in range(8):
+			string += "\n"
+			if separators:
+				if use_unicode:
+					string += "---------------------------------\n"
+				else:
+					string += "-----------------------------------------\n"
+			for y in range(8):
+				if self.pieceAt(functions.indexToCoordinate([x, y])):
+					if separators:
+						if use_unicode:
+							string += "| " + PieceEnum.unicode(self.pieceAt(functions.indexToCoordinate([x, y])).piece_type, self.pieceAt(functions.indexToCoordinate([x, y])).color) + " "
+						else:
+							string += "| " + str(self.pieceAt(functions.indexToCoordinate([x, y])).color[0]).upper() + {"pawn": "P", "knight": "N", "bishop": "B", "rook": "R", "queen": "Q", "king": "K"}[self.pieceAt(functions.indexToCoordinate([x, y])).piece_type] + " "
+					else:
+						if use_unicode:
+							string += PieceEnum.unicode(self.pieceAt(functions.indexToCoordinate([x, y])).piece_type, self.pieceAt(functions.indexToCoordinate([x, y])).color) + " "
+						else:
+							string += str(self.pieceAt(functions.indexToCoordinate([x, y])).color[0]).upper() + {"pawn": "P", "knight": "N", "bishop": "B", "rook": "R", "queen": "Q", "king": "K"}[self.pieceAt(functions.indexToCoordinate([x, y])).piece_type] + " "
+				else:
+					if separators:
+						if use_unicode:
+							string += "| " + empty_squares + " "
+						else:
+							string += "|  " + empty_squares + " "
+					else:
+						if use_unicode:
+							string += empty_squares + " "
+						else:
+							string += " " + empty_squares + " "
+			if separators:
+				string += "|"
+		if separators:
+			if use_unicode:
+				string += "\n---------------------------------"
+			else:
+				string += "\n-----------------------------------------"
 		if print_result:
-			print((("---------------------------------\n| " if use_unicode else "-----------------------------------------\n| ") + (" |\n---------------------------------\n| " if use_unicode else " |\n-----------------------------------------\n| ").join(" | ".join([y + ((empty_squares if use_unicode else empty_squares + " ") if y == "" else "") for y in x]) for x in [["".join([((PieceEnum.unicode(z.piece_type, z.color)) if use_unicode else (z.color[0].upper() + (z.piece_type[0].upper() if z.piece_type != "knight" else "N"))) if functions.coordinateToIndex(z.position) == [x, y] else "" for z in self.pieces]) for y in range(len(self.squares[x]))] for x in range(len(self.squares))]) + (" |\n---------------------------------" if use_unicode else " |\n-----------------------------------------")) if separators else ("\n".join(" ".join([y + ((empty_squares if use_unicode else empty_squares + " ") if y == "" else "") for y in x]) for x in [["".join([((PieceEnum.unicode(z.piece_type, z.color)) if use_unicode else (z.color[0].upper() + (z.piece_type[0].upper() if z.piece_type != "knight" else "N"))) if functions.coordinateToIndex(z.position) == [x, y] else "" for z in self.pieces]) for y in range(len(self.squares[x]))] for x in range(len(self.squares))])))
+			print(string)
 		else:
-			return (("---------------------------------\n| " if use_unicode else "-----------------------------------------\n| ") + (" |\n---------------------------------\n| " if use_unicode else " |\n-----------------------------------------\n| ").join(" | ".join([y + ((empty_squares if use_unicode else empty_squares + " ") if y == "" else "") for y in x]) for x in [["".join([((PieceEnum.unicode(z.piece_type, z.color)) if use_unicode else (z.color[0].upper() + (z.piece_type[0].upper() if z.piece_type != "knight" else "N"))) if functions.coordinateToIndex(z.position) == [x, y] else "" for z in self.pieces]) for y in range(len(self.squares[x]))] for x in range(len(self.squares))]) + (" |\n---------------------------------" if use_unicode else " |\n-----------------------------------------")) if separators else ("\n".join(" ".join([y + ((empty_squares if use_unicode else empty_squares + " ") if y == "" else "") for y in x]) for x in [["".join([((PieceEnum.unicode(z.piece_type, z.color)) if use_unicode else (z.color[0].upper() + (z.piece_type[0].upper() if z.piece_type != "knight" else "N"))) if functions.coordinateToIndex(z.position) == [x, y] else "" for z in self.pieces]) for y in range(len(self.squares[x]))] for x in range(len(self.squares))]))
+			return string
 
 	def generatePawnMoves(self, position, color, return_all=False, piece=None):
 		moves = []
