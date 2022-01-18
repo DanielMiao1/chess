@@ -1927,7 +1927,7 @@ class Game:
 								valid = False
 								break
 						if valid:
-							moves.append(Move("O-O-O", position, "c" + position[1], piece=self, castle=Castle.queenside, castle_rook=x))
+							moves.append(Move("O-O-O", position, "c" + position[1], piece=piece, castle=Castle.queenside, castle_rook=x))
 						else:
 							valid = True
 							continue

@@ -86,19 +86,19 @@ def toSAN(move, game):
 		if move[2] == "x" and coordinateValid(move[:2].lower()) and coordinateValid(move[3:].lower()):
 			if game.pieceAt(move[:2].lower()) is None:  # If the piece is not found, return move
 				return move + extra_characters
-			if game.pieceAt(move[:2].lower()).piece_type[0] == "pawn":  # If the piece is a pawn
+			if game.pieceAt(move[:2].lower()).piece_type == "pawn":  # If the piece is a pawn
 				return move[0] + "x" + move[3:] + extra_characters
 			else:
-				return {"knight": "N", "bishop": "B", "rook": "R", "queen": "Q", "king": "K"}[game.pieceAt(move[:2].lower()).piece_type[0]] + "x" + move[3:] + extra_characters
+				return {"knight": "N", "bishop": "B", "rook": "R", "queen": "Q", "king": "K"}[game.pieceAt(move[:2].lower()).piece_type] + "x" + move[3:] + extra_characters
 	if len(move) == 4:  # Check if the move is not a capture (e.g. e2e4)
 		# If the first two (move[:2]) and last two (move[2:]) characters are coordinates
 		if coordinateValid(move[:2].lower()) and coordinateValid(move[2:].lower()):
 			if game.pieceAt(move[:2].lower()) is None:  # If the piece is not found, return move
 				return move + extra_characters
-			if game.pieceAt(move[:2].lower()).piece_type[0] == "pawn":  # If the piece is a pawn
+			if game.pieceAt(move[:2].lower()).piece_type == "pawn":  # If the piece is a pawn
 				return move[2:] + extra_characters
 			else:  # Otherwise
-				return {"knight": "N", "bishop": "B", "rook": "R", "queen": "Q", "king": "K"}[game.pieceAt(move[:2].lower()).piece_type[0]] + move[2:] + extra_characters
+				return {"knight": "N", "bishop": "B", "rook": "R", "queen": "Q", "king": "K"}[game.pieceAt(move[:2].lower()).piece_type] + move[2:] + extra_characters
 
 	return move + extra_characters
 
