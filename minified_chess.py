@@ -3573,20 +3573,20 @@ class functions:
 			if move[2] == "x" and coordinateValid(move[:2].lower()) and coordinateValid(move[3:].lower()):
 				if game.pieceAt(move[:2].lower()) is None:  # If the piece is not found, return move
 					return move + extra_characters
-				if game.pieceAt(move[:2].lower()).piece_type[0] == "pawn":  # If the piece is a pawn
+				if game.pieceAt(move[:2].lower()).piece_type == "pawn":  # If the piece is a pawn
 					return move[0] + "x" + move[3:] + extra_characters
 				else:
-					return {"knight": "N", "bishop": "B", "rook": "R", "queen": "Q", "king": "K"}[game.pieceAt(move[:2].lower()).piece_type[0]] + "x" + move[3:] + extra_characters
+					return {"knight": "N", "bishop": "B", "rook": "R", "queen": "Q", "king": "K"}[game.pieceAt(move[:2].lower()).piece_type] + "x" + move[3:] + extra_characters
 		if len(move) == 4:  # Check if the move is not a capture (e.g. e2e4)
 			# If the first two (move[:2]) and last two (move[2:]) characters are coordinates
 			if coordinateValid(move[:2].lower()) and coordinateValid(move[2:].lower()):
 				if game.pieceAt(move[:2].lower()) is None:  # If the piece is not found, return move
 					return move + extra_characters
-				if game.pieceAt(move[:2].lower()).piece_type[0] == "pawn":  # If the piece is a pawn
+				if game.pieceAt(move[:2].lower()).piece_type == "pawn":  # If the piece is a pawn
 					return move[2:] + extra_characters
 				else:  # Otherwise
-					return {"knight": "N", "bishop": "B", "rook": "R", "queen": "Q", "king": "K"}[game.pieceAt(move[:2].lower()).piece_type[0]] + move[2:] + extra_characters
-
+					return {"knight": "N", "bishop": "B", "rook": "R", "queen": "Q", "king": "K"}[game.pieceAt(move[:2].lower()).piece_type] + move[2:] + extra_characters
+	
 		return move + extra_characters
 
 	@staticmethod
@@ -4258,8 +4258,10 @@ class Game:
 		self.white_king = self.black_king = None
 		# Append squares
 		for x in range(8):
+			row = []
 			for y in range(8):
-				self.squares.append(Square([x, y], self))
+				row.append(Square([x, y], self))
+			self.squares.append(row)
 		self.raise_errors = raise_errors  # Raise errors
 		# Load FEN-specific values
 		self.loadFEN(fen, evaluate_opening=fen != "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1")
@@ -4270,6 +4272,7 @@ class Game:
 		if not functions.FENvalid(fen):
 			self.error(errors.InvalidFEN(fen))
 			return False
+		self.positions = [fen]  # Set positions variable
 		self.starting_fen = fen  # Set the starting FEN
 		# Reset self.pieces
 		if self.pieces:
@@ -4528,6 +4531,8 @@ class Game:
 					self.is_stalemate = True
 					self.tags["Result"] = "1/2-1/2"
 
+			self.positions.append(self.FEN())  # Append the current FEN to the positions list
+
 			return move  # Return the applied move
 
 		if not isinstance(move, str):  # If move is not a string, raise an error and return False
@@ -4659,6 +4664,8 @@ class Game:
 				self.drawn = True
 				self.is_stalemate = True
 				self.tags["Result"] = "1/2-1/2"
+
+		self.positions.append(self.FEN())  # Append the current FEN to the positions list
 
 		return move_data  # Return the move data (Move object)
 
@@ -4792,6 +4799,9 @@ class Game:
 			self.opening = ""
 		else:
 			self.updateOpening()
+
+		# Update self.positions list
+		self.positions.pop()
 
 	def updateOpening(self):
 		"""Updates the opening if evaluate_openings is True"""
