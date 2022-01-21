@@ -803,200 +803,86 @@ class Game:
 		return Line(self.checking_piece.position, self.getKing(self.in_check).position, jump=self.checking_piece.piece_type == PieceEnum.knight)
 
 	def move(self, move, evaluate_checks=True, evaluate_opening=True, evaluate_move_checks=True, evaluate_move_checkmate=True):
-		"""Moves the specified move, if possible"""
-		if isinstance(move, Move):  # If move is a Move object
-			if move.is_capture:  # If the move is a capture
-				self.pieces.remove(self.squares_hashtable[move.new_position])  # Remove the captured piece from the list of pieces
-				# Update the hashtable
-				self.squares_hashtable[move.new_position] = move.piece
-				self.squares_hashtable[move.old_position] = False
-				if not self.captured_piece:
-					self.captured_piece = True  # Set captured piece to True
-			else:
-				self.squares_hashtable[move.piece.position], self.squares_hashtable[move.new_position] = self.squares_hashtable[move.new_position], self.squares_hashtable[move.piece.position]  # Move the piece in the hashtable
-			move.piece.position = move.new_position  # Move the position of the piece to the new position
-			move.piece.moved = True
-
-			if move.castle_rook:  # If the move is a castle
-				move.castle_rook.moved = True
-				if move.castle == Castle.kingside:  # Kingside castling
-					# Move the rook's position to the f-file
-					self.squares_hashtable[move.castle_rook.position], self.squares_hashtable["f" + move.castle_rook.position[1]] = self.squares_hashtable["f" + move.castle_rook.position[1]], self.squares_hashtable[move.castle_rook.position]
-					move.castle_rook.position = "f" + move.castle_rook.position[1]
-				else:  # Queenside castling
-					# Move the rook's position to the d-file
-					self.squares_hashtable[move.castle_rook.position], self.squares_hashtable["d" + move.castle_rook.position[1]] = self.squares_hashtable["d" + move.castle_rook.position[1]], self.squares_hashtable[move.castle_rook.position]
-					move.castle_rook.position = "d" + move.castle_rook.position[1]
-
-			# Reset piece giving check
-			self.checking_piece = None
-
-			# Reset en passant positions
-			self.en_passant_positions = None
-			for i in self.pieces:
-				i.en_passant = False
-
-			if move.double_pawn_move:  # If the move is a double pawn push
-				move.piece.en_passant = True  # Enable en passant for the piece
-				self.en_passant_positions = move.new_position[0] + str(int(move.new_position[1]) - (1 if move.piece.color == Color.white else -1))  # Append position to en passant positions
-
-			if move.en_passant:  # If the move is an en passant capture
-				# Remove captured pawn
-				self.pieces.remove(self.squares_hashtable[move.en_passant_position])
-				self.squares_hashtable[move.en_passant_position] = False
-				self.captured_piece = True
-
-			if self.castling_rights is not None and move.piece.piece_type == PieceEnum.king:  # If the king moved
-				if move.piece.color == Color.white:  # If the king is white
-					self.castling_rights = self.castling_rights.replace("K", "").replace("Q", "")  # Disable white castling
-				else:  # If the king is black
-					self.castling_rights = self.castling_rights.replace("k", "").replace("q", "")  # Disable black castling
-
-				if self.castling_rights == "":  # If the castling rights variable becomes an empty string
-					self.castling_rights = None  # Set the variable to None
-
-			if self.castling_rights is not None and move.piece.piece_type == PieceEnum.rook:  # If the rook moved
-				if move.old_position == "a1":  # If the rook was on a1
-					self.castling_rights = self.castling_rights.replace("Q", "")  # Disable white queenside castling
-				elif move.old_position == "a8":  # If the rook was on a8
-					self.castling_rights = self.castling_rights.replace("q", "")  # Disable black queenside castling
-				elif move.old_position == "h1":  # If the rook was on h1
-					self.castling_rights = self.castling_rights.replace("K", "")  # Disable white kingside castling
-				elif move.old_position == "h8":  # If the rook was on h8
-					self.castling_rights = self.castling_rights.replace("k", "")  # Disable black kingside castling
-
-			if move.promotion:
-				move.piece.piece_type = self.properties["promotions"][move.promotion]
-
-			self.raw_move_list.append(move)  # Append move to the raw move list
-
-			if self.in_check:  # If a king was in check before this move
-				# This move must have gotten out of check
-				self.in_check = False
-				self.checking_piece = None
-			else:  # Otherwise
-				if evaluate_checks:  # If the evaluate_checks parameter is True
-					if any([True for i in self.legal_moves(show_data=True, color=self.turn, evaluate_checks=evaluate_move_checks, evaluate_checkmate=evaluate_move_checkmate) if i.new_position == self.pieceType(PieceEnum.king, color=Color.invert(self.turn))[0].position]):  # If the king can be captured
-						move.name += "+"  # Append a check symbol to the end of the move
-						self.in_check = Color.invert(self.turn)  # Set in_check variable
-						self.checking_piece = move.piece
-					else:  # Otherwise
-						self.in_check = False  # Set in_check to False
-						self.checking_piece = None  # Reset piece giving check
-
-			if self.turn == Color.white:  # If white moved
-				# Add move to move list
-				if self.move_list == "":  # If there has not been any moves
-					self.move_list += "1. " + move.name
-				else:  # Otherwise
-					self.move_list += " " + str(int(self.move_list.split(" ")[-3][0]) + 1) + ". " + move.name
-			else:  # If black moved
-				if self.move_list == "":  # Check for custom FENs
-					self.move_list += "1. ... " + move.name  # Add move to move list
-				else:
-					self.move_list += " " + move.name  # Add move to move list
-				self.full_moves += 1  # Increase fullmove counter
-			# Calculate halfmove counter
-			if move.is_capture or move.piece.piece_type == PieceEnum.pawn:  # Reset halfmove counter if the move is a pawn move or a capture
-				self.half_moves = 0
-			else:  # Otherwise, increase the halfmove counter by 1
-				self.half_moves += 1
-			self.turn = Color.invert(self.turn)  # Invert turn
-			# Get opening
-			if evaluate_opening:
-				self.updateOpening()
-
-			if not self.legal_moves(evaluate_checks=evaluate_move_checks, evaluate_checkmate=evaluate_move_checkmate):
-				self.game_over = True
-				if self.in_check:
-					self.is_checkmate = True
-					self.tags["Result"] = "1-0" if self.turn == Color.black else "0-1"
-				else:
-					self.drawn = True
-					self.is_stalemate = True
-					self.tags["Result"] = "1/2-1/2"
-
-			self.positions.append(self.FEN())  # Append the current FEN to the positions list
-
-			return move  # Return the applied move
-
-		if not isinstance(move, str):  # If move is not a string, raise an error and return False
+		"""Moves the specified move if it is legal"""
+		move_data = None
+		if isinstance(move, str):
+			# Iterate through the legal moves
+			legal_moves = self.legal_moves(show_data=True, evaluate_checks=evaluate_move_checks, evaluate_checkmate=evaluate_move_checkmate)  # Store legal moves in legal_moves variable
+			for i in legal_moves:
+				if i.name == move:  # If the name of the current move is the move specified
+					move_data = i  # Set move_data equal to the current move
+					break  # Break from the loop
+			if " " in move:
+				for i in move.split(" ")[:-1]:
+					self.move(i, evaluate_checks=False, evaluate_move_checks=False, evaluate_opening=False)
+				move = move.split(" ")[-1]
+			move = functions.toSAN(move, self)  # Convert to SAN
+		elif isinstance(move, Move):
+			move_data = move
+			move = move.name
+		else:  # If move is not a valid type, raise an error and return False
 			self.error(errors.InvalidMove(move))
 			return False
 
-		if " " in move:
-			for i in move.split(" ")[:-1]:
-				self.move(i, evaluate_checks=False, evaluate_move_checks=False, evaluate_opening=False)
-			move = move.split(" ")[-1]
+		if move_data.is_capture:  # If the move is a capture
+			# Remove the captured piece
+			self.pieces.remove(self.squares_hashtable[move_data.new_position])
+			self.squares_hashtable[move_data.new_position] = False
+			self.captured_piece = True
 
-		move = functions.toSAN(move, self)  # Convert to SAN
-		legal_moves = self.legal_moves(show_data=True, evaluate_checks=evaluate_move_checks, evaluate_checkmate=evaluate_move_checkmate)  # Store legal moves in legal_moves variable
-		move_data = None
+		self.squares_hashtable[move_data.piece.position], self.squares_hashtable[move_data.new_position] = self.squares_hashtable[move_data.new_position], self.squares_hashtable[move_data.piece.position]
+		move_data.piece.position = move_data.new_position
+		move_data.piece.moved = True
+		if move_data.castle_rook:  # If the move is a castle
+			move_data.castle_rook.moved = True
+			if move_data.castle == Castle.kingside:  # Kingside castling
+				# Move the rook's position to the f-file
+				self.squares_hashtable[move_data.castle_rook.position], self.squares_hashtable["f" + move_data.castle_rook.position[1]] = self.squares_hashtable["f" + move_data.castle_rook.position[1]], self.squares_hashtable[move_data.castle_rook.position]
+				move_data.castle_rook.position = "f" + move_data.castle_rook.position[1]
+			else:  # Queenside castling
+				# Move the rook's position to the d-file
+				self.squares_hashtable[move_data.castle_rook.position], self.squares_hashtable["d" + move_data.castle_rook.position[1]] = self.squares_hashtable["d" + move_data.castle_rook.position[1]], self.squares_hashtable[move_data.castle_rook.position]
+				move_data.castle_rook.position = "d" + move_data.castle_rook.position[1]
 
-		# Iterate through the legal moves
-		for i in legal_moves:
-			if i.name == move:  # If the name of the current move is the move specified
-				move_data = i  # Set move_data equal to the current move
-				if i.is_capture:  # If the move is a capture
-					# Remove the captured piece
-					self.pieces.remove(self.squares_hashtable[i.new_position])
-					self.squares_hashtable[i.new_position] = False
-					self.captured_piece = True
+		# Clear en passant positions
+		self.en_passant_positions = None
+		for x in self.pieces:
+			x.en_passant = False
 
-				self.squares_hashtable[i.piece.position], self.squares_hashtable[i.new_position] = self.squares_hashtable[i.new_position], self.squares_hashtable[i.piece.position]
-				i.piece.position = i.new_position
-				i.piece.moved = True
-				if i.castle_rook:  # If the move is a castle
-					i.castle_rook.moved = True
-					if i.castle == Castle.kingside:  # Kingside castling
-						# Move the rook's position to the f-file
-						self.squares_hashtable[i.castle_rook.position], self.squares_hashtable["f" + i.castle_rook.position[1]] = self.squares_hashtable["f" + i.castle_rook.position[1]], self.squares_hashtable[i.castle_rook.position]
-						i.castle_rook.position = "f" + i.castle_rook.position[1]
-					else:  # Queenside castling
-						# Move the rook's position to the d-file
-						self.squares_hashtable[i.castle_rook.position], self.squares_hashtable["d" + i.castle_rook.position[1]] = self.squares_hashtable["d" + i.castle_rook.position[1]], self.squares_hashtable[i.castle_rook.position]
-						i.castle_rook.position = "d" + i.castle_rook.position[1]
+		# If the move was a double pawn push
+		if move_data.double_pawn_move:
+			move_data.piece.en_passant = True  # Set en_passant variable of moved piece to true
+			self.en_passant_positions = move_data.new_position[0] + str(int(move_data.new_position[1]) - (1 if move_data.piece.color == Color.white else -1))  # Append en passant position to en_passant_positions variable
 
-				# Clear en passant positions
-				self.en_passant_positions = None
-				for x in self.pieces:
-					x.en_passant = False
+		# If the move was an en passant capture
+		if move_data.en_passant:
+			# Remove the captured piece
+			self.pieces.remove(self.squares_hashtable[move_data.en_passant_position])
+			self.squares_hashtable[move_data.en_passant_position] = False
+			self.captured_piece = True
 
-				# If the move was a double pawn push
-				if i.double_pawn_move:
-					i.piece.en_passant = True  # Set en_passant variable of moved piece to true
-					self.en_passant_positions = i.new_position[0] + str(int(i.new_position[1]) - (1 if i.piece.color == Color.white else -1))  # Append en passant position to en_passant_positions variable
+		if self.castling_rights is not None and move_data.piece.piece_type == PieceEnum.king:  # If the piece moved was a king
+			if move_data.piece.color == Color.white:  # If moved side is white
+				self.castling_rights = self.castling_rights.replace("K", "").replace("Q", "")  # Disable white castling
+			else:  # Otherwise (if moved side is black)
+				self.castling_rights = self.castling_rights.replace("k", "").replace("q", "")  # Disable black castling
+			if self.castling_rights == "":  # If the castling_rights variable is now an empty string
+				self.castling_rights = None  # Set the castling_rights variable to None
 
-				# If the move was an en passant capture
-				if i.en_passant:
-					# Remove the captured piece
-					self.pieces.remove(self.squares_hashtable[i.en_passant_position])
-					self.squares_hashtable[i.en_passant_position] = False
-					self.captured_piece = True
+		if self.castling_rights is not None and move_data.piece.piece_type == PieceEnum.rook:  # If the piece moved was a rook
+			if move_data.old_position == "a1":  # If the rook was on a1
+				self.castling_rights = self.castling_rights.replace("Q", "")  # Disable white queenside castling
+			elif move_data.old_position == "a8":  # If the rook was on a8
+				self.castling_rights = self.castling_rights.replace("q", "")  # Disable black queenside castling
+			elif move_data.old_position == "h1":  # If the rook was on h1
+				self.castling_rights = self.castling_rights.replace("K", "")  # Disable white kingside castling
+			elif move_data.old_position == "h8":  # If the rook was on h8
+				self.castling_rights = self.castling_rights.replace("k", "")  # Disable black kingside castling
 
-				if self.castling_rights is not None and i.piece.piece_type == PieceEnum.king:  # If the piece moved was a king
-					if i.piece.color == Color.white:  # If moved side is white
-						self.castling_rights = self.castling_rights.replace("K", "").replace("Q", "")  # Disable white castling
-					else:  # Otherwise (if moved side is black)
-						self.castling_rights = self.castling_rights.replace("k", "").replace("q", "")  # Disable black castling
-					if self.castling_rights == "":  # If the castling_rights variable is now an empty string
-						self.castling_rights = None  # Set the castling_rights variable to None
+		if move_data.promotion:
+			move_data.piece.piece_type = self.properties["promotions"][move_data.promotion]
 
-				if self.castling_rights is not None and i.piece.piece_type == PieceEnum.rook:  # If the piece moved was a rook
-					if i.old_position == "a1":  # If the rook was on a1
-						self.castling_rights = self.castling_rights.replace("Q", "")  # Disable white queenside castling
-					elif i.old_position == "a8":  # If the rook was on a8
-						self.castling_rights = self.castling_rights.replace("q", "")  # Disable black queenside castling
-					elif i.old_position == "h1":  # If the rook was on h1
-						self.castling_rights = self.castling_rights.replace("K", "")  # Disable white kingside castling
-					elif i.old_position == "h8":  # If the rook was on h8
-						self.castling_rights = self.castling_rights.replace("k", "")  # Disable black kingside castling
-
-				if i.promotion:
-					i.piece.piece_type = self.properties["promotions"][i.promotion]
-
-				self.raw_move_list.append(i)  # Append the move to the raw_move_list list
-				break  # Break from the loop
+		self.raw_move_list.append(move_data)  # Append the move to the raw_move_list list
 
 		if move_data is None:  # If move_data is None (no move was found), raise an error and return False
 			self.error(errors.MoveNotPossible(move))
