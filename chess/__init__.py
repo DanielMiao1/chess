@@ -16,10 +16,17 @@ class Color:
 
 	@staticmethod
 	def all():
-		return [Color.white, Color.black]
+		"""
+		:return: Iterable[str]
+		"""
+		return Color.white, Color.black
 
 	@staticmethod
 	def invert(color):
+		"""
+		:type color: Any
+		:return: str
+		"""
 		if not Color.valid(color):
 			raise errors.UndefinedColor(color)
 		elif Color.isWhite(color):
@@ -29,14 +36,26 @@ class Color:
 
 	@staticmethod
 	def valid(color):
+		"""
+		:type color: Any
+		:return: bool
+		"""
 		return color in Color.all()
 
 	@staticmethod
 	def isWhite(color):
+		"""
+		:type color: Any
+		:return: bool
+		"""
 		return color in [Color.white, "w"]
 
 	@staticmethod
 	def isBlack(color):
+		"""
+		:type color: Any
+		:return: bool
+		"""
 		return color in [Color.black, "b"]
 
 
@@ -66,20 +85,30 @@ class PieceEnum:
 
 	@staticmethod
 	def all():
-		return [PieceEnum.pawn, PieceEnum.knight, PieceEnum.bishop, PieceEnum.rook, PieceEnum.queen, PieceEnum.king]
+		"""
+		:return: Iterable[str]
+		"""
+		return PieceEnum.pawn, PieceEnum.knight, PieceEnum.bishop, PieceEnum.rook, PieceEnum.queen, PieceEnum.king
 
 	@staticmethod
 	def unicode(piece, color="white"):
+		"""
+		:type piece: str
+		:type color: str
+		:return: str
+		"""
 		if not PieceEnum.valid(piece):
 			raise errors.UndefinedPiece(piece)
-			return False
 		if not Color.valid(color):
 			raise errors.UndefinedColor(color)
-			return False
 		return PieceEnum.unicode_dictionary[color + piece]
 
 	@staticmethod
 	def value(piece):
+		"""
+		:type piece: Piece | str
+		:return: int | float
+		"""
 		try:
 			piece = piece.piece_type
 		except AttributeError:
@@ -90,6 +119,13 @@ class PieceEnum:
 
 	@staticmethod
 	def evaluate_piece_position(piece, position, color, game_phase):
+		"""
+		:type piece: str
+		:type position: str
+		:type color: str
+		:type game_phase: str
+		:return: int
+		"""
 		if not Phase.valid(game_phase):
 			raise errors.UndefinedGamePhase(game_phase)
 		if not PieceEnum.valid(piece):
@@ -106,6 +142,10 @@ class PieceEnum:
 
 	@staticmethod
 	def valid(piece):
+		"""
+		:type piece: Any
+		:return: bool
+		"""
 		return piece in PieceEnum.all()
 
 
@@ -114,10 +154,17 @@ class Phase:
 
 	@staticmethod
 	def all():
-		return [Phase.opening, Phase.middlegame, Phase.endgame]
+		"""
+		:return: Iterable[str]
+		"""
+		return Phase.opening, Phase.middlegame, Phase.endgame
 
 	@staticmethod
 	def valid(phase):
+		"""
+		:type phase: Any
+		:return: bool
+		"""
 		return phase in Phase.all()
 
 
@@ -126,10 +173,17 @@ class Castle:
 
 	@staticmethod
 	def all():
-		return [Castle.kingside, Castle.queenside]
+		"""
+		:return: Iterable[str]
+		"""
+		return Castle.kingside, Castle.queenside
 
 	@staticmethod
 	def valid(castle):
+		"""
+		:type castle: Any
+		:return: bool
+		"""
 		return castle in Castle.all()
 
 
@@ -138,15 +192,37 @@ class Stop:
 
 	@staticmethod
 	def all():
-		return [Stop.never, Stop.capture_piece, Stop.no_capture, Stop.piece]
+		"""
+		:return: Iterable[str]
+		"""
+		return Stop.never, Stop.capture_piece, Stop.no_capture, Stop.piece
 
 	@staticmethod
 	def valid(stop):
+		"""
+		:type stop: Any
+		:return: bool
+		"""
 		return stop in Stop.all()
 
 
 class Move:
 	def __init__(self, name, old_position, new_position, piece, is_capture=False, check=False, castle=None, castle_rook=None, double_pawn_move=False, en_passant=False, en_passant_position=None, promotion=False):
+		"""
+		:type name: str
+		:type old_position: str
+		:type new_position: str
+		:type piece: Piece | None
+		:type is_capture: bool
+		:type check: bool
+		:type castle: str | None
+		:type castle_rook: Piece | None
+		:type double_pawn_move: bool
+		:type en_passant: bool
+		:type en_passant_position: str | None
+		:type promotion: bool
+		:return: None
+		"""
 		self.piece = piece
 		self.name = name
 		self.old_position, self.new_position = old_position, new_position
@@ -164,10 +240,19 @@ class Move:
 			self.captured_piece = None
 
 	def visualized(self, print_result=False, empty_squares=" ", separators=True, old_position_symbol="□", new_position_symbol="■", capture_symbol="X"):
+		"""
+		Returns or prints a string representation of the move
+		:type print_result: bool
+		:type empty_squares: str
+		:type separators: bool
+		:type old_position_symbol: str
+		:type new_position_symbol: str
+		:type capture_symbol: str
+		:return: str | None
+		"""
 		if empty_squares == "":
 			empty_squares = " "
 		empty_squares = empty_squares[0]
-		squares = []
 		string = ""
 		for x in range(8):
 			string += "\n"
@@ -204,14 +289,28 @@ class Move:
 			return string
 
 	def __str__(self, *args, **kwargs):
+		"""
+		:type args: Any
+		:type kwargs: Any
+		:return: str
+		"""
 		return str(self.name)
 
 	def __repr__(self, *args, **kwargs):
+		"""
+		:type args: Any
+		:type kwargs: Any
+		:return: str
+		"""
 		return str(self.name)
 
 
 class MoveSet:
 	def __init__(self, *moves):
+		"""
+		:type moves: *Iterable[Move]
+		:return: None
+		"""
 		if len(moves) == 1 and isinstance(moves[0], (list, set, tuple)):
 			self.moves = []
 			for i in list(moves[0]):
@@ -224,10 +323,19 @@ class MoveSet:
 					self.moves.append(i)
 
 	def visualized(self, print_result=False, empty_squares=" ", separators=True, old_position_symbol="□", new_position_symbol="■", capture_symbol="X"):
+		"""
+		Returns or prints a string representation of the moves
+		:type print_result: bool
+		:type empty_squares: str
+		:type separators: bool
+		:type old_position_symbol: str
+		:type new_position_symbol: str
+		:type capture_symbol: str
+		:return: str | None
+		"""
 		if empty_squares == "":
 			empty_squares = " "
 		empty_squares = empty_squares[0]
-		squares = []
 		string = ""
 		for x in range(8):
 			string += "\n"
@@ -265,23 +373,37 @@ class MoveSet:
 			return string
 
 	def old_positions(self):
+		"""
+		:return: List[str]
+		"""
 		positions = []
 		for i in self.moves:
 			positions.append(i.old_position)
 		return positions
 
 	def new_positions(self):
+		"""
+		:return: List[str]
+		"""
 		positions = []
 		for i in self.moves:
 			positions.append(i.new_position)
 		return positions
 
 	def __contains__(self, obj):
+		"""
+		:type obj: Any
+		:return: bool
+		"""
 		if isinstance(obj, Move):
 			return obj in self.moves
 		return False
 
 	def __add__(self, other):
+		"""
+		:type other: Any
+		:return: MoveSet
+		"""
 		if isinstance(other, MoveSet):
 			return MoveSet(self.moves + other.moves)
 		if isinstance(other, Move):
@@ -294,12 +416,24 @@ class MoveSet:
 		return self
 
 	def __radd__(self, other):
+		"""
+		:type other: Any
+		:return: MoveSet
+		"""
 		return self.__add__(other)
 
 	def __iadd__(self, other):
+		"""
+		:type other: Any
+		:return: MoveSet
+		"""
 		return self.__add__(other)
 
 	def __sub__(self, other):
+		"""
+		:type other: Any
+		:return: MoveSet
+		"""
 		if isinstance(other, MoveSet):
 			new_set = MoveSet(self.moves)
 			for i in other.moves:
@@ -320,28 +454,51 @@ class MoveSet:
 		return self
 
 	def __rsub__(self, other):
+		"""
+		:type other: Any
+		:return: MoveSet
+		"""
 		return self.__sub__(other)
 
 	def __isub__(self, other):
+		"""
+		:type other: Any
+		:return: MoveSet
+		"""
 		return self.__sub__(other)
 
 	def __neg__(self):
+		"""
+		:return: MoveSet
+		"""
 		new_set = MoveSet(self.moves)
 		for i in new_set:
 			i.new_position, i.old_position = i.old_position, i.new_position
 		return new_set
 
 	def __pos__(self):
+		"""
+		:return: MoveSet
+		"""
 		return MoveSet(self.moves)
 
 	def __len__(self):
+		"""
+		:return: int
+		"""
 		return len(self.moves)
 
 	def __iter__(self):
+		"""
+		:return: Move
+		"""
 		self.iter_position = 0
 		return self
 
 	def __next__(self):
+		"""
+		:return: Move
+		"""
 		if self.iter_position < len(self.moves):
 			self.iter_position += 1
 			return self.moves[self.iter_position - 1]
@@ -349,6 +506,9 @@ class MoveSet:
 			raise StopIteration
 
 	def next(self):
+		"""
+		:return: Move
+		"""
 		if self.iter_position < len(self.moves):
 			self.iter_position += 1
 			return self.moves[self.iter_position - 1]
@@ -360,6 +520,13 @@ class MoveSet:
 
 class Line:
 	def __init__(self, start, end, jump=False):
+		"""
+		Initialize the line
+		:type start: str
+		:type end: str
+		:type jump: bool
+		:return: None
+		"""
 		self.start_position = start
 		self.end_position = end
 		if not jump:
@@ -413,10 +580,19 @@ class Line:
 			self.positions = []
 
 	def visualized(self, print_result=False, separators=True, empty_squares=" ", line_symbol="●", start_position_symbol="○", end_position_symbol="◎"):
+		"""
+		Returns or prints a string representation of the line
+		:type print_result: bool
+		:type separators: bool
+		:type empty_squares: str
+		:type line_symbol: str
+		:type start_position_symbol: str
+		:type end_position_symbol: str
+		:return: str | None
+		"""
 		if empty_squares == "":
 			empty_squares = " "
 		empty_squares = empty_squares[0]
-		squares = []
 		string = ""
 		for x in range(8):
 			string += "\n"
@@ -453,22 +629,39 @@ class Line:
 			return string
 
 	def __str__(self):
+		"""
+		:return: str
+		"""
 		return self.visualized()
 
 	def __repr__(self):
+		"""
+		:return: str
+		"""
 		return str(self.positions)
 
 	def __unicode__(self):
+		"""
+		:return: str
+		"""
 		return self.visualized()
 
 	def __contains__(self, item):
+		"""
+		:type item: Any
+		:return: bool
+		"""
 		return item in self.positions
 
 
 class Square:
-	"""A square"""
 	def __init__(self, position, board):
-		"""Initialize the square"""
+		"""
+		Initialize the square
+		:type position: List[int]
+		:type board: Game
+		:return: None
+		"""
 		self.position = functions.indexToCoordinate(position)
 		self.board = board
 		if ((position[0] + position[1]) & 1) == 0:
@@ -477,12 +670,22 @@ class Square:
 			self.color = Color.black
 
 	def __str__(self):
+		"""
+		:return: str
+		"""
 		return self.color.title() + " square from " + str(self.board)
 
 	def __eq__(self, other):
+		"""
+		:type other: Any
+		:return: bool
+		"""
 		return self.position == other.position and isinstance(other, Square)
 
 	def __unicode__(self):
+		"""
+		:return: str
+		"""
 		return self.color.title() + " square"
 
 	__lt__ = __le__ = lambda self, *args: self.error(Exception("Cannot compare squares"))
@@ -494,7 +697,14 @@ class Square:
 
 class Piece:
 	def __init__(self, position, piece_type, color, board):
-		"""Initialize the piece"""
+		"""
+		Initialize the piece
+		:type position: str
+		:type piece_type: str
+		:type color: str
+		:type board: Game
+		:return: None
+		"""
 		if isinstance(position, str):
 			self.position = position
 		else:
@@ -504,7 +714,14 @@ class Piece:
 		self.en_passant = False
 
 	def moveTo(self, position, override_pieces=True, evaluate_opening=True, evaluate_checks=True):
-		"""Move the piece to a position"""
+		"""
+		Move the piece to a position
+		:type position: str
+		:type override_pieces: bool
+		:type evaluate_opening: bool
+		:type evaluate_checks: bool
+		:return: None
+		"""
 		if self.board.pieceAt(position) and override_pieces:
 			self.board.pieces.remove(self.board.pieceAt(position))
 			self.board.squares_hashtable[position] = False
@@ -521,7 +738,12 @@ class Piece:
 			self.board.updateOpening()
 
 	def moves(self, show_data=False, evaluate_checks=True):
-		"""Legal moves of the piece"""
+		"""
+		Legal moves of the piece
+		:type show_data: bool
+		:type evaluate_checks: bool
+		:return: List[Move] | List[str]
+		"""
 		if self.board.game_over:
 			return []
 		moves = []
@@ -587,15 +809,30 @@ class Piece:
 		return new_moves
 
 	def __str__(self):
+		"""
+		:return: str
+		"""
 		return self.color.title() + " " + self.piece_type + " at " + self.position
 
 	def __lt__(self, other):
+		"""
+		:type other: Any
+		:return: bool
+		"""
 		return PieceEnum.value(self.piece_type) < PieceEnum.value(other)
 
 	def __le__(self, other):
+		"""
+		:type other: Any
+		:return: bool
+		"""
 		return PieceEnum.value(self.piece_type) <= PieceEnum.value(other)
 
 	def __eq__(self, other):
+		"""
+		:type other: Any
+		:return: bool
+		"""
 		if isinstance(other, Piece):
 			other_vars = {}
 			for x, y in vars(other).items():
@@ -609,6 +846,9 @@ class Piece:
 		return False
 
 	def __unicode__(self):
+		"""
+		:return: str
+		"""
 		return self.color.title() + " " + self.piece_type
 
 	__add__ = __radd__ = __sub__ = __rsub__ = __mul__ = __rmul__ = __div__ = __rdiv__ = __truediv__ = __rtruediv__ = __floordiv__ = __rfloordiv__ = __mod__ = __rmod__ = __divmod__ = __rdivmod__ = __pow__ = __rpow__ = __lshift__ = __rlshift__ = __rshift__ = __rrshift__ = __and__ = __rand__ = __or__ = __ror__ = __xor__ = __rxor__ = __iadd__ = __isub__ = __imul__ = __idiv__ = __itruediv__ = __ifloordiv__ = __imod__ = __ipow__ = __iand__ = __ior__ = __ixor__ = __ilshift__ = __irshift__ = __neg__ = __pos__ = __abs__ = __invert__ = __int__ = __long__ = __float__ = __complex__ = __oct__ = __hex__ = __coerce__ = lambda self, *args: self.error(ArithmeticError("Cannot perform arithmetic operations on Piece object"))
@@ -617,15 +857,21 @@ class Piece:
 
 
 class Game:
-	"""Game class"""
-	def __init__(self, raise_errors=True, fen="rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1", evaluate_openings=False, pieces=Piece):
-		"""Initialize"""
+	def __init__(self, fen="rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1", raise_errors=True, evaluate_openings=False, pieces=Piece):
+		"""
+		Initialize the game
+		:type fen: str
+		:type raise_errors: bool
+		:type evaluate_openings: bool
+		:type pieces: Any
+		:return: None
+		"""
 		if not functions.FENvalid(fen):
 			fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
 		self.tags = {"Result": "*"}
 		self.properties = {
 			"promotions": {"N": PieceEnum.knight, "B": PieceEnum.bishop, "R": PieceEnum.rook, "Q": PieceEnum.queen}
-		}
+		}  # type: dict
 		self.pieces_class = pieces
 		self.opening = ""  # Opening
 		self.evaluate_openings = evaluate_openings
@@ -652,7 +898,13 @@ class Game:
 		self.loadFEN(fen, evaluate_opening=fen != "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1")
 
 	def loadFEN(self, fen, evaluate_opening=True, evaluate_checks=True):
-		"""Load/Reload with the specified FEN. Returns True if the FEN loaded successfully, otherwise False."""
+		"""
+		Load/Reload with the specified FEN. Returns whether the FEN loaded successfully
+		:type fen: str
+		:type evaluate_opening: bool
+		:type evaluate_checks: bool
+		:return: bool
+		"""
 		self.move_list, self.raw_move_list = "", []  # Move lists
 		if not functions.FENvalid(fen):
 			self.error(errors.InvalidFEN(fen))
@@ -664,29 +916,29 @@ class Game:
 			self.pieces = []
 		# If a piece has been captured
 		captured_piece = 0
-		for x in fen.split(" ")[0].split("/"):
+		for x in fen.split()[0].split("/"):
 			for y in x:
 				captured_piece += int(not unicode(y).isnumeric())
 		self.captured_piece = captured_piece < 32
 		# The side to move
-		if fen.split(" ")[-5].lower() == "w":
+		if fen.split()[-5].lower() == "w":
 			self.turn = Color.white
 		else:
 			self.turn = Color.black
-		self.half_moves = int(fen.split(" ")[-2])  # Halfmove clock
-		self.full_moves = int(fen.split(" ")[-1])  # Fullmove clock
+		self.half_moves = int(fen.split()[-2])  # Halfmove clock
+		self.full_moves = int(fen.split()[-1])  # Fullmove clock
 		# Castling rights
-		if fen.split(" ")[2] != "-":
-			self.castling_rights = fen.split(" ")[2]
+		if fen.split()[2] != "-":
+			self.castling_rights = fen.split()[2]
 		else:
 			self.castling_rights = None
 		# En passant pawns
-		if fen.split(" ")[3] != "-":
-			self.en_passant_positions = fen.split(" ")[3]
+		if fen.split()[3] != "-":
+			self.en_passant_positions = fen.split()[3]
 		else:
 			self.en_passant_positions = None
 		# Add pieces
-		for i, j in enumerate(functions.splitNumbers(fen.split(" ")[0]).split("/")):
+		for i, j in enumerate(functions.splitNumbers(fen.split()[0]).split("/")):
 			for x, y in enumerate(j):
 				if unicode(y).isnumeric():
 					continue
@@ -709,7 +961,13 @@ class Game:
 		return True
 
 	def loadPGN(self, pgn=None, file=None, quotes="\""):
-		"""Loads the specified pgn. If the file argument is specified (is not None), loads the text of the file instead."""
+		"""
+		Loads the specified pgn. If the file argument is specified (is not None), loads the text of the file instead.
+		:type pgn: str | None
+		:type file: str | None
+		:type quotes: str
+		:return: bool | None
+		"""
 		if file is pgn is None:
 			return
 
@@ -730,15 +988,20 @@ class Game:
 							self.move(j)
 						else:
 							self.move(j, evaluate_checks=False, evaluate_opening=False)
-					except:
+					except errors.Error:
 						self.error(errors.InvalidPGNMove(j, i))
 						return False
 			else:
 				self.error(errors.InvalidPGNLine(y, x + 1))
 				return False
+		return True
 
 	def loadOpening(self, opening_name):
-		"""Load an opening"""
+		"""
+		Load the specified opening
+		:type opening_name: str
+		:return: bool
+		"""
 		for i in openings.openings:
 			if opening_name.lower().replace("king's pawn game", "open game").replace("queen's pawn game", "closed game").replace("russian game", "petrov's defense") in [i["name"].lower(), i["eco"].lower() + " " + i["name"].lower(), i["eco"].lower() + i["name"].lower(), i["eco"].lower().replace("'", ""), i["eco"].lower() + " " + i["name"].lower().replace("'", ""), i["eco"].lower() + i["name"].lower().replace("'", "")]:
 				self.loadFEN(i["fen"] + " - 0 1")
@@ -746,11 +1009,17 @@ class Game:
 		return False
 
 	def reset(self):
-		"""Reset game"""
+		"""
+		Reset game
+		:return: None
+		"""
 		self.loadFEN("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1")
 
 	def FEN(self):
-		"""Returns the FEN of the game"""
+		"""
+		Returns the FEN of the game
+		:return: str
+		"""
 		fen = ""  # Set fen variable
 		# Get squares
 		for x in self.squares:
@@ -768,7 +1037,11 @@ class Game:
 		return fen
 
 	def PGN(self, **kwargs):
-		"""Returns the PGN of the game."""
+		"""
+		Returns the PGN of the game.
+		:type kwargs: **str
+		:return: str
+		"""
 		pgn = ""
 		for i in kwargs:
 			pgn += "[" + i + " \"" + str(kwargs[i]) + "\"]\n"
@@ -776,46 +1049,85 @@ class Game:
 		return pgn
 
 	def error(self, error):
-		"""Raises an error if allowed"""
+		"""
+		Raises an error if allowed
+		:type error: Any
+		:return: None
+		"""
 		if self.raise_errors:
 			raise error
 
 	def placePiece(self, coordinate, color, piece_type):
-		"""Places a piece with the specified properties at position `coordinate`, overriding any existing pieces on the coordinate."""
+		"""
+		Places a piece with the specified properties at position `coordinate`, overriding any existing pieces on the coordinate.
+		:type coordinate: str
+		:type color: str
+		:type piece_type: str
+		:return: Piece
+		"""
 		if self.pieceAt(coordinate):
 			self.pieces.remove(self.pieceAt(coordinate))
 		self.pieces.append(self.pieces_class(coordinate, piece_type, color, self))
 		self.squares_hashtable[coordinate] = self.pieces[-1]
+		return self.pieces[-1]
+
+	def removePiece(self, coordinate):
+		"""
+		Removes the piece at the specified coordinate
+		:param coordinate: str
+		:return: Piece | None
+		"""
+		piece = self.pieceAt(coordinate)
+		if piece is not None:
+			self.pieces.remove(piece)
+			self.squares_hashtable[coordinate] = False
+			return piece
 
 	def getKing(self, color):
-		"""Get the king of color `color`"""
+		"""
+		Returns the king of color `color`
+		:type color: str
+		:return: Piece
+		"""
 		if not Color.valid(color):
 			self.error(errors.UndefinedColor(color))
-			return None
 
 		if color == Color.white:
 			return self.white_king
 		return self.black_king
 
 	def checkLine(self):
+		"""
+		If a side is in check, returns the line in which the check is delivered
+		:return: Line | None
+		"""
 		if not self.in_check:
 			return False
 		return Line(self.checking_piece.position, self.getKing(self.in_check).position, jump=self.checking_piece.piece_type == PieceEnum.knight)
 
 	def move(self, move, evaluate_checks=True, evaluate_opening=True, evaluate_move_checks=True, evaluate_move_checkmate=True):
-		"""Moves the specified move if it is legal"""
+		"""
+		Makes the specified move if it is legal
+		:type move: str | Move
+		:type evaluate_checks: bool
+		:type evaluate_opening: bool
+		:type evaluate_move_checks: bool
+		:type evaluate_move_checkmate: bool
+		:return: Move
+		"""
 		move_data = None
 		if isinstance(move, str):
+			if " " in move:
+				for i in move.split()[:-1]:
+					self.move(i, evaluate_checks=False, evaluate_move_checks=False, evaluate_opening=False)
+				move = move.split()[-1]
 			# Iterate through the legal moves
-			legal_moves = self.legal_moves(show_data=True, evaluate_checks=evaluate_move_checks, evaluate_checkmate=evaluate_move_checkmate)  # Store legal moves in legal_moves variable
-			for i in legal_moves:
+			for i in self.legal_moves(show_data=True, evaluate_checks=evaluate_move_checks, evaluate_checkmate=evaluate_move_checkmate):
 				if i.name == move:  # If the name of the current move is the move specified
 					move_data = i  # Set move_data equal to the current move
 					break  # Break from the loop
-			if " " in move:
-				for i in move.split(" ")[:-1]:
-					self.move(i, evaluate_checks=False, evaluate_move_checks=False, evaluate_opening=False)
-				move = move.split(" ")[-1]
+			if move_data is None:
+				self.error(errors.MoveNotPossible(move))
 			move = functions.toSAN(move, self)  # Convert to SAN
 		elif isinstance(move, Move):
 			move_data = move
@@ -906,7 +1218,7 @@ class Game:
 			if self.move_list == "":  # If there has not been any moves
 				self.move_list += "1. " + move  # Add a "1. " before the move string to the moves list
 			else:  # Otherwise
-				self.move_list += " " + str(int(self.move_list.split(" ")[-3][0]) + 1) + ". " + move  # Add a space character, the move number, followed by a period before the move string to the moves list
+				self.move_list += " " + str(int(self.move_list.split()[-3][0]) + 1) + ". " + move  # Add a space character, the move number, followed by a period before the move string to the moves list
 		else:  # If black moved
 			if self.move_list == "":  # If there has not been any moves (a custom FEN)
 				self.move_list += "1. ... " + move  # Add a "1. ..." string before the move name to the moves list
@@ -941,7 +1253,15 @@ class Game:
 		return move_data  # Return the move data (Move object)
 
 	def legal_moves(self, show_data=False, color=Color.current, evaluate_checks=True, evaluate_checkmate=True, piece_type=PieceEnum.all()):
-		"""Returns all legal moves by pieces of type(s) piece_type"""
+		"""
+		Returns all legal moves by pieces of type(s) piece_type
+		:type show_data: bool
+		:type color: str
+		:type evaluate_checks: bool
+		:type evaluate_checkmate: bool
+		:type piece_type: str | List[str]
+		:return: List[str] | List[Move]
+		"""
 		if self.game_over:
 			return []
 
@@ -968,7 +1288,12 @@ class Game:
 		return moves  # Return result
 
 	def pieceType(self, piece, color=Color.any):
-		"""Returns all pieces with type `piece` and color `color`"""
+		"""
+		Returns all pieces with type `piece` and color `color`
+		:type piece: str
+		:type color: str
+		:return: List[Piece]
+		"""
 		if color == Color.any:
 			color = [Color.white, Color.black]
 		elif color == Color.current:
@@ -979,7 +1304,10 @@ class Game:
 		return [i for i in self.pieces if i.color in color and i.piece_type == piece]
 
 	def gamePhase(self):
-		"""Returns the current game phase"""
+		"""
+		Returns the current game phase
+		:return: str
+		"""
 		# The game is in the opening phase if there are less than 7 full moves or a piece has not been captured
 		if len(self.raw_move_list) // 2 <= 6 or not self.captured_piece:
 			return Phase.opening
@@ -991,7 +1319,10 @@ class Game:
 		return Phase.middlegame  # Otherwise, the game must be in the middlegame phase
 
 	def totalMaterial(self):
-		"""The total amount of material"""
+		"""
+		The total amount of material
+		:return: int
+		"""
 		material = 0
 		for i in self.pieces:
 			if i.piece_type != PieceEnum.king:
@@ -999,18 +1330,26 @@ class Game:
 		return material
 
 	def materialDifference(self):
-		"""Returns the material difference. Positive values indicate white has more material, while negative values indicate black has more."""
+		"""
+		Returns the material difference. Positive values indicate white has more material, while negative values indicate black has more.
+		:return: int
+		"""
 		difference = 0
-		for i in PieceEnum.all():
-			if i == PieceEnum.king:
+		for i in self.pieces:
+			if i.piece_type == PieceEnum.king:
 				continue
-
-			difference += sum([PieceEnum.value(x) for x in self.pieceType(i, Color.white)]) - sum([PieceEnum.value(x) for x in self.pieceType(i, Color.black)])
+			if i.color == Color.white:
+				difference += PieceEnum.value(i.piece_type)
+			else:
+				difference -= PieceEnum.value(i.piece_type)
 
 		return difference
 
 	def evaluate(self):
-		"""Evaluates the current position"""
+		"""
+		Evaluates the current position
+		:return: float
+		"""
 		evaluation_centipawns = (self.materialDifference() * 100) + (0.1 * (len(self.legal_moves(color=Color.white)) - len(self.legal_moves(color=Color.black))))  # Material difference + piece mobility
 
 		for i in self.pieces:
@@ -1019,7 +1358,11 @@ class Game:
 		return round(evaluation_centipawns / 100, 5)
 
 	def pieceAt(self, coordinate):
-		"""Returns the piece at coordinate if one exists, otherwise return None"""
+		"""
+		Returns the piece at coordinate if one exists, otherwise return None
+		:type coordinate: str
+		:return: None | Piece
+		"""
 		if not functions.coordinateValid(coordinate):  # If the coordinate is not valid, raise an error and return None
 			self.error(errors.InvalidCoordinate(coordinate))
 			return None
@@ -1028,7 +1371,10 @@ class Game:
 		return None
 
 	def takeback(self):
-		"""Take backs one move. To take back multiple moves, call the function multiple times."""
+		"""
+		Take backs one move. To take back multiple moves, call the function multiple times.
+		:return: None
+		"""
 		# TODO: update fullmove and halfmove counters
 		# TODO: update in_check variable
 		if not self.raw_move_list:  # If there has not been any moves, return
@@ -1058,10 +1404,10 @@ class Game:
 		self.raw_move_list.pop()  # Remove the last move from the raw move list
 
 		# Remove the last move from the move list
-		if self.move_list.split(" ")[-2][-1] == ".":
-			self.move_list = " ".join(self.move_list.split(" ")[:-2])
+		if self.move_list.split()[-2][-1] == ".":
+			self.move_list = " ".join(self.move_list.split()[:-2])
 		else:
-			self.move_list = " ".join(self.move_list.split(" ")[:-1])
+			self.move_list = " ".join(self.move_list.split()[:-1])
 
 		self.turn = Color.invert(self.turn)  # Invert the turn
 		self.en_passant_positions = None  # Reset en_passant_positions
@@ -1075,11 +1421,14 @@ class Game:
 		self.positions.pop()
 
 	def updateOpening(self):
-		"""Updates the opening if evaluate_openings is True"""
+		"""
+		Updates the opening if allowed
+		:return: bool | str
+		"""
 		if self.evaluate_openings:
 			opening = False
 			for i in openings.openings:
-				if i["position"] == self.FEN().split(" ")[0]:
+				if i["position"] == self.FEN().split()[0]:
 					self.opening = i["eco"] + " " + i["name"]
 					opening = i["eco"] + " " + i["name"]
 					break
@@ -1088,7 +1437,12 @@ class Game:
 			return False
 
 	def attackers(self, coordinate, color):
-		"""Returns a list of the pieces that attack the coordinate"""
+		"""
+		Returns the pieces that attack the coordinate
+		:type coordinate: str
+		:type color: str
+		:return: List[Piece]
+		"""
 		if color == Color.current:
 			color = self.turn
 		if color not in [Color.white, Color.black]:
@@ -1122,7 +1476,11 @@ class Game:
 		return attackers
 
 	def protectors(self, piece):
-		"""Returns a list of the pieces that protect the piece"""
+		"""
+		Returns the protectors of the piece
+		:type piece: Piece
+		:return: List[Piece]
+		"""
 		if not isinstance(piece, Piece):
 			self.error(errors.InvalidPiece(piece))
 		protectors = []
@@ -1147,10 +1505,17 @@ class Game:
 		return protectors
 
 	def visualized(self, print_result=False, use_unicode=True, empty_squares=" ", separators=True):
+		"""
+		Returns a string representation of the pieces
+		:type print_result: bool
+		:type use_unicode: bool
+		:type empty_squares: str
+		:type separators: bool
+		:return: None | str
+		"""
 		if empty_squares == "":
 			empty_squares = " "
 		empty_squares = empty_squares[0]
-		squares = []
 		string = ""
 		for x in range(8):
 			string += "\n"
@@ -1195,6 +1560,13 @@ class Game:
 			return string
 
 	def generatePawnMoves(self, position, color, return_all=False, piece=None):
+		"""
+		:type position: str
+		:type color: str
+		:type return_all: bool
+		:type piece: Piece | None
+		:return: List[Move]
+		"""
 		moves = []
 		if (color == Color.black and position[1] == "1") or (color == Color.white and position[1] == "8") or not functions.coordinateValid(position):
 			return moves if (color == Color.black and position[1] == "1") or (color == Color.white and position[1] == "8") else [self.error(errors.InvalidCoordinate(position)), moves][1]
@@ -1230,6 +1602,13 @@ class Game:
 			return []
 
 	def generatePawnCaptures(self, position, color, return_all=False, piece=None):
+		"""
+		:type position: str
+		:type color: str
+		:type return_all: bool
+		:type piece: Piece | None
+		:return: List[Move]
+		"""
 		if (color == Color.black and position[1] == "1") or (color == Color.white and position[1] == "8"):
 			return []
 
@@ -1273,6 +1652,13 @@ class Game:
 		return []
 
 	def generateKnightMoves(self, position, color, return_all=False, piece=None):
+		"""
+		:type position: str
+		:type color: str
+		:type return_all: bool
+		:type piece: Piece | None
+		:return: List[Move]
+		"""
 		if not functions.coordinateValid(position):
 			self.error(errors.InvalidCoordinate(position))
 			return []
@@ -1331,6 +1717,13 @@ class Game:
 		return moves
 
 	def generateBishopMoves(self, position, color, stop=Stop.capture_piece, piece=None):
+		"""
+		:type position: str
+		:type color: str
+		:type stop: str
+		:type piece: Piece | None
+		:return: List[Move]
+		"""
 		moves = []
 		capture, (pos1, pos2), piece_found = False, functions.coordinateToIndex(position), 0
 		while pos1 != 0 and pos2 != 0:
@@ -1431,6 +1824,13 @@ class Game:
 		return moves
 
 	def generateRookMoves(self, position, color, stop=Stop.capture_piece, piece=None):
+		"""
+		:type position: str
+		:type color: str
+		:type stop: str
+		:type piece: Piece | None
+		:return: List[Move]
+		"""
 		moves = []
 		capture = False
 		for x in reversed(range(functions.coordinateToIndex(position)[0])):
@@ -1515,6 +1915,13 @@ class Game:
 		return moves
 
 	def generateQueenMoves(self, position, color, stop=Stop.capture_piece, piece=None):
+		"""
+		:type position: str
+		:type color: str
+		:type stop: str
+		:type piece: Piece | None
+		:return: List[Move]
+		"""
 		moves = []
 		# Diagonal moves
 		capture, (pos1, pos2), piece_found = False, functions.coordinateToIndex(position), 0
@@ -1697,6 +2104,15 @@ class Game:
 		return moves
 
 	def generateKingMoves(self, position, color, piece=None):
+		"""
+		:type position: str
+		:type color: str
+		:type piece: Piece | None
+		:return: List[Move]
+		"""
+		if piece is None:
+			piece = self.pieceAt(position)
+		
 		moves = []
 		if position[0] != "h" and position[1] != "1":
 			if self.pieceAt(functions.indexToCoordinate([functions.coordinateToIndex(position)[0] + 1, functions.coordinateToIndex(position)[1] + 1])):
@@ -1789,6 +2205,11 @@ class Game:
 		return moves
 
 	def generateKingCastles(self, position, piece=None):
+		"""
+		:type position: str
+		:type piece: Piece | None
+		:return: List[Move]
+		"""
 		if piece is None:
 			piece = self.pieceAt(position)
 
@@ -1821,27 +2242,48 @@ class Game:
 		return moves
 
 	def __str__(self):
+		"""
+		:return: str
+		"""
 		return "Chess Game with FEN " + self.FEN()
 
 	def __lt__(self, other):
+		"""
+		:type other: Game
+		:return: bool
+		"""
 		return self.totalMaterial() < other.totalMaterial()
 
 	def __le__(self, other):
+		"""
+		:type other: Game
+		:return: bool
+		"""
 		return self.totalMaterial() <= other.totalMaterial()
 
 	def __contains__(self, obj):
+		"""
+		:type obj: Any
+		:return: bool
+		"""
 		if isinstance(obj, Piece):
 			return self.squares_hashtable[obj.position] == obj
 		if isinstance(obj, Square):
 			return vars(obj) in map(vars, self.squares)
 
-		self.error(TypeError("Invalid type: " + str(obj)))
 		return False
 
 	def __unicode__(self):
-		return "---------------------------------\n| " + " |\n---------------------------------\n| ".join(" | ".join([y + (" " if y == "" else "") for y in x]) for x in [["".join([(PieceEnum.unicode(z.piece_type, z.color)) if functions.coordinateToIndex(z.position) == [x, y] else "" for z in self.pieces]) for y in range(len(self.squares[x]))] for x in range(len(self.squares))]) + " |\n---------------------------------"
+		"""
+		:return: str
+		"""
+		return self.visualized()
 
 	def __eq__(self, other):
+		"""
+		:type other: Game
+		:return: bool
+		"""
 		return self.FEN() == other.FEN()
 
 	__add__ = __radd__ = __sub__ = __rsub__ = __mul__ = __rmul__ = __div__ = __rdiv__ = __truediv__ = __rtruediv__ = __floordiv__ = __rfloordiv__ = __mod__ = __rmod__ = __divmod__ = __rdivmod__ = __pow__ = __rpow__ = __lshift__ = __rlshift__ = __rshift__ = __rrshift__ = __and__ = __rand__ = __or__ = __ror__ = __xor__ = __rxor__ = __iadd__ = __isub__ = __imul__ = __idiv__ = __itruediv__ = __ifloordiv__ = __imod__ = __ipow__ = __iand__ = __ior__ = __ixor__ = __ilshift__ = __irshift__ = __neg__ = __pos__ = __abs__ = __invert__ = __int__ = __long__ = __float__ = __complex__ = __oct__ = __hex__ = __coerce__ = lambda self, *args: self.error(ArithmeticError("Cannot perform arithmetic operations on Game object"))
@@ -1851,9 +2293,17 @@ class Game:
 
 class Antichess(Game):
 	class AntichessPiece(Piece):
+		def __init__(self, position, piece_type, color, board):
+			super(Antichess.AntichessPiece, self).__init__(position, piece_type, color, board)
+
 		def moves(self, show_data=False, evaluate_checks=False):
 			if self.board.game_over:
 				return []
+			for x in self.board.pieces:
+				if x != self:
+					for y in x.moves(show_data=False, evaluate_checks=False):
+						if "x" in y:
+							return []
 			moves = []
 			if self.piece_type == PieceEnum.pawn:  # Pawn moves
 				moves.extend(self.board.generatePawnCaptures(self.position, self.color, piece=self))
@@ -1885,8 +2335,8 @@ class Antichess(Game):
 				return captures
 			return non_captures
 
-	def __init__(self, fen="rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1", raise_errors=True):
-		super(Antichess, self).__init__(fen=fen, raise_errors=raise_errors, pieces=Antichess.AntichessPiece)
+	def __init__(self, fen="rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1", raise_errors=True, evaluate_openings=False, pieces=Piece):
+		super(Antichess, self).__init__(fen=fen, raise_errors=raise_errors, evaluate_openings=evaluate_openings, pieces=pieces)
 		self.properties["promotions"]["K"] = PieceEnum.king
 
 	def legal_moves(self, show_data=False, color=Color.current, evaluate_checks=True, evaluate_checkmate=True, piece_type=PieceEnum.all()):
@@ -1914,12 +2364,12 @@ class Antichess(Game):
 		if self.in_check:
 			self.in_check = False
 
-		if self.legal_moves() == []:
+		if not self.legal_moves():
 			self.game_over = True
 			self.tags["Result"] = "1-0" if self.turn == Color.white else "0-1"
 			if self.drawn:
 				self.drawn = False
-				self.stalemate = False
+				self.is_stalemate = False
 
 		return move
 
@@ -1980,12 +2430,13 @@ class Antichess(Game):
 
 
 class ThreeCheck(Game):
-	def __init__(self, fen="rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1", raise_errors=True):
-		super(ThreeCheck, self).__init__(fen=fen, raise_errors=raise_errors)
+	def __init__(self, fen="rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1", raise_errors=True, evaluate_openings=False, pieces=Piece):
+		super(ThreeCheck, self).__init__(fen=fen, raise_errors=raise_errors, evaluate_openings=evaluate_openings, pieces=pieces)
 		self.white_checks = self.black_checks = 0
 
 	def move(self, move, evaluate_checks=True, evaluate_opening=True, evaluate_move_checks=True, evaluate_move_checkmate=True):
-		if super(ThreeCheck, self).move(move=move, evaluate_checks=evaluate_checks, evaluate_opening=evaluate_opening, evaluate_move_checks=evaluate_move_checks, evaluate_move_checkmate=evaluate_move_checkmate).check:
+		move = super(ThreeCheck, self).move(move=move, evaluate_checks=evaluate_checks, evaluate_opening=evaluate_opening, evaluate_move_checks=evaluate_move_checks, evaluate_move_checkmate=evaluate_move_checkmate)
+		if move.check:
 			if self.turn == Color.white:
 				self.black_checks += 1
 			else:
@@ -1997,3 +2448,92 @@ class ThreeCheck(Game):
 			elif self.black_checks == 3:
 				self.game_over = True
 				self.tags["Result"] = "0-1"
+		return move
+
+
+class KingOfTheHill(Game):
+	def __init__(self, fen="rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1", raise_errors=True, evaluate_openings=False, pieces=Piece):
+		super(KingOfTheHill, self).__init__(fen=fen, raise_errors=raise_errors, evaluate_openings=evaluate_openings, pieces=pieces)
+
+	def move(self, move, evaluate_checks=True, evaluate_opening=True, evaluate_move_checks=True, evaluate_move_checkmate=True):
+		move = super(KingOfTheHill, self).move(move=move, evaluate_checks=evaluate_checks, evaluate_opening=evaluate_opening, evaluate_move_checks=evaluate_move_checks, evaluate_move_checkmate=evaluate_move_checkmate)
+		if self.white_king.position in ["d4", "d5", "e4", "e5"]:
+			self.game_over = True
+			self.tags["Result"] = "1-0"
+		elif self.black_king.position in ["d4", "d5", "e4", "e5"]:
+			self.game_over = True
+			self.tags["Result"] = "0-1"
+		
+		return move
+
+
+class RacingKings(Game):
+	class RacingKingsPiece(Piece):
+		def __init__(self, position, piece_type, color, board):
+			super(RacingKings.RacingKingsPiece, self).__init__(position, piece_type, color, board)
+		
+		def moves(self, show_data=False, evaluate_checks=True):
+			return [(i if show_data else i.name) for i in super(RacingKings.RacingKingsPiece, self).moves(show_data=True, evaluate_checks=evaluate_checks) if not i.check]
+
+	def __init__(self, fen="8/8/8/8/8/8/krbnNBRK/qrbnNBRQ w - - 0 1", raise_errors=True, evaluate_openings=False, pieces=RacingKingsPiece):
+		super(RacingKings, self).__init__(fen=fen, raise_errors=raise_errors, evaluate_openings=evaluate_openings, pieces=pieces)
+	
+	def move(self, move, evaluate_checks=True, evaluate_opening=True, evaluate_move_checks=True, evaluate_move_checkmate=True):
+		move = super(RacingKings, self).move(move=move, evaluate_checks=evaluate_checks, evaluate_opening=evaluate_opening, evaluate_move_checks=evaluate_move_checks, evaluate_move_checkmate=evaluate_move_checkmate)
+		if self.white_king.position[1] == "8":
+			self.game_over = True
+			self.tags["Result"] = "1-0"
+		elif self.white_king.position[1] == "8":
+			self.game_over = True
+			self.tags["Result"] = "1-0"
+		return move
+
+
+class Atomic(Game):
+	class AtomicPiece(Piece):
+		def __init__(self, position, piece_type, color, board):
+			super(Atomic.AtomicPiece, self).__init__(position, piece_type, color, board)
+		
+		def moves(self, show_data=False, evaluate_checks=True):
+			return [(i.name if not show_data else i) for i in super(Atomic.AtomicPiece, self).moves(show_data=True, evaluate_checks=evaluate_checks) if not i.is_capture or (self.board.getKing(self.color).position not in self.board.generateExplosionRadius(i.new_position))]
+	
+	def __init__(self, fen="rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1", raise_errors=True, evaluate_openings=False, pieces=AtomicPiece):
+		super(Atomic, self).__init__(fen=fen, raise_errors=raise_errors, evaluate_openings=evaluate_openings, pieces=pieces)
+		
+	@staticmethod
+	def generateExplosionRadius(coordinate):
+		"""
+		:type coordinate: str
+		:return: List[str]
+		"""
+		if coordinate[0] == "a":
+			if coordinate[1] == "1":
+				return ["a" + str(int(coordinate[1]) + 1), "b" + str(int(coordinate[1]) + 1), "b" + coordinate[1], coordinate]
+			elif coordinate[1] == "8":
+				return ["a" + str(int(coordinate[1]) - 1), "b" + str(int(coordinate[1]) - 1), "b" + coordinate[1], coordinate]
+			else:
+				return ["a" + str(int(coordinate[1]) + 1), "a" + str(int(coordinate[1]) - 1), "b" + str(int(coordinate[1]) + 1), "b" + str(int(coordinate[1]) - 1), "b" + coordinate[1], coordinate]
+		if coordinate[0] == "h":
+			if coordinate[1] == "1":
+				return ["h" + str(int(coordinate[1]) + 1), "g" + str(int(coordinate[1]) + 1), "g" + coordinate[1], coordinate]
+			elif coordinate[1] == "8":
+				return ["h" + str(int(coordinate[1]) - 1), "g" + str(int(coordinate[1]) - 1), "g" + coordinate[1], coordinate]
+			else:
+				return ["h" + str(int(coordinate[1]) + 1), "h" + str(int(coordinate[1]) - 1), "g" + str(int(coordinate[1]) + 1), "g" + str(int(coordinate[1]) - 1), "g" + coordinate[1], coordinate]
+		if coordinate[1] == "1":
+			return [coordinate[0] + str(int(coordinate[1]) + 1), functions.indexToCoordinate([functions.coordinateToIndex(coordinate)[0], functions.coordinateToIndex(coordinate)[1] + 1])[0] + str(int(coordinate[1]) + 1), functions.indexToCoordinate([functions.coordinateToIndex(coordinate)[0], functions.coordinateToIndex(coordinate)[1] - 1])[0] + str(int(coordinate[1]) + 1), functions.indexToCoordinate([functions.coordinateToIndex(coordinate)[0], functions.coordinateToIndex(coordinate)[1] - 1])[0] + coordinate[1], functions.indexToCoordinate([functions.coordinateToIndex(coordinate)[0], functions.coordinateToIndex(coordinate)[1] + 1])[0] + coordinate[1], coordinate]
+		if coordinate[1] == "8":
+			return [coordinate[0] + str(int(coordinate[1]) - 1), functions.indexToCoordinate([functions.coordinateToIndex(coordinate)[0], functions.coordinateToIndex(coordinate)[1] + 1])[0] + str(int(coordinate[1]) - 1), functions.indexToCoordinate([functions.coordinateToIndex(coordinate)[0], functions.coordinateToIndex(coordinate)[1] - 1])[0] + str(int(coordinate[1]) - 1), functions.indexToCoordinate([functions.coordinateToIndex(coordinate)[0], functions.coordinateToIndex(coordinate)[1] - 1])[0] + coordinate[1], functions.indexToCoordinate([functions.coordinateToIndex(coordinate)[0], functions.coordinateToIndex(coordinate)[1] + 1])[0] + coordinate[1], coordinate]
+		return [coordinate[0] + str(int(coordinate[1]) + 1), coordinate[0] + str(int(coordinate[1]) - 1), functions.indexToCoordinate([functions.coordinateToIndex(coordinate)[0], functions.coordinateToIndex(coordinate)[1] + 1])[0] + str(int(coordinate[1]) + 1), functions.indexToCoordinate([functions.coordinateToIndex(coordinate)[0], functions.coordinateToIndex(coordinate)[1] + 1])[0] + str(int(coordinate[1]) - 1), functions.indexToCoordinate([functions.coordinateToIndex(coordinate)[0], functions.coordinateToIndex(coordinate)[1] - 1])[0] + str(int(coordinate[1]) + 1), functions.indexToCoordinate([functions.coordinateToIndex(coordinate)[0], functions.coordinateToIndex(coordinate)[1] - 1])[0] + str(int(coordinate[1]) - 1), functions.indexToCoordinate([functions.coordinateToIndex(coordinate)[0], functions.coordinateToIndex(coordinate)[1] - 1])[0] + coordinate[1], functions.indexToCoordinate([functions.coordinateToIndex(coordinate)[0], functions.coordinateToIndex(coordinate)[1] + 1])[0] + coordinate[1], coordinate]
+		
+	def move(self, move, evaluate_checks=True, evaluate_opening=True, evaluate_move_checks=True, evaluate_move_checkmate=True):
+		move = super(Atomic, self).move(move, evaluate_checks=evaluate_checks, evaluate_opening=evaluate_opening, evaluate_move_checks=evaluate_move_checks, evaluate_move_checkmate=evaluate_move_checkmate)
+		if move.is_capture:
+			for i in self.generateExplosionRadius(move.new_position):
+				print(i)
+				if self.pieceAt(i) is not None:
+					if self.pieceAt(i).piece_type != PieceEnum.pawn:
+						if self.removePiece(i).piece_type == PieceEnum.king:
+							self.game_over = True
+							self.tags["Result"] = self.turn
+		return move
