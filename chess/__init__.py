@@ -220,7 +220,7 @@ class Move:
 		:type double_pawn_move: bool
 		:type en_passant: bool
 		:type en_passant_position: str | None
-		:type promotion: bool
+		:type promotion: bool | str
 		:return: None
 		"""
 		self.piece = piece
@@ -871,15 +871,11 @@ class Game:
 		self.tags = {"Result": "*"}
 		self.properties = {
 			"promotions": {"N": PieceEnum.knight, "B": PieceEnum.bishop, "R": PieceEnum.rook, "Q": PieceEnum.queen}
-		}  # type: dict
+		}
 		self.pieces_class = pieces
 		self.opening = ""  # Opening
 		self.evaluate_openings = evaluate_openings
 		self.squares, self.pieces = [], []  # Pieces and squares
-		self.squares_hashtable = {}  # Squares hashtable
-		for x in "abcdefgh":
-			for y in range(1, 9):
-				self.squares_hashtable[x + str(y)] = False
 		self.in_check = False  # False if neither side is in check, Color.white if white is in check, otherwise Color.black if black is in check
 		self.game_over = False
 		self.is_checkmate = False
@@ -937,6 +933,11 @@ class Game:
 			self.en_passant_positions = fen.split()[3]
 		else:
 			self.en_passant_positions = None
+		# Clear squares_hashtable
+		self.squares_hashtable = {}  # Squares hashtable
+		for x in "abcdefgh":
+			for y in range(1, 9):
+				self.squares_hashtable[x + str(y)] = False
 		# Add pieces
 		for i, j in enumerate(functions.splitNumbers(fen.split()[0]).split("/")):
 			for x, y in enumerate(j):
@@ -1074,7 +1075,7 @@ class Game:
 	def removePiece(self, coordinate):
 		"""
 		Removes the piece at the specified coordinate
-		:param coordinate: str
+		:type coordinate: str
 		:return: Piece | None
 		"""
 		piece = self.pieceAt(coordinate)
@@ -1271,19 +1272,13 @@ class Game:
 			color = self.turn
 
 		if isinstance(piece_type, (list, set, tuple)):  # If the piece_type parameter is an iterable
-			pieces = {"pawn": [], "knight": [], "bishop": [], "rook": [], "queen": [], "king": []}  # Define hashtable of piece types
-
 			for i in self.pieces:  # Iterate through pieces
-				if color == Color.any or i.color == color:
-					pieces[i.piece_type].append(i)  # Append piece to respective list in pieces hashtable
-
-			for x in piece_type:  # Iterate through the piece types
-				for y in pieces[x]:  # Iterate through the pieces of this type
-					moves.extend(y.moves(show_data, evaluate_checks=evaluate_checks))  # Append the piece moves
+				if (color == Color.any or i.color == color) and i.piece_type in piece_type:
+					moves.extend(i.moves(show_data=show_data, evaluate_checks=evaluate_checks))  # Append the piece moves
 		elif piece_type in PieceEnum.all():  # If the piece type is a single type
 			for i in self.pieceType(piece_type):  # Iterate through the pieces of the specified type
 				if color == Color.any or i.color == color:  # If the specified color(s) includes the piece color
-					moves.extend(i.moves(show_data, evaluate_checks=evaluate_checks))  # Append the piece moves
+					moves.extend(i.moves(show_data=show_data, evaluate_checks=evaluate_checks))  # Append the piece moves
 
 		return moves  # Return result
 
@@ -1370,18 +1365,19 @@ class Game:
 			return self.squares_hashtable[coordinate]
 		return None
 
-	def takeback(self):
+	def takeback(self, evaluate_openings=True, evaluate_checks=True):
 		"""
 		Take backs one move. To take back multiple moves, call the function multiple times.
+		:type evaluate_openings: bool
+		:type evaluate_checks: bool
 		:return: None
 		"""
 		# TODO: update fullmove and halfmove counters
-		# TODO: update in_check variable
 		if not self.raw_move_list:  # If there has not been any moves, return
 			return
 
 		# Reset the moved piece's position
-		self.squares_hashtable[self.raw_move_list[-1].piece.position], self.squares_hashtable[self.raw_move_list[-1].old_position] = self.squares_hashtable[self.raw_move_list[-1].old_position], self.squares_hashtable[self.raw_move_list[-1].piece.position]
+		self.squares_hashtable[self.raw_move_list[-1].new_position], self.squares_hashtable[self.raw_move_list[-1].old_position] = self.squares_hashtable[self.raw_move_list[-1].old_position], self.squares_hashtable[self.raw_move_list[-1].new_position]
 		self.raw_move_list[-1].piece.position = self.raw_move_list[-1].old_position
 
 		if self.raw_move_list[-1].is_capture:  # If the last move was a capture
@@ -1414,27 +1410,46 @@ class Game:
 		# Set opening
 		if self.move_list == "":
 			self.opening = ""
-		else:
+		elif evaluate_openings:
 			self.updateOpening()
-
 		# Update self.positions list
 		self.positions.pop()
+		# Update in_check variable
+		if evaluate_checks:
+			in_check = False
+			for x in self.pieces:
+				if x.color == self.turn or x.piece_type == PieceEnum.king:
+					continue
+				if x.piece_type == PieceEnum.pawn:
+					generate_function = self.generatePawnCaptures
+				elif x.piece_type == PieceEnum.knight:
+					generate_function = self.generateKnightMoves
+				elif x.piece_type == PieceEnum.bishop:
+					generate_function = self.generateBishopMoves
+				elif x.piece_type == PieceEnum.rook:
+					generate_function = self.generateRookMoves
+				else:
+					generate_function = self.generateQueenMoves
+				for y in generate_function(x.position, x.color):
+					if y.new_position == self.getKing(self.turn).position:
+						self.in_check = self.turn
+						in_check = True
+						break
+			if not in_check:
+				self.in_check = False
 
 	def updateOpening(self):
 		"""
 		Updates the opening if allowed
-		:return: bool | str
+		:return: False | str
 		"""
 		if self.evaluate_openings:
-			opening = False
+			position = self.FEN().split()[0]
 			for i in openings.openings:
-				if i["position"] == self.FEN().split()[0]:
+				if i["position"] == position:
 					self.opening = i["eco"] + " " + i["name"]
-					opening = i["eco"] + " " + i["name"]
-					break
-			return opening
-		else:
-			return False
+					return self.opening
+		return False
 
 	def attackers(self, coordinate, color):
 		"""
@@ -2240,6 +2255,34 @@ class Game:
 							continue
 
 		return moves
+	
+	def minimax_evaluation(self, depth, alpha=float("-inf"), beta=float("inf"), maximizing=True, color=Color.current):
+		"""
+		:type depth: int
+		:type alpha: float
+		:type beta: float
+		:type maximizing: bool
+		:type color: str
+		:return: dict
+		"""
+		if color == Color.current:
+			color = self.turn
+		move = None
+
+		if depth == 0 or self.game_over:
+			return {"move": move, "evaluation": self.evaluate() if color == Color.white else -self.evaluate()}
+
+		base = float("-inf" if maximizing else "inf")
+		for i in self.legal_moves():
+			self.move(i)
+			evaluation = self.minimax_evaluation(depth - 1, alpha=alpha, beta=beta, maximizing=not maximizing, color=color)["evaluation"]
+			self.takeback()
+			if (maximizing and base < evaluation) or (not maximizing and base > evaluation):
+				base = evaluation
+				move = i
+			if (maximizing and beta <= max(alpha, evaluation)) or (not maximizing and alpha >= min(beta, evaluation)):
+				break
+		return {"move": move, "evaluation": base}
 
 	def __str__(self):
 		"""
@@ -2530,7 +2573,6 @@ class Atomic(Game):
 		move = super(Atomic, self).move(move, evaluate_checks=evaluate_checks, evaluate_opening=evaluate_opening, evaluate_move_checks=evaluate_move_checks, evaluate_move_checkmate=evaluate_move_checkmate)
 		if move.is_capture:
 			for i in self.generateExplosionRadius(move.new_position):
-				print(i)
 				if self.pieceAt(i) is not None:
 					if self.pieceAt(i).piece_type != PieceEnum.pawn:
 						if self.removePiece(i).piece_type == PieceEnum.king:
