@@ -1372,7 +1372,6 @@ class Game:
 		:type evaluate_checks: bool
 		:return: None
 		"""
-		# TODO: update fullmove and halfmove counters
 		if not self.raw_move_list:  # If there has not been any moves, return
 			return
 
@@ -1396,6 +1395,8 @@ class Game:
 		# If the last move was a promotion
 		if self.raw_move_list[-1].promotion:
 			self.raw_move_list[-1].piece.piece_type = PieceEnum.pawn  # Make the promoted piece a pawn
+		
+		self.half_moves = int(self.positions[-2].split()[-2])
 
 		self.raw_move_list.pop()  # Remove the last move from the raw move list
 
@@ -1404,9 +1405,13 @@ class Game:
 			self.move_list = " ".join(self.move_list.split()[:-2])
 		else:
 			self.move_list = " ".join(self.move_list.split()[:-1])
-
+		
 		self.turn = Color.invert(self.turn)  # Invert the turn
-		self.en_passant_positions = None  # Reset en_passant_positions
+		# Update en_passant_positions
+		if self.positions[-2].split()[-3] == "-":
+			self.en_passant_positions = None
+		else:
+			self.en_passant_positions = self.positions[-2].split()[-3]
 		# Set opening
 		if self.move_list == "":
 			self.opening = ""
