@@ -57,6 +57,26 @@ def coordinateValid(coordinate):
 	return coordinate[0] in ["a", "b", "c", "d", "e", "f", "g", "h"] and coordinate[1] in ["1", "2", "3", "4", "5", "6", "7", "8"]
 
 
+def toLAN(move, game):
+	"""Return the move in long algebraic notation (e.g. e4 -> e2e4, Nf3 -> g1f3, e2e4 -> e2e4)"""
+	trimmed_move = ""
+	for i in move:
+		if i in ["+", "#", "="]:
+			break
+		trimmed_move += i
+	if move[0] in ["N", "B", "R", "Q", "K"]:
+		for i in game.pieceType({"N": "knight", "B": "bishop", "R": "rook", "Q": "queen", "K": "king"}[move[0]]):
+			if trimmed_move in i.moves():
+				return i.position + move[1:]
+		return move
+	for i in game.pieceType("pawn"):
+		if trimmed_move in i.moves():
+			if "x" in trimmed_move:
+				return i.position + move[1:]
+			return i.position + move
+	return move
+	
+
 def toSAN(move, game):
 	"""Return the move in standard algebraic notation (e.g. e2e4 -> e4, g1f3 -> Nf3, e4 -> e4)"""
 	extra_characters = ""  # Stores extra characters (e.g +,  #, =Q, =Q+...)
@@ -90,14 +110,29 @@ def toSAN(move, game):
 				return move[0] + "x" + move[3:] + extra_characters
 			else:
 				return {"knight": "N", "bishop": "B", "rook": "R", "queen": "Q", "king": "K"}[game.pieceAt(move[:2].lower()).piece_type] + "x" + move[3:] + extra_characters
-	if len(move) == 4:  # Check if the move is not a capture (e.g. e2e4)
+	if len(move) == 4:
 		# If the first two (move[:2]) and last two (move[2:]) characters are coordinates
 		if coordinateValid(move[:2].lower()) and coordinateValid(move[2:].lower()):
 			if game.pieceAt(move[:2].lower()) is None:  # If the piece is not found, return move
 				return move + extra_characters
+			if game.pieceAt(move[:2].lower()).piece_type == "king":  # If the piece is a king
+				if game.pieceAt(move[:2].lower()).color == "white" and move[:2] == "e1":
+					if move[2:] == "g1" and "K" in game.castling_rights:
+						return "O-O"
+					elif move[2:] == "c1" and "Q" in game.castling_rights:
+						return "O-O-O"
+				if game.pieceAt(move[:2].lower()).color == "black" and move[:2] == "e8":
+					if move[2:] == "g8" and "k" in game.castling_rights:
+						return "O-O"
+					elif move[2:] == "c8" and "q" in game.castling_rights:
+						return "O-O-O"
 			if game.pieceAt(move[:2].lower()).piece_type == "pawn":  # If the piece is a pawn
+				if game.pieceAt(move[2:].lower()) is not None:  # If the move is a capture
+					return move[0] + "x" + move[2:] + extra_characters
 				return move[2:] + extra_characters
 			else:  # Otherwise
+				if game.pieceAt(move[2:].lower()) is not None:  # If the move is a capture
+					return {"knight": "N", "bishop": "B", "rook": "R", "queen": "Q", "king": "K"}[game.pieceAt(move[:2].lower()).piece_type] + "x" + move[2:] + extra_characters
 				return {"knight": "N", "bishop": "B", "rook": "R", "queen": "Q", "king": "K"}[game.pieceAt(move[:2].lower()).piece_type] + move[2:] + extra_characters
 
 	return move + extra_characters
