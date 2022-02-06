@@ -712,6 +712,7 @@ class Piece:
 		self.piece_type, self.color, self.board = piece_type, color, board
 		self.moved = False
 		self.en_passant = False
+		self.promoted = False
 
 	def moveTo(self, position, override_pieces=True, evaluate_opening=True, evaluate_checks=True):
 		"""
@@ -1194,6 +1195,7 @@ class Game:
 
 		if move_data.promotion:
 			move_data.piece.piece_type = self.properties["promotions"][move_data.promotion]
+			move_data.piece.promoted = True
 
 		self.raw_move_list.append(move_data)  # Append the move to the raw_move_list list
 
@@ -2339,151 +2341,13 @@ class Game:
 	__getitem__ = __setitem__ = __delitem__ = __getslice__ = __setslice__ = __delslice__ = lambda self, *args: self.error(IndexError("Cannot perform operation on Game object"))
 
 
-class Antichess(Game):
-	class AntichessPiece(Piece):
-		def __init__(self, position, piece_type, color, board):
-			super(Antichess.AntichessPiece, self).__init__(position, piece_type, color, board)
-
-		def moves(self, show_data=False, evaluate_checks=False):
-			if self.board.game_over:
-				return []
-			for x in self.board.pieces:
-				if x != self:
-					for y in x.moves(show_data=False, evaluate_checks=False):
-						if "x" in y:
-							return []
-			moves = []
-			if self.piece_type == PieceEnum.pawn:  # Pawn moves
-				moves.extend(self.board.generatePawnCaptures(self.position, self.color, piece=self))
-				moves.extend(self.board.generatePawnMoves(self.position, self.color, piece=self))
-			elif self.piece_type == PieceEnum.knight:  # Knight moves
-				moves.extend(self.board.generateKnightMoves(self.position, self.color, piece=self))
-			elif self.piece_type == PieceEnum.bishop:  # Bishop moves
-				moves.extend(self.board.generateBishopMoves(self.position, self.color, piece=self))
-			if self.piece_type == PieceEnum.rook:  # Rook moves
-				moves.extend(self.board.generateRookMoves(self.position, self.color, piece=self))
-			elif self.piece_type == PieceEnum.queen:  # Queen moves
-				moves.extend(self.board.generateQueenMoves(self.position, self.color, piece=self))
-			elif self.piece_type == PieceEnum.king:
-				moves.extend(self.board.generateKingMoves(self.position, self.color, piece=self))
-			captures, non_captures = [], []
-			for i in moves:
-				if i.is_capture:
-					if show_data:
-						captures.append(i)
-					else:
-						captures.append(i.name)
-				else:
-					if not captures:
-						if show_data:
-							non_captures.append(i)
-						else:
-							non_captures.append(i.name)
-			if captures:
-				return captures
-			return non_captures
-
-	def __init__(self, fen="rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1", raise_errors=True, evaluate_openings=False, pieces=Piece):
-		super(Antichess, self).__init__(fen=fen, raise_errors=raise_errors, evaluate_openings=evaluate_openings, pieces=pieces)
-		self.properties["promotions"]["K"] = PieceEnum.king
-
-	def legal_moves(self, show_data=False, color=Color.current, evaluate_checks=True, evaluate_checkmate=True, piece_type=PieceEnum.all()):
-		moves = super(Antichess, self).legal_moves(show_data=True, color=color, evaluate_checks=False, evaluate_checkmate=False, piece_type=piece_type)
-		captures, non_captures = [], []
-		for i in moves:
-			if i.is_capture:
-				if show_data:
-					captures.append(i)
-				else:
-					captures.append(i.name)
-			else:
-				if not captures:
-					if show_data:
-						non_captures.append(i)
-					else:
-						non_captures.append(i.name)
-
-		if captures:
-			return captures
-		return non_captures
-
-	def move(self, move, evaluate_checks=True, evaluate_opening=True, evaluate_move_checks=True, evaluate_move_checkmate=True):
-		move = super(Antichess, self).move(move, evaluate_checks=False, evaluate_opening=evaluate_opening, evaluate_move_checks=False, evaluate_move_checkmate=False)
-		if self.in_check:
-			self.in_check = False
-
-		if not self.legal_moves():
-			self.game_over = True
-			self.tags["Result"] = "1-0" if self.turn == Color.white else "0-1"
-			if self.drawn:
-				self.drawn = False
-				self.is_stalemate = False
-
-		return move
-
-	def generateKingMoves(self, position, color, piece=None):
-		moves = []
-		if position[0] != "h" and position[1] != "1":
-			if self.pieceAt(functions.indexToCoordinate([functions.coordinateToIndex(position)[0] + 1, functions.coordinateToIndex(position)[1] + 1])):
-				if self.pieceAt(functions.indexToCoordinate([functions.coordinateToIndex(position)[0] + 1, functions.coordinateToIndex(position)[1] + 1])).color != color:
-					moves.append(Move(name="Kx" + functions.indexToCoordinate([functions.coordinateToIndex(position)[0] + 1, functions.coordinateToIndex(position)[1] + 1]), old_position=position, new_position=functions.indexToCoordinate([functions.coordinateToIndex(position)[0] + 1, functions.coordinateToIndex(position)[1] + 1]), piece=piece, is_capture=True))
-			else:
-				moves.append(Move(name="K" + functions.indexToCoordinate([functions.coordinateToIndex(position)[0] + 1, functions.coordinateToIndex(position)[1] + 1]), old_position=position, new_position=functions.indexToCoordinate([functions.coordinateToIndex(position)[0] + 1, functions.coordinateToIndex(position)[1] + 1]), piece=piece))
-		if position[0] != "a" and position[1] != "8":
-			if self.pieceAt(functions.indexToCoordinate([functions.coordinateToIndex(position)[0] - 1, functions.coordinateToIndex(position)[1] - 1])):
-				if self.pieceAt(functions.indexToCoordinate([functions.coordinateToIndex(position)[0] - 1, functions.coordinateToIndex(position)[1] - 1])).color != color:
-					moves.append(Move(name="Kx" + functions.indexToCoordinate([functions.coordinateToIndex(position)[0] - 1, functions.coordinateToIndex(position)[1] - 1]), old_position=position, new_position=functions.indexToCoordinate([functions.coordinateToIndex(position)[0] - 1, functions.coordinateToIndex(position)[1] - 1]), piece=piece, is_capture=True))
-			else:
-				moves.append(Move(name="K" + functions.indexToCoordinate([functions.coordinateToIndex(position)[0] - 1, functions.coordinateToIndex(position)[1] - 1]), old_position=position, new_position=functions.indexToCoordinate([functions.coordinateToIndex(position)[0] - 1, functions.coordinateToIndex(position)[1] - 1]), piece=piece))
-		if position[0] != "a" and position[1] != "1":
-			if self.pieceAt(functions.indexToCoordinate([functions.coordinateToIndex(position)[0] + 1, functions.coordinateToIndex(position)[1] - 1])):
-				if self.pieceAt(functions.indexToCoordinate([functions.coordinateToIndex(position)[0] + 1, functions.coordinateToIndex(position)[1] - 1])).color != color:
-					moves.append(Move(name="Kx" + functions.indexToCoordinate([functions.coordinateToIndex(position)[0] + 1, functions.coordinateToIndex(position)[1] - 1]), old_position=position, new_position=functions.indexToCoordinate([functions.coordinateToIndex(position)[0] + 1, functions.coordinateToIndex(position)[1] - 1]), piece=piece, is_capture=True))
-			else:
-				moves.append(Move(name="K" + functions.indexToCoordinate([functions.coordinateToIndex(position)[0] + 1, functions.coordinateToIndex(position)[1] - 1]), old_position=position, new_position=functions.indexToCoordinate([functions.coordinateToIndex(position)[0] + 1, functions.coordinateToIndex(position)[1] - 1]), piece=piece))
-		if position[0] != "h" and position[1] != "8":
-			if self.pieceAt(functions.indexToCoordinate([functions.coordinateToIndex(position)[0] - 1, functions.coordinateToIndex(position)[1] + 1])):
-				if self.pieceAt(functions.indexToCoordinate([functions.coordinateToIndex(position)[0] - 1, functions.coordinateToIndex(position)[1] + 1])).color != color:
-					moves.append(Move(name="Kx" + functions.indexToCoordinate([functions.coordinateToIndex(position)[0] - 1, functions.coordinateToIndex(position)[1] + 1]), old_position=position, new_position=functions.indexToCoordinate([functions.coordinateToIndex(position)[0] - 1, functions.coordinateToIndex(position)[1] + 1]), piece=piece, is_capture=True))
-			else:
-				moves.append(Move(name="K" + functions.indexToCoordinate([functions.coordinateToIndex(position)[0] - 1, functions.coordinateToIndex(position)[1] + 1]), old_position=position, new_position=functions.indexToCoordinate([functions.coordinateToIndex(position)[0] - 1, functions.coordinateToIndex(position)[1] + 1]), piece=piece))
-		if position[0] != "a":
-			if self.pieceAt(functions.indexToCoordinate([functions.coordinateToIndex(position)[0], functions.coordinateToIndex(position)[1] - 1])):
-				if self.pieceAt(functions.indexToCoordinate([functions.coordinateToIndex(position)[0], functions.coordinateToIndex(position)[1] - 1])).color != color:
-					moves.append(Move(name="Kx" + functions.indexToCoordinate([functions.coordinateToIndex(position)[0], functions.coordinateToIndex(position)[1] - 1]), old_position=position, new_position=functions.indexToCoordinate([functions.coordinateToIndex(position)[0], functions.coordinateToIndex(position)[1] - 1]), piece=piece, is_capture=True))
-			else:
-				moves.append(Move(name="K" + functions.indexToCoordinate([functions.coordinateToIndex(position)[0], functions.coordinateToIndex(position)[1] - 1]), old_position=position, new_position=functions.indexToCoordinate([functions.coordinateToIndex(position)[0], functions.coordinateToIndex(position)[1] - 1]), piece=piece))
-		if position[0] != "h":
-			if self.pieceAt(functions.indexToCoordinate([functions.coordinateToIndex(position)[0], functions.coordinateToIndex(position)[1] + 1])):
-				if self.pieceAt(functions.indexToCoordinate([functions.coordinateToIndex(position)[0], functions.coordinateToIndex(position)[1] + 1])).color != color:
-					moves.append(Move(name="Kx" + functions.indexToCoordinate([functions.coordinateToIndex(position)[0], functions.coordinateToIndex(position)[1] + 1]), old_position=position, new_position=functions.indexToCoordinate([functions.coordinateToIndex(position)[0], functions.coordinateToIndex(position)[1] + 1]), piece=piece, is_capture=True))
-			else:
-				moves.append(Move(name="K" + functions.indexToCoordinate([functions.coordinateToIndex(position)[0], functions.coordinateToIndex(position)[1] + 1]), old_position=position, new_position=functions.indexToCoordinate([functions.coordinateToIndex(position)[0], functions.coordinateToIndex(position)[1] + 1]), piece=piece))
-		if position[1] != "1":
-			if self.pieceAt(functions.indexToCoordinate([functions.coordinateToIndex(position)[0] + 1, functions.coordinateToIndex(position)[1]])):
-				if self.pieceAt(functions.indexToCoordinate([functions.coordinateToIndex(position)[0] + 1, functions.coordinateToIndex(position)[1]])).color != color:
-					moves.append(Move(name="Kx" + functions.indexToCoordinate([functions.coordinateToIndex(position)[0] + 1, functions.coordinateToIndex(position)[1]]), old_position=position, new_position=functions.indexToCoordinate([functions.coordinateToIndex(position)[0] + 1, functions.coordinateToIndex(position)[1]]), piece=piece, is_capture=True))
-			else:
-				moves.append(Move(name="K" + functions.indexToCoordinate([functions.coordinateToIndex(position)[0] + 1, functions.coordinateToIndex(position)[1]]), old_position=position, new_position=functions.indexToCoordinate([functions.coordinateToIndex(position)[0] + 1, functions.coordinateToIndex(position)[1]]), piece=piece))
-		if position[1] != "8":
-			if self.pieceAt(functions.indexToCoordinate([functions.coordinateToIndex(position)[0] - 1, functions.coordinateToIndex(position)[1]])):
-				if self.pieceAt(functions.indexToCoordinate([functions.coordinateToIndex(position)[0] - 1, functions.coordinateToIndex(position)[1]])).color != color:
-					moves.append(Move(name="Kx" + functions.indexToCoordinate([functions.coordinateToIndex(position)[0] - 1, functions.coordinateToIndex(position)[1]]), old_position=position, new_position=functions.indexToCoordinate([functions.coordinateToIndex(position)[0] - 1, functions.coordinateToIndex(position)[1]]), piece=piece, is_capture=True))
-			else:
-				moves.append(Move(name="K" + functions.indexToCoordinate([functions.coordinateToIndex(position)[0] - 1, functions.coordinateToIndex(position)[1]]), old_position=position, new_position=functions.indexToCoordinate([functions.coordinateToIndex(position)[0] - 1, functions.coordinateToIndex(position)[1]]), piece=piece))
-		return moves
-
-	def generateKingCastles(self, *args, **kwargs):
-		return []
-
-
 class ThreeCheck(Game):
 	def __init__(self, fen="rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1", raise_errors=True, evaluate_openings=False, pieces=Piece):
 		super(ThreeCheck, self).__init__(fen=fen, raise_errors=raise_errors, evaluate_openings=evaluate_openings, pieces=pieces)
 		self.white_checks = self.black_checks = 0
 
 	def move(self, move, evaluate_checks=True, evaluate_opening=True, evaluate_move_checks=True, evaluate_move_checkmate=True):
-		move = super(ThreeCheck, self).move(move=move, evaluate_checks=evaluate_checks, evaluate_opening=evaluate_opening, evaluate_move_checks=evaluate_move_checks, evaluate_move_checkmate=evaluate_move_checkmate)
+		move = super(ThreeCheck, self).move(move=move, evaluate_opening=evaluate_opening, evaluate_move_checkmate=evaluate_move_checkmate)
 		if move.check:
 			if self.turn == Color.white:
 				self.black_checks += 1
@@ -2573,7 +2437,7 @@ class Atomic(Game):
 		if coordinate[1] == "8":
 			return [coordinate[0] + str(int(coordinate[1]) - 1), functions.indexToCoordinate([functions.coordinateToIndex(coordinate)[0], functions.coordinateToIndex(coordinate)[1] + 1])[0] + str(int(coordinate[1]) - 1), functions.indexToCoordinate([functions.coordinateToIndex(coordinate)[0], functions.coordinateToIndex(coordinate)[1] - 1])[0] + str(int(coordinate[1]) - 1), functions.indexToCoordinate([functions.coordinateToIndex(coordinate)[0], functions.coordinateToIndex(coordinate)[1] - 1])[0] + coordinate[1], functions.indexToCoordinate([functions.coordinateToIndex(coordinate)[0], functions.coordinateToIndex(coordinate)[1] + 1])[0] + coordinate[1], coordinate]
 		return [coordinate[0] + str(int(coordinate[1]) + 1), coordinate[0] + str(int(coordinate[1]) - 1), functions.indexToCoordinate([functions.coordinateToIndex(coordinate)[0], functions.coordinateToIndex(coordinate)[1] + 1])[0] + str(int(coordinate[1]) + 1), functions.indexToCoordinate([functions.coordinateToIndex(coordinate)[0], functions.coordinateToIndex(coordinate)[1] + 1])[0] + str(int(coordinate[1]) - 1), functions.indexToCoordinate([functions.coordinateToIndex(coordinate)[0], functions.coordinateToIndex(coordinate)[1] - 1])[0] + str(int(coordinate[1]) + 1), functions.indexToCoordinate([functions.coordinateToIndex(coordinate)[0], functions.coordinateToIndex(coordinate)[1] - 1])[0] + str(int(coordinate[1]) - 1), functions.indexToCoordinate([functions.coordinateToIndex(coordinate)[0], functions.coordinateToIndex(coordinate)[1] - 1])[0] + coordinate[1], functions.indexToCoordinate([functions.coordinateToIndex(coordinate)[0], functions.coordinateToIndex(coordinate)[1] + 1])[0] + coordinate[1], coordinate]
-		
+
 	def move(self, move, evaluate_checks=True, evaluate_opening=True, evaluate_move_checks=True, evaluate_move_checkmate=True):
 		move = super(Atomic, self).move(move, evaluate_checks=evaluate_checks, evaluate_opening=evaluate_opening, evaluate_move_checks=evaluate_move_checks, evaluate_move_checkmate=evaluate_move_checkmate)
 		if move.is_capture:
@@ -2582,5 +2446,56 @@ class Atomic(Game):
 					if self.pieceAt(i).piece_type != PieceEnum.pawn:
 						if self.removePiece(i).piece_type == PieceEnum.king:
 							self.game_over = True
-							self.tags["Result"] = self.turn
+							self.tags["Result"] = "0-1" if self.turn == Color.white else "1-0"
+		return move
+
+
+class Crazyhouse(Game):
+	class CrazyhousePiece(Piece):
+		def __init__(self, position, piece_type, color, board):
+			super(Crazyhouse.CrazyhousePiece, self).__init__(position, piece_type, color, board)
+		
+		def moves(self, show_data=False, evaluate_checks=True):
+			if self.position is None:
+				return []
+			return super(Crazyhouse.CrazyhousePiece, self).moves(show_data=show_data, evaluate_checks=evaluate_checks)
+	
+	def __init__(self, fen="rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1", raise_errors=True, evaluate_openings=False, pieces=CrazyhousePiece):
+		super(Crazyhouse, self).__init__(fen=fen, raise_errors=raise_errors, evaluate_openings=evaluate_openings, pieces=pieces)
+		self.white_pocket = []
+		self.black_pocket = []
+	
+	def dropPiece(self, piece_type, position):
+		"""
+		:type piece_type: str
+		:type position: str
+		:return: Piece | False
+		"""
+		if (piece_type == "pawn" and position[1] in "18") or self.pieceAt(position):
+			return False
+		if self.turn == Color.white:
+			pocket = self.white_pocket
+		else:
+			pocket = self.black_pocket
+		for i in pocket:
+			if i.piece_type == piece_type:
+				pocket.remove(i)
+				i.position = position
+				self.pieces.append(i)
+				self.squares_hashtable[position] = i
+				return i
+		return False
+	
+	def move(self, move, evaluate_checks=True, evaluate_opening=True, evaluate_move_checks=True, evaluate_move_checkmate=True):
+		move = super(Crazyhouse, self).move(move, evaluate_checks=evaluate_checks, evaluate_opening=evaluate_opening, evaluate_move_checks=evaluate_move_checks, evaluate_move_checkmate=evaluate_move_checkmate)
+		if move.is_capture:
+			move.captured_piece.position = None
+			move.captured_piece.color = Color.invert(move.captured_piece.color)
+			if move.captured_piece.promoted:
+				move.captured_piece.promoted = False
+				move.captured_piece.piece_type = Piece.pawn
+			if self.turn == Color.white:
+				self.black_pocket.append(move.captured_piece)
+			else:
+				self.white_pocket.append(move.captured_piece)
 		return move
