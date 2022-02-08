@@ -96,6 +96,9 @@ def toSAN(move, game):
 		if move[-2] == "=" and move[-1] in ["N", "B", "R", "Q"]:
 			extra_characters = move[-2:] + extra_characters
 			move = move[:-2]
+	if len(move) > 1 and move[-1] in [i.lower() for i in game.properties["promotions"].keys()]:
+		extra_characters = "=" + move[-1].upper() + extra_characters
+		move = move[:-1]
 	if len(move) == 5:
 		# Remove the hyphen if one is present (e2-e4 -> e2e4)
 		if move[2] == "-":

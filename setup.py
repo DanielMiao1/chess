@@ -3,8 +3,8 @@
 import setuptools
 import sys
 
-if sys.version_info < (2, 7):
-	raise ImportError("This library requires Python 2.7 or later.")
+if sys.version_info < (2, 5):
+	raise ImportError("This library requires Python 2.5 or later.")
 
 setuptools.setup(
 	name="chess",
@@ -23,5 +23,5 @@ setuptools.setup(
 	packages=["chess"],
 	package_data={"chess": ["py.typed"]},
 	package_dir={"": "."},
-	python_requires=">=2.7",
+	python_requires=">=2.5",
 )
