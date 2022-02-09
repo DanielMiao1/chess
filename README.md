@@ -26,8 +26,9 @@ To make a move, use the `Game.move()` function:
 ```py
 >>> game.move("e4")
 e4
-### Takeback
-To take back a move, use the `Game.takeback()` function:
+```
+### Undo move
+To undo (takeback) a move, use the `Game.takeback()` function:
 ```py
 >>> game.takeback()
 ```
