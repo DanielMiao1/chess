@@ -75,7 +75,7 @@ def toLAN(move, game):
 				return i.position + move[1:]
 			return i.position + move
 	return move
-	
+
 
 def toSAN(move, game):
 	"""Return the move in standard algebraic notation (e.g. e2e4 -> e4, g1f3 -> Nf3, e4 -> e4)"""
@@ -111,8 +111,7 @@ def toSAN(move, game):
 				return move + extra_characters
 			if game.pieceAt(move[:2].lower()).piece_type == "pawn":  # If the piece is a pawn
 				return move[0] + "x" + move[3:] + extra_characters
-			else:
-				return {"knight": "N", "bishop": "B", "rook": "R", "queen": "Q", "king": "K"}[game.pieceAt(move[:2].lower()).piece_type] + "x" + move[3:] + extra_characters
+			return {"knight": "N", "bishop": "B", "rook": "R", "queen": "Q", "king": "K"}[game.pieceAt(move[:2].lower()).piece_type] + "x" + move[3:] + extra_characters
 	if len(move) == 4:
 		# If the first two (move[:2]) and last two (move[2:]) characters are coordinates
 		if coordinateValid(move[:2].lower()) and coordinateValid(move[2:].lower()):
@@ -133,10 +132,9 @@ def toSAN(move, game):
 				if game.pieceAt(move[2:].lower()) is not None:  # If the move is a capture
 					return move[0] + "x" + move[2:] + extra_characters
 				return move[2:] + extra_characters
-			else:  # Otherwise
-				if game.pieceAt(move[2:].lower()) is not None:  # If the move is a capture
-					return {"knight": "N", "bishop": "B", "rook": "R", "queen": "Q", "king": "K"}[game.pieceAt(move[:2].lower()).piece_type] + "x" + move[2:] + extra_characters
-				return {"knight": "N", "bishop": "B", "rook": "R", "queen": "Q", "king": "K"}[game.pieceAt(move[:2].lower()).piece_type] + move[2:] + extra_characters
+			if game.pieceAt(move[2:].lower()) is not None:  # If the move is a capture
+				return {"knight": "N", "bishop": "B", "rook": "R", "queen": "Q", "king": "K"}[game.pieceAt(move[:2].lower()).piece_type] + "x" + move[2:] + extra_characters
+			return {"knight": "N", "bishop": "B", "rook": "R", "queen": "Q", "king": "K"}[game.pieceAt(move[:2].lower()).piece_type] + move[2:] + extra_characters
 
 	return move + extra_characters
 
@@ -150,7 +148,7 @@ def FENvalid(fen):
 	# Check the number of kings
 	kings = []
 	for x in fen.split(" ")[0].split("/"):
-		if not all([y.lower() in "pnbrqk" or (unicode(y).isnumeric() and int(y) < 9) for y in x]) or len(splitNumbers(x)) != 8:
+		if not all(y.lower() in "pnbrqk" or (unicode(y).isnumeric() and int(y) < 9) for y in x) or len(splitNumbers(x)) != 8:
 			return False
 		if "k" in x:
 			if x.count("k") > 1:
@@ -164,7 +162,7 @@ def FENvalid(fen):
 		return False
 	if fen.split(" ")[1] not in "wb":  # If the side to move is invalid
 		return False
-	if (fen.split(" ")[2] != "-" and (not all([i.lower() in "kq" for i in fen.split(" ")[2]]) or len(set(fen.split(" ")[2])) != len(fen.split(" ")[2]))) or (fen.split(" ")[3] != "-" and not coordinateValid(fen.split(" ")[3])) or not unicode(fen.split(" ")[4]).isnumeric() or not unicode(fen.split(" ")[5]).isnumeric():  # If the en passant squares or castling rights are invalid
+	if (fen.split(" ")[2] != "-" and (not all(i.lower() in "kq" for i in fen.split(" ")[2]) or len(set(fen.split(" ")[2])) != len(fen.split(" ")[2]))) or (fen.split(" ")[3] != "-" and not coordinateValid(fen.split(" ")[3])) or not unicode(fen.split(" ")[4]).isnumeric() or not unicode(fen.split(" ")[5]).isnumeric():  # If the en passant squares or castling rights are invalid
 		return False
 	return True  # If all the checks pass, the FEN is valid
 

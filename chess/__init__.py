@@ -29,10 +29,9 @@ class Color:
 		"""
 		if not Color.valid(color):
 			raise errors.UndefinedColor(color)
-		elif Color.isWhite(color):
+		if Color.isWhite(color):
 			return "black"
-		else:
-			return "white"
+		return "white"
 
 	@staticmethod
 	def valid(color):
@@ -505,8 +504,7 @@ class MoveSet:
 		if self.iter_position < len(self.moves):
 			self.iter_position += 1
 			return self.moves[self.iter_position - 1]
-		else:
-			raise StopIteration
+		raise StopIteration
 
 	def next(self):
 		"""
@@ -515,8 +513,7 @@ class MoveSet:
 		if self.iter_position < len(self.moves):
 			self.iter_position += 1
 			return self.moves[self.iter_position - 1]
-		else:
-			raise StopIteration
+		raise StopIteration
 
 	__str__ = __repr__ = lambda self: ", ".join(map(str, self.moves))
 
@@ -691,9 +688,9 @@ class Square:
 		"""
 		return self.color.title() + " square"
 
-	__lt__ = __le__ = lambda self, *args: self.error(Exception("Cannot compare squares"))
+	__lt__ = __le__ = lambda self, *args: self.board.error(Exception("Cannot compare squares"))
 
-	__add__ = __radd__ = __sub__ = __rsub__ = __mul__ = __rmul__ = __div__ = __rdiv__ = __truediv__ = __rtruediv__ = __floordiv__ = __rfloordiv__ = __mod__ = __rmod__ = __divmod__ = __rdivmod__ = __pow__ = __rpow__ = __lshift__ = __rlshift__ = __rshift__ = __rrshift__ = __and__ = __rand__ = __or__ = __ror__ = __xor__ = __rxor__ = __iadd__ = __isub__ = __imul__ = __idiv__ = __itruediv__ = __ifloordiv__ = __imod__ = __ipow__ = __iand__ = __ior__ = __ixor__ = __ilshift__ = __irshift__ = __neg__ = __pos__ = __abs__ = __invert__ = __int__ = __long__ = __float__ = __complex__ = __oct__ = __hex__ = __coerce__ = lambda self, *args: self.error(ArithmeticError("Cannot perform arithmetic operations on Square object"))
+	__add__ = __radd__ = __sub__ = __rsub__ = __mul__ = __rmul__ = __div__ = __rdiv__ = __truediv__ = __rtruediv__ = __floordiv__ = __rfloordiv__ = __mod__ = __rmod__ = __divmod__ = __rdivmod__ = __pow__ = __rpow__ = __lshift__ = __rlshift__ = __rshift__ = __rrshift__ = __and__ = __rand__ = __or__ = __ror__ = __xor__ = __rxor__ = __iadd__ = __isub__ = __imul__ = __idiv__ = __itruediv__ = __ifloordiv__ = __imod__ = __ipow__ = __iand__ = __ior__ = __ixor__ = __ilshift__ = __irshift__ = __neg__ = __pos__ = __abs__ = __invert__ = __int__ = __long__ = __float__ = __complex__ = __oct__ = __hex__ = __coerce__ = lambda self, *args: self.board.error(ArithmeticError("Cannot perform arithmetic operations on Square object"))
 
 	__getitem__ = __setitem__ = __delitem__ = __getslice__ = __setslice__ = __delslice__ = __contains__ = lambda self, *args: self.board.error(IndexError("Cannot perform operation on Square"))
 
@@ -744,6 +741,9 @@ class Piece:
 			self.board.updateOpening()
 
 	def pinLine(self):
+		"""
+		:return: False | Line
+		"""
 		if not self.pinned:
 			return False
 		for i in self.board.pieces:
@@ -879,7 +879,7 @@ class Piece:
 		"""
 		return self.color.title() + " " + self.piece_type
 
-	__add__ = __radd__ = __sub__ = __rsub__ = __mul__ = __rmul__ = __div__ = __rdiv__ = __truediv__ = __rtruediv__ = __floordiv__ = __rfloordiv__ = __mod__ = __rmod__ = __divmod__ = __rdivmod__ = __pow__ = __rpow__ = __lshift__ = __rlshift__ = __rshift__ = __rrshift__ = __and__ = __rand__ = __or__ = __ror__ = __xor__ = __rxor__ = __iadd__ = __isub__ = __imul__ = __idiv__ = __itruediv__ = __ifloordiv__ = __imod__ = __ipow__ = __iand__ = __ior__ = __ixor__ = __ilshift__ = __irshift__ = __neg__ = __pos__ = __abs__ = __invert__ = __int__ = __long__ = __float__ = __complex__ = __oct__ = __hex__ = __coerce__ = lambda self, *args: self.error(ArithmeticError("Cannot perform arithmetic operations on Piece object"))
+	__add__ = __radd__ = __sub__ = __rsub__ = __mul__ = __rmul__ = __div__ = __rdiv__ = __truediv__ = __rtruediv__ = __floordiv__ = __rfloordiv__ = __mod__ = __rmod__ = __divmod__ = __rdivmod__ = __pow__ = __rpow__ = __lshift__ = __rlshift__ = __rshift__ = __rrshift__ = __and__ = __rand__ = __or__ = __ror__ = __xor__ = __rxor__ = __iadd__ = __isub__ = __imul__ = __idiv__ = __itruediv__ = __ifloordiv__ = __imod__ = __ipow__ = __iand__ = __ior__ = __ixor__ = __ilshift__ = __irshift__ = __neg__ = __pos__ = __abs__ = __invert__ = __int__ = __long__ = __float__ = __complex__ = __oct__ = __hex__ = __coerce__ = lambda self, *args: self.board.error(ArithmeticError("Cannot perform arithmetic operations on Piece object"))
 
 	__getitem__ = __setitem__ = __delitem__ = __getslice__ = __setslice__ = __delslice__ = __contains__ = lambda self, *args: self.board.error(IndexError("Cannot perform operation on Piece"))
 
@@ -1248,7 +1248,7 @@ class Game:
 			self.checking_piece = None
 		else:  # Otherwise
 			if evaluate_checks:  # If the evaluate_checks parameter is True
-				if any([True for i in self.legal_moves(show_data=True, color=self.turn, evaluate_checks=evaluate_move_checks, evaluate_checkmate=evaluate_move_checkmate) if i.new_position == self.pieceType(PieceEnum.king, color=Color.invert(self.turn))[0].position]):  # If the king can be captured
+				if any(True for i in self.legal_moves(show_data=True, color=self.turn, evaluate_checks=evaluate_move_checks, evaluate_checkmate=evaluate_move_checkmate) if i.new_position == self.pieceType(PieceEnum.king, color=Color.invert(self.turn))[0].position):  # If the king can be captured
 					self.in_check = Color.invert(self.turn)  # Set in_check variable
 					self.checking_piece = move_data.piece
 				else:  # Otherwise
@@ -1315,11 +1315,11 @@ class Game:
 
 		if isinstance(piece_type, (list, set, tuple)):  # If the piece_type parameter is an iterable
 			for i in self.pieces:  # Iterate through pieces
-				if (color == Color.any or i.color == color) and i.piece_type in piece_type:
+				if color in [Color.any, i.color] and i.piece_type in piece_type:
 					moves.extend(i.moves(show_data=show_data, evaluate_checks=evaluate_checks))  # Append the piece moves
 		elif piece_type in PieceEnum.all():  # If the piece type is a single type
 			for i in self.pieceType(piece_type):  # Iterate through the pieces of the specified type
-				if color == Color.any or i.color == color:  # If the specified color(s) includes the piece color
+				if color in [Color.any, i.color]:  # If the specified color(s) includes the piece color
 					moves.extend(i.moves(show_data=show_data, evaluate_checks=evaluate_checks))  # Append the piece moves
 
 		return moves  # Return result
@@ -1423,8 +1423,8 @@ class Game:
 
 		if self.raw_move_list[-1].is_capture:  # If the last move was a capture
 			# Bring back the captured piece
-			self.pieces.append(self.pieces_class(self.raw_move_list[-1].new_position, self.raw_move_list[-1].captured_piece.piece_type, self.raw_move_list[-1].captured_piece.color, self))
-			self.squares_hashtable[self.raw_move_list[-1].new_position] = self.pieces[-1]
+			self.pieces.append(self.raw_move_list[-1].captured_piece)
+			self.squares_hashtable[self.raw_move_list[-1].captured_piece.position] = self.pieces[-1]
 
 		# Reset the castle rook's position if the last move was a castle
 		if self.raw_move_list[-1].castle == Castle.kingside:  # If the last move was a kingside castle
@@ -1646,7 +1646,7 @@ class Game:
 			if position[1] == "7" and not self.pieceAt(position[0] + "8"):
 				return [Move(position[0] + "8=" + i, position, position[0] + "8", piece, promotion=i) for i in list(self.properties["promotions"])]
 			return moves
-		elif Color.isBlack(color):
+		if Color.isBlack(color):
 			if return_all:
 				moves = [Move(functions.indexToCoordinate([functions.coordinateToIndex(position)[0] + 1, functions.coordinateToIndex(position)[1]]), position, functions.indexToCoordinate([functions.coordinateToIndex(position)[0] + 1, functions.coordinateToIndex(position)[1]]), piece), Move(functions.indexToCoordinate([functions.coordinateToIndex(position)[0] + 2, functions.coordinateToIndex(position)[1]]), position, functions.indexToCoordinate([functions.coordinateToIndex(position)[0] + 2, functions.coordinateToIndex(position)[1]]), piece, double_pawn_move=True)]
 			else:
@@ -1659,9 +1659,8 @@ class Game:
 			if position[1] == "2" and not self.pieceAt(position[0] + "1"):
 				return [Move(position[0] + "1=" + i, position, position[0] + "1", piece, promotion=i) for i in list(self.properties["promotions"])]
 			return moves
-		else:
-			self.error(errors.UndefinedColor(color))
-			return []
+		self.error(errors.UndefinedColor(color))
+		return []
 
 	def generatePawnCaptures(self, position, color, return_all=False, piece=None):
 		"""
@@ -1702,7 +1701,7 @@ class Game:
 						break
 				if capture_found:  # If capture is found
 					if functions.coordinateToIndex(position)[0] == 1:
-						for i in self.properties["promotions"].keys():
+						for i in self.properties["promotions"]:
 							moves.append(Move(name=functions.indexToCoordinate(functions.coordinateToIndex(position))[0] + "x" + functions.indexToCoordinate([functions.coordinateToIndex(position)[0] - 1, functions.coordinateToIndex(position)[1] - 1]) + "=" + i, old_position=position, new_position=functions.indexToCoordinate([functions.coordinateToIndex(position)[0] - 1, functions.coordinateToIndex(position)[1] - 1]), piece=piece, is_capture=True, promotion=i))
 					else:
 						moves.append(Move(name=functions.indexToCoordinate(functions.coordinateToIndex(position))[0] + "x" + functions.indexToCoordinate([functions.coordinateToIndex(position)[0] - 1, functions.coordinateToIndex(position)[1] - 1]), old_position=position, new_position=functions.indexToCoordinate([functions.coordinateToIndex(position)[0] - 1, functions.coordinateToIndex(position)[1] - 1]), piece=piece, is_capture=True))  # Append pawn capture move
@@ -1718,7 +1717,7 @@ class Game:
 						break
 				if capture_found:
 					if functions.coordinateToIndex(position)[0] == 1:
-						for i in self.properties["promotions"].keys():
+						for i in self.properties["promotions"]:
 							moves.append(Move(name=functions.indexToCoordinate(functions.coordinateToIndex(position))[0] + "x" + functions.indexToCoordinate([functions.coordinateToIndex(position)[0] - 1, functions.coordinateToIndex(position)[1] + 1]) + "=" + i, old_position=position, new_position=functions.indexToCoordinate([functions.coordinateToIndex(position)[0] - 1, functions.coordinateToIndex(position)[1] + 1]), piece=piece, is_capture=True, promotion=i))
 					else:
 						moves.append(Move(name=position[0] + "x" + functions.indexToCoordinate([functions.coordinateToIndex(position)[0] - 1, functions.coordinateToIndex(position)[1] + 1]), old_position=position, new_position=functions.indexToCoordinate([functions.coordinateToIndex(position)[0] - 1, functions.coordinateToIndex(position)[1] + 1]), piece=piece, is_capture=True))  # Append pawn capture move
@@ -1743,7 +1742,7 @@ class Game:
 						break
 				if capture_found:
 					if functions.coordinateToIndex(position)[0] == 6:
-						for i in self.properties["promotions"].keys():
+						for i in self.properties["promotions"]:
 							moves.append(Move(name=functions.indexToCoordinate(functions.coordinateToIndex(position))[0] + "x" + functions.indexToCoordinate([functions.coordinateToIndex(position)[0] + 1, functions.coordinateToIndex(position)[1] - 1]) + "=" + i, old_position=position, new_position=functions.indexToCoordinate([functions.coordinateToIndex(position)[0] + 1, functions.coordinateToIndex(position)[1] - 1]), piece=piece, is_capture=True, promotion=i))
 					else:
 						moves.append(Move(name=functions.indexToCoordinate(functions.coordinateToIndex(position))[0] + "x" + functions.indexToCoordinate([functions.coordinateToIndex(position)[0] + 1, functions.coordinateToIndex(position)[1] - 1]), old_position=position, new_position=functions.indexToCoordinate([functions.coordinateToIndex(position)[0] + 1, functions.coordinateToIndex(position)[1] - 1]), piece=piece, is_capture=True))  # Append pawn capture move
@@ -1759,7 +1758,7 @@ class Game:
 						break
 				if capture_found:
 					if functions.coordinateToIndex(position)[0] == 6:
-						for i in self.properties["promotions"].keys():
+						for i in self.properties["promotions"]:
 							moves.append(Move(name=functions.indexToCoordinate(functions.coordinateToIndex(position))[0] + "x" + functions.indexToCoordinate([functions.coordinateToIndex(position)[0] + 1, functions.coordinateToIndex(position)[1] + 1]) + "=" + i, old_position=position, new_position=functions.indexToCoordinate([functions.coordinateToIndex(position)[0] + 1, functions.coordinateToIndex(position)[1] + 1]), piece=piece, is_capture=True, promotion=i))
 					else:
 						moves.append(Move(name=functions.indexToCoordinate(functions.coordinateToIndex(position))[0] + "x" + functions.indexToCoordinate([functions.coordinateToIndex(position)[0] + 1, functions.coordinateToIndex(position)[1] + 1]), old_position=position, new_position=functions.indexToCoordinate([functions.coordinateToIndex(position)[0] + 1, functions.coordinateToIndex(position)[1] + 1]), piece=piece, is_capture=True))  # Append pawn capture move
@@ -1841,7 +1840,7 @@ class Game:
 		:return: List[Move]
 		"""
 		moves = []
-		capture, (pos1, pos2), piece_found = False, functions.coordinateToIndex(position), 0
+		capture, (pos1, pos2) = False, functions.coordinateToIndex(position)
 		while pos1 != 0 and pos2 != 0:
 			pos1, pos2 = pos1 - 1, pos2 - 1
 			if stop == Stop.piece:
@@ -2040,7 +2039,7 @@ class Game:
 		"""
 		moves = []
 		# Diagonal moves
-		capture, (pos1, pos2), piece_found = False, functions.coordinateToIndex(position), 0
+		capture, (pos1, pos2) = False, functions.coordinateToIndex(position)
 		while pos1 != 0 and pos2 != 0:
 			pos1, pos2 = pos1 - 1, pos2 - 1
 			if stop == Stop.piece:
@@ -2458,9 +2457,6 @@ class ThreeCheck(Game):
 
 
 class KingOfTheHill(Game):
-	def __init__(self, fen="rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1", raise_errors=True, evaluate_openings=False, pieces=Piece):
-		super(KingOfTheHill, self).__init__(fen=fen, raise_errors=raise_errors, evaluate_openings=evaluate_openings, pieces=pieces)
-
 	def move(self, move, evaluate_checks=True, evaluate_opening=True, evaluate_move_checks=True, evaluate_move_checkmate=True):
 		move = super(KingOfTheHill, self).move(move=move, evaluate_checks=evaluate_checks, evaluate_opening=evaluate_opening, evaluate_move_checks=evaluate_move_checks, evaluate_move_checkmate=evaluate_move_checkmate)
 		if self.white_king.position in ["d4", "d5", "e4", "e5"]:
@@ -2475,9 +2471,6 @@ class KingOfTheHill(Game):
 
 class RacingKings(Game):
 	class RacingKingsPiece(Piece):
-		def __init__(self, position, piece_type, color, board):
-			super(RacingKings.RacingKingsPiece, self).__init__(position, piece_type, color, board)
-
 		def moves(self, show_data=False, evaluate_checks=True):
 			return [(i if show_data else i.name) for i in super(RacingKings.RacingKingsPiece, self).moves(show_data=True, evaluate_checks=evaluate_checks) if not i.check]
 
@@ -2497,9 +2490,6 @@ class RacingKings(Game):
 
 class Atomic(Game):
 	class AtomicPiece(Piece):
-		def __init__(self, position, piece_type, color, board):
-			super(Atomic.AtomicPiece, self).__init__(position, piece_type, color, board)
-
 		def moves(self, show_data=False, evaluate_checks=True):
 			return [(i.name if not show_data else i) for i in super(Atomic.AtomicPiece, self).moves(show_data=True, evaluate_checks=evaluate_checks) if not i.is_capture or (self.board.getKing(self.color).position not in self.board.generateExplosionRadius(i.new_position))]
 
@@ -2515,17 +2505,15 @@ class Atomic(Game):
 		if coordinate[0] == "a":
 			if coordinate[1] == "1":
 				return ["a" + str(int(coordinate[1]) + 1), "b" + str(int(coordinate[1]) + 1), "b" + coordinate[1], coordinate]
-			elif coordinate[1] == "8":
+			if coordinate[1] == "8":
 				return ["a" + str(int(coordinate[1]) - 1), "b" + str(int(coordinate[1]) - 1), "b" + coordinate[1], coordinate]
-			else:
-				return ["a" + str(int(coordinate[1]) + 1), "a" + str(int(coordinate[1]) - 1), "b" + str(int(coordinate[1]) + 1), "b" + str(int(coordinate[1]) - 1), "b" + coordinate[1], coordinate]
+			return ["a" + str(int(coordinate[1]) + 1), "a" + str(int(coordinate[1]) - 1), "b" + str(int(coordinate[1]) + 1), "b" + str(int(coordinate[1]) - 1), "b" + coordinate[1], coordinate]
 		if coordinate[0] == "h":
 			if coordinate[1] == "1":
 				return ["h" + str(int(coordinate[1]) + 1), "g" + str(int(coordinate[1]) + 1), "g" + coordinate[1], coordinate]
-			elif coordinate[1] == "8":
+			if coordinate[1] == "8":
 				return ["h" + str(int(coordinate[1]) - 1), "g" + str(int(coordinate[1]) - 1), "g" + coordinate[1], coordinate]
-			else:
-				return ["h" + str(int(coordinate[1]) + 1), "h" + str(int(coordinate[1]) - 1), "g" + str(int(coordinate[1]) + 1), "g" + str(int(coordinate[1]) - 1), "g" + coordinate[1], coordinate]
+			return ["h" + str(int(coordinate[1]) + 1), "h" + str(int(coordinate[1]) - 1), "g" + str(int(coordinate[1]) + 1), "g" + str(int(coordinate[1]) - 1), "g" + coordinate[1], coordinate]
 		if coordinate[1] == "1":
 			return [coordinate[0] + str(int(coordinate[1]) + 1), functions.indexToCoordinate([functions.coordinateToIndex(coordinate)[0], functions.coordinateToIndex(coordinate)[1] + 1])[0] + str(int(coordinate[1]) + 1), functions.indexToCoordinate([functions.coordinateToIndex(coordinate)[0], functions.coordinateToIndex(coordinate)[1] - 1])[0] + str(int(coordinate[1]) + 1), functions.indexToCoordinate([functions.coordinateToIndex(coordinate)[0], functions.coordinateToIndex(coordinate)[1] - 1])[0] + coordinate[1], functions.indexToCoordinate([functions.coordinateToIndex(coordinate)[0], functions.coordinateToIndex(coordinate)[1] + 1])[0] + coordinate[1], coordinate]
 		if coordinate[1] == "8":
@@ -2587,7 +2575,7 @@ class Crazyhouse(Game):
 			move.captured_piece.color = Color.invert(move.captured_piece.color)
 			if move.captured_piece.promoted:
 				move.captured_piece.promoted = False
-				move.captured_piece.piece_type = Piece.pawn
+				move.captured_piece.piece_type = PieceEnum.pawn
 			if self.turn == Color.white:
 				self.black_pocket.append(move.captured_piece)
 			else:
