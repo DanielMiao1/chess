@@ -141,7 +141,7 @@ def toSAN(move, game):
 
 def FENvalid(fen):
 	"""Check if the FEN is valid"""
-	if len(fen.split(" ")) < 6:  # If there are more that 6 space-separated entries
+	if len(fen.split(" ")) < 6:  # If there are more than 6 space-separated entries
 		return False
 	if fen.split(" ")[0].count("/") != 7:  # If there is not exactly 7 "/" separators
 		return False
