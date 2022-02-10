@@ -207,7 +207,7 @@ class Stop:
 
 
 class Move:
-	def __init__(self, name, old_position, new_position, piece, is_capture=False, check=False, castle=None, castle_rook=None, double_pawn_move=False, en_passant=False, en_passant_position=None, promotion=False):
+	def __init__(self, name, old_position, new_position, piece, is_capture=False, check=False, castle=None, castle_rook=None, double_pawn_move=False, en_passant=False, en_passant_position=None, promotion=False, blocks=False):
 		"""
 		:type name: str
 		:type old_position: str
@@ -234,6 +234,7 @@ class Move:
 		self.en_passant = en_passant
 		self.en_passant_position = en_passant_position
 		self.promotion = promotion
+		self.blocks = blocks
 		if is_capture and piece is not None:
 			self.captured_piece = self.piece.board.pieceAt(new_position)
 		elif en_passant and piece is not None:
@@ -715,6 +716,8 @@ class Piece:
 		self.moved = False
 		self.en_passant = False
 		self.promoted = False
+		self.pinned = False
+		self.pinning = None
 
 	def moveTo(self, position, override_pieces=True, evaluate_opening=True, evaluate_checks=True):
 		"""
@@ -740,6 +743,17 @@ class Piece:
 		if evaluate_opening:
 			self.board.updateOpening()
 
+	def pinLine(self):
+		if not self.pinned:
+			return False
+		for i in self.board.pieces:
+			if i.color != self.color:
+				if functions.isLine(self.board.getKing(self.color).position, i.position):
+					line = Line(i.position, self.board.getKing(self.color).position)
+					if self.position in line:
+						return line
+		return False
+
 	def moves(self, show_data=False, evaluate_checks=True):
 		"""
 		Legal moves of the piece
@@ -764,11 +778,15 @@ class Piece:
 		elif self.piece_type == PieceEnum.king:
 			moves.extend(self.board.generateKingMoves(self.position, self.color, piece=self))
 			moves.extend(self.board.generateKingCastles(self.position, piece=self))
-		check_line = self.board.checkLine()
+		check_line, pin_line = self.board.checkLine(), self.pinLine()
 		new_moves = []
 		for x in moves:
-			if self.board.in_check and self.piece_type != PieceEnum.king and x.new_position not in check_line.positions + [check_line.start_position]:
-				continue
+			if self.board.in_check:
+				if self.piece_type != PieceEnum.king:
+					if x.new_position in check_line.positions:
+						x.blocks = True
+					elif x.new_position != check_line.start_position:
+						continue
 			if evaluate_checks:
 				if self.piece_type == PieceEnum.pawn:
 					moves_ = []
@@ -805,10 +823,17 @@ class Piece:
 					if self.board.getKing(Color.invert(self.color)).position in moves_:
 						x.name += "+"
 						x.check = True
-			if show_data:
-				new_moves.append(x)
+			if pin_line:
+				if x.new_position in pin_line.positions or x.new_position == pin_line.start_position:
+					if show_data:
+						new_moves.append(x)
+					else:
+						new_moves.append(x.name)
 			else:
-				new_moves.append(x.name)
+				if show_data:
+					new_moves.append(x)
+				else:
+					new_moves.append(x.name)
 		return new_moves
 
 	def __str__(self):
@@ -1197,9 +1222,26 @@ class Game:
 
 		self.raw_move_list.append(move_data)  # Append the move to the raw_move_list list
 
-		if move_data is None:  # If move_data is None (no move was found), raise an error and return False
-			self.error(errors.MoveNotPossible(move))
-			return False
+		if move_data.blocks:
+			move_data.piece.pinned = True
+			self.pieceAt(move_data.piece.pinLine().start_position).pinning = move_data.piece
+		if move_data.piece.pinning is not None:
+			if functions.isLine(move_data.piece.position, self.getKing(move_data.piece.pinning.color).position) and functions.isLine(move_data.piece.position, move_data.piece.pinning.position):
+				pass
+			else:
+				move_data.piece.pinning.pinned = False
+				move_data.piece.pinning = None
+		if functions.isLine(move_data.new_position, self.getKing(move_data.piece.color).position):
+			pieces_found = []
+			for i in Line(move_data.new_position, self.getKing(move_data.piece.color).position).positions:
+				if self.pieceAt(i):
+					pieces_found.append(self.pieceAt(i))
+					if len(pieces_found) >= 2:
+						break
+			if len(pieces_found) == 1:
+				pieces_found[0].pinned = True
+				move_data.piece.pinning = pieces_found[0]
+
 		if self.in_check:  # If a king was in check before this move
 			# This move must have gotten out of check
 			self.in_check = False
