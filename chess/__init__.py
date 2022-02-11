@@ -908,6 +908,9 @@ class Game:
 		self.game_over = False
 		self.is_checkmate = False
 		self.is_stalemate = False
+		self.is_fivefold_repetition = False
+		self.insufficient_material = False
+		self.is_seventyfive_move = False
 		self.drawn = False
 		self.checking_piece = None  # The piece checking a king, or None
 		self.white_king = self.black_king = None
@@ -1292,6 +1295,49 @@ class Game:
 				self.tags["Result"] = "1/2-1/2"
 
 		self.positions.append(self.FEN())  # Append the current FEN to the positions list
+
+		if not self.game_over:
+			# Check for fivefold repetition
+			positions = {}
+			for i in self.positions:
+				if " ".join(i.split()[:-2]) not in positions:
+					positions[" ".join(i.split()[:-2])] = 1
+				else:
+					positions[" ".join(i.split()[:-2])] += 1
+					if positions[" ".join(i.split()[:-2])] == 5:
+						self.game_over = True
+						self.drawn = True
+						self.is_fivefold_repetition = True
+						break
+
+		if not self.game_over:
+			# Check for insufficient material
+			pieces = {"white": {"knight": 0, "bishop": 0}, "black": {"knight": 0, "bishop": 0}}
+			for i in self.pieces:
+				if i.piece_type in [PieceEnum.pawn, PieceEnum.queen, PieceEnum.rook]:
+					break
+				if i.piece_type == PieceEnum.king:
+					continue
+				pieces[i.color][i.piece_type] += 1
+			else:
+				if (not pieces["white"]["knight"] and not pieces["white"]["knight"] and not pieces["black"]["knight"] and not pieces["black"]["bishop"]) or (not pieces["white"]["knight"] and not pieces["white"]["knight"] and not pieces["black"]["knight"] and pieces["black"]["bishop"]) or (not pieces["white"]["knight"] and not pieces["white"]["knight"] and pieces["black"]["knight"] and not pieces["black"]["bishop"]) or (not pieces["black"]["knight"] and not pieces["black"]["knight"] and not pieces["white"]["knight"] and pieces["white"]["bishop"]) or (not pieces["black"]["knight"] and not pieces["black"]["knight"] and pieces["white"]["knight"] and not pieces["white"]["bishop"]):
+					self.game_over = True
+					self.drawn = True
+					self.insufficient_material = True
+				elif not pieces["white"]["knight"] and not pieces["white"]["knight"] and not pieces["black"]["knight"] and not pieces["black"]["bishop"]:
+					bishops = self.pieceType(PieceEnum.bishop)
+					if len(bishops) == 2:
+						if bishops[0].color != bishops[1].color and self.squares[functions.coordinateToIndex(bishops[0].position)[0]][functions.coordinateToIndex(bishops[0].position)[1]].color != self.squares[functions.coordinateToIndex(bishops[1].position)[0]][functions.coordinateToIndex(bishops[1].position)[1]].color:
+							self.game_over = True
+							self.drawn = True
+							self.insufficient_material = True
+
+		if not self.game_over:
+			# Check for seventyfive-move rule
+			if self.half_moves >= 75:
+				self.game_over = True
+				self.drawn = True
+				self.is_seventyfive_move = True
 
 		return move_data  # Return the move data (Move object)
 
