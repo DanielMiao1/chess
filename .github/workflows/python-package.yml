@@ -1,7 +1,7 @@
 # This workflow will install Python dependencies, run tests and lint with a variety of Python versions
 # For more information see: https://help.github.com/actions/language-and-framework-guides/using-python-with-github-actions
 
-name: Python package
+name: Test package
 
 on:
   push:
@@ -11,14 +11,12 @@ on:
 
 jobs:
   build:
-
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:
         os: [ubuntu-20.04]
         python-version: [2.7.18, 3.5.4, 3.11.1]
-
     steps:
     - uses: actions/checkout@v2
     - name: Set up Python ${{ matrix.python-version }}
@@ -30,4 +28,4 @@ jobs:
         python -m pip install pytest git+https://github.com/DanielMiao1/chess
     - name: Test with PyTest
       run: |
-        pytest
+        python -m pytest
