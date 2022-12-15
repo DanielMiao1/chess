@@ -6,6 +6,24 @@ except NameError:
 	unicode = str
 
 
+def isNumeric(string):
+	"""
+	Recursive implementation of python3's str.isnumeric function.
+	Does not consider "other unicode number characters" (e.g. superscript/fractional numbers) to be numeric.
+	"""
+	if not string:
+		return
+
+	if len(string) == 1:
+		return string in ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"]
+
+	for character in string:
+		if not isNumeric(character):
+			return False
+
+	return True
+
+
 def getMovesFromString(string):
 	"""Returns a list of moves from a move string (e.g. '1. e4 e5 2. Nf3 Nc6 *')"""
 	moves = []
@@ -13,7 +31,7 @@ def getMovesFromString(string):
 	for i in string.split(" "):
 		if i in ["*", "1-0", "0-1", "1/2-1/2"]:
 			break
-		if i[0].isnumeric():
+		if isNumeric(i[0]):
 			continue
 		moves.append(i)
 
@@ -22,22 +40,22 @@ def getMovesFromString(string):
 
 def splitNumbers(string):
 	"""Splits numbers in a string"""
-	return "".join(["1" * int(i) if unicode(i).isnumeric() else i for i in string])
+	return "".join(["1" * int(i) if isNumeric(unicode(i)) else i for i in string])
 
 
 def combineNumbers(string):
 	"""Combine numbers in a string"""
 	if "1" not in string:
 		return string
-	if unicode(string).isnumeric():
+	if isNumeric(unicode(string)):
 		return sum(map(int, string))
 	new_string = ""
 	index = 0
 	for i in range(len(string)):
-		if not unicode(string[i]).isnumeric():
+		if not isNumeric(unicode(string[i])):
 			new_string += str(combineNumbers(string[index:i])) + string[i]
 			index = i + 1
-	if unicode(string[-1]).isnumeric():
+	if isNumeric(unicode(string[-1])):
 		new_string += str(combineNumbers(string[index:]))
 	return new_string
 
@@ -148,7 +166,7 @@ def FENvalid(fen):
 	# Check the number of kings
 	kings = []
 	for x in fen.split(" ")[0].split("/"):
-		if not all(y.lower() in "pnbrqk" or (unicode(y).isnumeric() and int(y) < 9) for y in x) or len(splitNumbers(x)) != 8:
+		if not all(y.lower() in "pnbrqk" or (isNumeric(unicode(y)) and int(y) < 9) for y in x) or len(splitNumbers(x)) != 8:
 			return False
 		if "k" in x:
 			if x.count("k") > 1:
@@ -162,7 +180,7 @@ def FENvalid(fen):
 		return False
 	if fen.split(" ")[1] not in "wb":  # If the side to move is invalid
 		return False
-	if (fen.split(" ")[2] != "-" and (not all(i.lower() in "kq" for i in fen.split(" ")[2]) or len(set(fen.split(" ")[2])) != len(fen.split(" ")[2]))) or (fen.split(" ")[3] != "-" and not coordinateValid(fen.split(" ")[3])) or not unicode(fen.split(" ")[4]).isnumeric() or not unicode(fen.split(" ")[5]).isnumeric():  # If the en passant squares or castling rights are invalid
+	if (fen.split(" ")[2] != "-" and (not all(i.lower() in "kq" for i in fen.split(" ")[2]) or len(set(fen.split(" ")[2])) != len(fen.split(" ")[2]))) or (fen.split(" ")[3] != "-" and not coordinateValid(fen.split(" ")[3])) or not isNumeric(unicode(fen.split(" ")[4])) or not isNumeric(unicode(fen.split(" ")[5])):  # If the en passant squares or castling rights are invalid
 		return False
 	return True  # If all the checks pass, the FEN is valid
 
