@@ -8,7 +8,7 @@ if sys.version_info < (2, 5):
 
 setuptools.setup(
 	name="chess",
-	version="v1.1.1",
+	version="v1.1.2",
 	author="Daniel M",
 	author_email="danielmiao2019@icloud.com",
 	description="Chess Library for Python 3 and Python 2",

@@ -3,7 +3,7 @@
 ## Requirements
 Python 2.7 or Python 3
 ## Installation
-The library can be installed directly from github using pip: `pip install git+https://github.com/DanielMiao1/chess`.
+The library can be installed directly from GitHub using pip: `pip install git+https://github.com/DanielMiao1/chess`.
 ## Basic Features
 **See the features section of the wiki for a list of features**
 
