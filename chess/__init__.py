@@ -1,13 +1,123 @@
 # -*- coding: utf-8 -*-
 
-import chess.errors
 import chess.openings
-import chess.functions
 
 try:
 	unicode
 except NameError:
 	unicode = str
+
+
+def fillNorthIterative(board, blockers):
+	current_position = board
+	mask = 0b11111111_00000000_00000000_00000000_00000000_00000000_00000000_00000000
+	while not current_position & blockers:
+		yield current_position
+		current_position <<= 8
+
+		if current_position & mask == current_position:
+			if not current_position & blockers:
+				yield current_position
+
+			return
+
+
+def fillSouthIterative(board, blockers):
+	current_position = board
+	mask = 0b00000000_00000000_00000000_00000000_00000000_00000000_00000000_11111111
+	while not current_position & blockers:
+		yield current_position
+		current_position >>= 8
+
+		if current_position & mask == current_position:
+			if not current_position & blockers:
+				yield current_position
+
+			return
+
+
+def fillEastIterative(board, blockers):
+	current_position = board
+	mask = 0b10000000_10000000_10000000_10000000_10000000_10000000_10000000_10000000
+	while not current_position & blockers:
+		yield current_position
+		current_position <<= 1
+
+		if current_position & mask == current_position:
+			if not current_position & blockers:
+				yield current_position
+
+			return
+
+
+def fillWestIterative(board, blockers):
+	current_position = board
+	mask = 0b00000001_00000001_00000001_00000001_00000001_00000001_00000001_00000001
+	while not current_position & blockers:
+		yield current_position
+		current_position >>= 1
+
+		if current_position & mask == current_position:
+			if not current_position & blockers:
+				yield current_position
+
+			return
+
+
+def fillNorthEastIterative(board, blockers):
+	current_position = board
+	mask = 0b11111111_10000000_10000000_10000000_10000000_10000000_10000000_10000000
+	while not current_position & blockers:
+		yield current_position
+		current_position <<= 9
+
+		if current_position & mask == current_position:
+			if not current_position & blockers:
+				yield current_position
+
+			return
+
+
+def fillNorthWestIterative(board, blockers):
+	current_position = board
+	mask = 0b11111111_00000001_00000001_00000001_00000001_00000001_00000001_00000001
+	while not current_position & blockers:
+		yield current_position
+		current_position <<= 7
+
+		if current_position & mask == current_position:
+			if not current_position & blockers:
+				yield current_position
+
+			return
+
+
+def fillSouthEastIterative(board, blockers):
+	current_position = board
+	mask = 0b00000001_10000000_10000000_10000000_10000000_10000000_10000000_11111111
+	while not current_position & blockers:
+		yield current_position
+		current_position >>= 7
+
+		if current_position & mask == current_position:
+			if not current_position & blockers:
+				yield current_position
+
+			return
+
+
+def fillSouthWestIterative(board, blockers):
+	current_position = board
+	mask = 0b00000001_00000001_00000001_00000001_00000001_00000001_00000001_11111111
+	while not current_position & blockers:
+		yield current_position
+		current_position >>= 9
+
+		if current_position & mask == current_position:
+			if not current_position & blockers:
+				yield current_position
+
+			return
 
 
 class Game:
@@ -33,118 +143,6 @@ class Game:
 			0b00001000,
 			0b00001000_00000000_00000000_00000000_00000000_00000000_00000000_00000000
 		)
-
-	@staticmethod
-	def fillNorthIterative(board, blockers):
-		current_position = board
-		mask = 0b11111111_00000000_00000000_00000000_00000000_00000000_00000000_00000000
-		while not current_position & blockers:
-			yield current_position
-			current_position <<= 8
-
-			if current_position & mask == current_position:
-				if not current_position & blockers:
-					yield current_position
-
-				return
-
-	@staticmethod
-	def fillSouthIterative(board, blockers):
-		current_position = board
-		mask = 0b00000000_00000000_00000000_00000000_00000000_00000000_00000000_11111111
-		while not current_position & blockers:
-			yield current_position
-			current_position >>= 8
-
-			if current_position & mask == current_position:
-				if not current_position & blockers:
-					yield current_position
-
-				return
-
-	@staticmethod
-	def fillEastIterative(board, blockers):
-		current_position = board
-		mask = 0b10000000_10000000_10000000_10000000_10000000_10000000_10000000_10000000
-		while not current_position & blockers:
-			yield current_position
-			current_position <<= 1
-
-			if current_position & mask == current_position:
-				if not current_position & blockers:
-					yield current_position
-
-				return
-
-	@staticmethod
-	def fillWestIterative(board, blockers):
-		current_position = board
-		mask = 0b00000001_00000001_00000001_00000001_00000001_00000001_00000001_00000001
-		while not current_position & blockers:
-			yield current_position
-			current_position >>= 1
-
-			if current_position & mask == current_position:
-				if not current_position & blockers:
-					yield current_position
-
-				return
-
-	@staticmethod
-	def fillNorthEastIterative(board, blockers):
-		current_position = board
-		mask = 0b11111111_10000000_10000000_10000000_10000000_10000000_10000000_10000000
-		while not current_position & blockers:
-			yield current_position
-			current_position <<= 9
-
-			if current_position & mask == current_position:
-				if not current_position & blockers:
-					yield current_position
-
-				return
-
-	@staticmethod
-	def fillNorthWestIterative(board, blockers):
-		current_position = board
-		mask = 0b11111111_00000001_00000001_00000001_00000001_00000001_00000001_00000001
-		while not current_position & blockers:
-			yield current_position
-			current_position <<= 7
-
-			if current_position & mask == current_position:
-				if not current_position & blockers:
-					yield current_position
-
-				return
-
-	@staticmethod
-	def fillSouthEastIterative(board, blockers):
-		current_position = board
-		mask = 0b00000001_10000000_10000000_10000000_10000000_10000000_10000000_11111111
-		while not current_position & blockers:
-			yield current_position
-			current_position >>= 7
-
-			if current_position & mask == current_position:
-				if not current_position & blockers:
-					yield current_position
-
-				return
-
-	@staticmethod
-	def fillSouthWestIterative(board, blockers):
-		current_position = board
-		mask = 0b00000001_00000001_00000001_00000001_00000001_00000001_00000001_11111111
-		while not current_position & blockers:
-			yield current_position
-			current_position >>= 9
-
-			if current_position & mask == current_position:
-				if not current_position & blockers:
-					yield current_position
-
-				return
 
 	def __repr__(self):
 		return str(self)
