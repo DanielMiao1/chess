@@ -2,11 +2,6 @@
 
 import chess.openings
 
-try:
-	unicode
-except NameError:
-	unicode = str
-
 
 ALL_SQUARES = 0b11111111_11111111_11111111_11111111_11111111_11111111_11111111_11111111
 
@@ -146,6 +141,28 @@ def fillQueenMoves(pieces, blockers, captures):
 	)
 
 
+def stringifyBitBoard(pieces_, additional_pieces=None):
+	pieces_list = [" "] * 64
+
+	def appendToString(value, piece_string):
+		_pieces = str(bin(value))[2:].zfill(64)
+		for index in range(len(_pieces)):
+			if int(_pieces[index]):
+				pieces_list[index] = piece_string
+
+	appendToString(pieces_, "*")
+
+	if additional_pieces is not None:
+		for character, board in additional_pieces.items():
+			appendToString(board, character)
+
+	pieces_dimensional_list = [pieces_list[:8], pieces_list[8:16], pieces_list[16:24], pieces_list[24:32], pieces_list[32:40], pieces_list[40:48], pieces_list[48:56], pieces_list[56:64]]
+
+	string = "---------------------------------\n" + "\n|-------------------------------|\n".join(["| " + " | ".join(row) + " |" for row in pieces_dimensional_list]) + "\n---------------------------------"
+
+	return string
+
+
 class Game:
 	def __init__(self):
 		(
@@ -170,33 +187,57 @@ class Game:
 			0b00001000_00000000_00000000_00000000_00000000_00000000_00000000_00000000
 		)
 
+	def _pseudoLegalMoves(self):
+		white_pieces = (
+			self.white_pawns |
+			self.white_knights |
+			self.white_bishops |
+			self.white_rooks |
+			self.white_queens |
+			self.white_kings
+		)
+
+		black_pieces = (
+			self.black_pawns |
+			self.black_knights |
+			self.black_bishops |
+			self.black_rooks |
+			self.black_queens |
+			self.black_kings
+		)
+		return (
+			generatePawnMoves(self.white_pawns, white_pieces ^ self.white_pawns, black_pieces) |
+			generatePawnMoves(self.black_pawns, black_pieces ^ self.black_pawns, white_pieces, False) |
+
+			generateKnightMoves(self.white_knights, white_pieces ^ self.white_knights) |
+			generateKnightMoves(self.black_knights, black_pieces ^ self.black_knights) |
+
+			fillBishopMoves(self.white_bishops, white_pieces ^ self.white_bishops, black_pieces) |
+			fillBishopMoves(self.black_bishops, black_pieces ^ self.black_bishops, white_pieces) |
+
+			fillRookMoves(self.white_rooks, white_pieces ^ self.white_rooks, black_pieces) |
+			fillRookMoves(self.black_rooks, black_pieces ^ self.black_rooks, white_pieces) |
+
+			fillQueenMoves(self.white_queens, white_pieces ^ self.white_queens, black_pieces) |
+			fillQueenMoves(self.black_queens, black_pieces ^ self.black_queens, white_pieces)
+		)
+
+
 	def __repr__(self):
 		return str(self)
 
 	def __str__(self):
-		pieces_list = [" "] * 64
-
-		def appendToString(value, piece_string):
-			pieces = str(bin(value))[2:].zfill(64)
-			for index in range(len(pieces)):
-				if int(pieces[index]):
-					pieces_list[index] = piece_string
-
-		appendToString(self.white_pawns, "P")
-		appendToString(self.black_pawns, "p")
-		appendToString(self.white_knights, "N")
-		appendToString(self.black_knights, "n")
-		appendToString(self.white_bishops, "B")
-		appendToString(self.black_bishops, "b")
-		appendToString(self.white_rooks, "R")
-		appendToString(self.black_rooks, "r")
-		appendToString(self.white_queens, "Q")
-		appendToString(self.black_queens, "q")
-		appendToString(self.white_kings, "K")
-		appendToString(self.black_kings, "k")
-
-		pieces_dimensional_list = [pieces_list[:8], pieces_list[8:16], pieces_list[16:24], pieces_list[24:32], pieces_list[32:40], pieces_list[40:48], pieces_list[48:56], pieces_list[56:64]]
-
-		string = "---------------------------------\n" + "\n|-------------------------------|\n".join(["| " + " | ".join(row) + " |" for row in pieces_dimensional_list]) + "\n---------------------------------"
-
-		return string
+		return stringifyBitBoard(0, {
+			"P": self.white_pawns,
+			"N": self.white_knights,
+			"B": self.white_bishops,
+			"R": self.white_rooks,
+			"Q": self.white_queens,
+			"K": self.white_kings,
+			"p": self.black_pawns,
+			"n": self.black_knights,
+			"b": self.black_bishops,
+			"r": self.black_rooks,
+			"q": self.black_queens,
+			"k": self.black_kings
+		})
