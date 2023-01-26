@@ -64,6 +64,31 @@ def fillSouthWestIterative(board, blockers, captures):
 	return fillIterative(board, blockers, captures, mask, 9, False)
 
 
+def fillRookMoves(pieces, blockers, captures):
+	return (
+		fillNorthIterative(pieces, blockers, captures) |
+		fillSouthIterative(pieces, blockers, captures) |
+		fillWestIterative(pieces, blockers, captures) |
+		fillEastIterative(pieces, blockers, captures)
+	)
+
+
+def fillBishopMoves(pieces, blockers, captures):
+	return (
+		fillNorthWestIterative(pieces, blockers, captures) |
+		fillNorthEastIterative(pieces, blockers, captures) |
+		fillSouthWestIterative(pieces, blockers, captures) |
+		fillSouthEastIterative(pieces, blockers, captures)
+	)
+
+
+def fillQueenMoves(pieces, blockers, captures):
+	return (
+		fillRookMoves(pieces, blockers, captures) |
+		fillBishopMoves(pieces, blockers, captures)
+	)
+
+
 class Game:
 	def __init__(self):
 		(
