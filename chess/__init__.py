@@ -8,116 +8,60 @@ except NameError:
 	unicode = str
 
 
-def fillNorthIterative(board, blockers):
+def fillIterative(board, blockers, captures, mask, shift_amount, left_shift=True):
+	def singleShift(shiftee):
+		if left_shift:
+			return shiftee << shift_amount
+		return shiftee >> shift_amount
+
+	filled_board = 0
 	current_position = board
+
+	while not current_position & captures and not singleShift(current_position) & blockers and current_position & mask != current_position:
+		current_position = singleShift(current_position)
+		filled_board |= current_position
+
+	return filled_board
+
+
+def fillNorthIterative(board, blockers, captures):
 	mask = 0b11111111_00000000_00000000_00000000_00000000_00000000_00000000_00000000
-	while not current_position & blockers:
-		yield current_position
-		current_position <<= 8
-
-		if current_position & mask == current_position:
-			if not current_position & blockers:
-				yield current_position
-
-			return
+	return fillIterative(board, blockers, captures, mask, 8)
 
 
-def fillSouthIterative(board, blockers):
-	current_position = board
+def fillSouthIterative(board, blockers, captures):
 	mask = 0b00000000_00000000_00000000_00000000_00000000_00000000_00000000_11111111
-	while not current_position & blockers:
-		yield current_position
-		current_position >>= 8
-
-		if current_position & mask == current_position:
-			if not current_position & blockers:
-				yield current_position
-
-			return
+	return fillIterative(board, blockers, captures, mask, 8, False)
 
 
-def fillEastIterative(board, blockers):
-	current_position = board
+def fillEastIterative(board, blockers, captures):
 	mask = 0b10000000_10000000_10000000_10000000_10000000_10000000_10000000_10000000
-	while not current_position & blockers:
-		yield current_position
-		current_position <<= 1
-
-		if current_position & mask == current_position:
-			if not current_position & blockers:
-				yield current_position
-
-			return
+	return fillIterative(board, blockers, captures, mask, 1)
 
 
-def fillWestIterative(board, blockers):
-	current_position = board
+def fillWestIterative(board, blockers, captures):
 	mask = 0b00000001_00000001_00000001_00000001_00000001_00000001_00000001_00000001
-	while not current_position & blockers:
-		yield current_position
-		current_position >>= 1
-
-		if current_position & mask == current_position:
-			if not current_position & blockers:
-				yield current_position
-
-			return
+	return fillIterative(board, blockers, captures, mask, 1, False)
 
 
-def fillNorthEastIterative(board, blockers):
-	current_position = board
+def fillNorthEastIterative(board, blockers, captures):
 	mask = 0b11111111_10000000_10000000_10000000_10000000_10000000_10000000_10000000
-	while not current_position & blockers:
-		yield current_position
-		current_position <<= 9
-
-		if current_position & mask == current_position:
-			if not current_position & blockers:
-				yield current_position
-
-			return
+	return fillIterative(board, blockers, captures, mask, 9)
 
 
-def fillNorthWestIterative(board, blockers):
-	current_position = board
+def fillNorthWestIterative(board, blockers, captures):
 	mask = 0b11111111_00000001_00000001_00000001_00000001_00000001_00000001_00000001
-	while not current_position & blockers:
-		yield current_position
-		current_position <<= 7
-
-		if current_position & mask == current_position:
-			if not current_position & blockers:
-				yield current_position
-
-			return
+	return fillIterative(board, blockers, captures, mask, 7)
 
 
-def fillSouthEastIterative(board, blockers):
-	current_position = board
+def fillSouthEastIterative(board, blockers, captures):
 	mask = 0b00000001_10000000_10000000_10000000_10000000_10000000_10000000_11111111
-	while not current_position & blockers:
-		yield current_position
-		current_position >>= 7
-
-		if current_position & mask == current_position:
-			if not current_position & blockers:
-				yield current_position
-
-			return
+	return fillIterative(board, blockers, captures, mask, 7, False)
 
 
-def fillSouthWestIterative(board, blockers):
-	current_position = board
+def fillSouthWestIterative(board, blockers, captures):
 	mask = 0b00000001_00000001_00000001_00000001_00000001_00000001_00000001_11111111
-	while not current_position & blockers:
-		yield current_position
-		current_position >>= 9
-
-		if current_position & mask == current_position:
-			if not current_position & blockers:
-				yield current_position
-
-			return
+	return fillIterative(board, blockers, captures, mask, 9, False)
 
 
 class Game:
@@ -156,18 +100,18 @@ class Game:
 				if int(pieces[index]):
 					pieces_list[index] = piece_string
 
-		appendToString(self.white_pawns.value, "P")
-		appendToString(self.black_pawns.value, "p")
-		appendToString(self.white_knights.value, "N")
-		appendToString(self.black_knights.value, "n")
-		appendToString(self.white_bishops.value, "B")
-		appendToString(self.black_bishops.value, "b")
-		appendToString(self.white_rooks.value, "R")
-		appendToString(self.black_rooks.value, "r")
-		appendToString(self.white_queens.value, "Q")
-		appendToString(self.black_queens.value, "q")
-		appendToString(self.white_kings.value, "K")
-		appendToString(self.black_kings.value, "k")
+		appendToString(self.white_pawns, "P")
+		appendToString(self.black_pawns, "p")
+		appendToString(self.white_knights, "N")
+		appendToString(self.black_knights, "n")
+		appendToString(self.white_bishops, "B")
+		appendToString(self.black_bishops, "b")
+		appendToString(self.white_rooks, "R")
+		appendToString(self.black_rooks, "r")
+		appendToString(self.white_queens, "Q")
+		appendToString(self.black_queens, "q")
+		appendToString(self.white_kings, "K")
+		appendToString(self.black_kings, "k")
 
 		pieces_dimensional_list = [pieces_list[:8], pieces_list[8:16], pieces_list[16:24], pieces_list[24:32], pieces_list[32:40], pieces_list[40:48], pieces_list[48:56], pieces_list[56:64]]
 
