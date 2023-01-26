@@ -8,6 +8,25 @@ except NameError:
 	unicode = str
 
 
+A_FILE = 0b10000000_10000000_10000000_10000000_10000000_10000000_10000000_10000000
+B_FILE = 0b01000000_01000000_01000000_01000000_01000000_01000000_01000000_01000000
+C_FILE = 0b00100000_00100000_00100000_00100000_00100000_00100000_00100000_00100000
+D_FILE = 0b00010000_00010000_00010000_00010000_00010000_00010000_00010000_00010000
+E_FILE = 0b00001000_00001000_00001000_00001000_00001000_00001000_00001000_00001000
+F_FILE = 0b00000100_00000100_00000100_00000100_00000100_00000100_00000100_00000100
+G_FILE = 0b00000010_00000010_00000010_00000010_00000010_00000010_00000010_00000010
+H_FILE = 0b00000001_00000001_00000001_00000001_00000001_00000001_00000001_00000001
+
+EIGHTH_RANK = 0b11111111_00000000_00000000_00000000_00000000_00000000_00000000_00000000
+SEVENTH_RANK = 0b00000000_11111111_00000000_00000000_00000000_00000000_00000000_00000000
+SIXTH_RANK = 0b00000000_00000000_11111111_00000000_00000000_00000000_00000000_00000000
+FIFTH_RANK = 0b00000000_00000000_00000000_11111111_00000000_00000000_00000000_00000000
+FOURTH_RANK = 0b00000000_00000000_00000000_00000000_11111111_00000000_00000000_00000000
+THIRD_RANK = 0b00000000_00000000_00000000_00000000_00000000_11111111_00000000_00000000
+SECOND_RANK = 0b00000000_00000000_00000000_00000000_00000000_00000000_11111111_00000000
+FIRST_RANK = 0b00000000_00000000_00000000_00000000_00000000_00000000_00000000_11111111
+
+
 def fillIterative(board, blockers, captures, mask, shift_amount, left_shift=True):
 	def singleShift(shiftee):
 		if left_shift:
@@ -25,43 +44,35 @@ def fillIterative(board, blockers, captures, mask, shift_amount, left_shift=True
 
 
 def fillNorthIterative(board, blockers, captures):
-	mask = 0b11111111_00000000_00000000_00000000_00000000_00000000_00000000_00000000
-	return fillIterative(board, blockers, captures, mask, 8)
+	return fillIterative(board, blockers, captures, EIGHTH_RANK, 8)
 
 
 def fillSouthIterative(board, blockers, captures):
-	mask = 0b00000000_00000000_00000000_00000000_00000000_00000000_00000000_11111111
-	return fillIterative(board, blockers, captures, mask, 8, False)
+	return fillIterative(board, blockers, captures, FIRST_RANK, 8, False)
 
 
 def fillEastIterative(board, blockers, captures):
-	mask = 0b10000000_10000000_10000000_10000000_10000000_10000000_10000000_10000000
-	return fillIterative(board, blockers, captures, mask, 1)
+	return fillIterative(board, blockers, captures, A_FILE, 1)
 
 
 def fillWestIterative(board, blockers, captures):
-	mask = 0b00000001_00000001_00000001_00000001_00000001_00000001_00000001_00000001
-	return fillIterative(board, blockers, captures, mask, 1, False)
+	return fillIterative(board, blockers, captures, H_FILE, 1, False)
 
 
 def fillNorthEastIterative(board, blockers, captures):
-	mask = 0b11111111_10000000_10000000_10000000_10000000_10000000_10000000_10000000
-	return fillIterative(board, blockers, captures, mask, 9)
+	return fillIterative(board, blockers, captures, EIGHTH_RANK | A_FILE, 9)
 
 
 def fillNorthWestIterative(board, blockers, captures):
-	mask = 0b11111111_00000001_00000001_00000001_00000001_00000001_00000001_00000001
-	return fillIterative(board, blockers, captures, mask, 7)
+	return fillIterative(board, blockers, captures, EIGHTH_RANK | H_FILE, 7)
 
 
 def fillSouthEastIterative(board, blockers, captures):
-	mask = 0b00000001_10000000_10000000_10000000_10000000_10000000_10000000_11111111
-	return fillIterative(board, blockers, captures, mask, 7, False)
+	return fillIterative(board, blockers, captures, FIRST_RANK | A_FILE, 7, False)
 
 
 def fillSouthWestIterative(board, blockers, captures):
-	mask = 0b00000001_00000001_00000001_00000001_00000001_00000001_00000001_11111111
-	return fillIterative(board, blockers, captures, mask, 9, False)
+	return fillIterative(board, blockers, captures, FIRST_RANK | H_FILE, 9, False)
 
 
 def fillRookMoves(pieces, blockers, captures):
