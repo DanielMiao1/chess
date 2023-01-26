@@ -77,6 +77,33 @@ def fillSouthWestIterative(board, blockers, captures):
 	return fillIterative(board, blockers, captures, FIRST_RANK | H_FILE, 9, False)
 
 
+def generatePawnMoves(pieces, blockers, captures, white_move=True):
+	allowed_pawn_positions = (ALL_SQUARES ^ EIGHTH_RANK ^ FIRST_RANK)
+	occupied_squares = ALL_SQUARES ^ (blockers | captures)
+	double_move_rank = SECOND_RANK if white_move else SEVENTH_RANK
+
+	def singleMove(position):
+		if white_move:
+			return position << 8
+		return position >> 8
+
+	moves = 0b0
+	moves |= singleMove(pieces & allowed_pawn_positions) & (ALL_SQUARES ^ (blockers | captures))
+
+	moves |= singleMove(singleMove(pieces & double_move_rank) & occupied_squares) & occupied_squares  # Double pawn move
+
+	if white_move:
+		moves |= ((pieces & allowed_pawn_positions) << 9) & captures  # West captures
+		moves |= ((pieces & allowed_pawn_positions) << 7) & captures  # East captures
+	else:
+		moves |= ((pieces & allowed_pawn_positions) >> 9) & captures  # West captures
+		moves |= ((pieces & allowed_pawn_positions) >> 7) & captures  # East captures
+
+	moves &= ALL_SQUARES ^ blockers
+
+	return moves
+
+
 def generateKnightMoves(pieces, blockers):
 	moves = 0b0
 	moves |= (pieces << 15) & (ALL_SQUARES ^ A_FILE)  # North-north-west move
