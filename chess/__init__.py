@@ -8,6 +8,8 @@ except NameError:
 	unicode = str
 
 
+ALL_SQUARES = 0b11111111_11111111_11111111_11111111_11111111_11111111_11111111_11111111
+
 A_FILE = 0b10000000_10000000_10000000_10000000_10000000_10000000_10000000_10000000
 B_FILE = 0b01000000_01000000_01000000_01000000_01000000_01000000_01000000_01000000
 C_FILE = 0b00100000_00100000_00100000_00100000_00100000_00100000_00100000_00100000
@@ -75,13 +77,21 @@ def fillSouthWestIterative(board, blockers, captures):
 	return fillIterative(board, blockers, captures, FIRST_RANK | H_FILE, 9, False)
 
 
-def fillRookMoves(pieces, blockers, captures):
-	return (
-		fillNorthIterative(pieces, blockers, captures) |
-		fillSouthIterative(pieces, blockers, captures) |
-		fillWestIterative(pieces, blockers, captures) |
-		fillEastIterative(pieces, blockers, captures)
-	)
+def generateKnightMoves(pieces, blockers):
+	moves = 0b0
+	moves |= (pieces << 15) & (ALL_SQUARES ^ A_FILE)  # North-north-west move
+	moves |= (pieces << 17) & (ALL_SQUARES ^ H_FILE)  # North-north-east move
+	moves |= (pieces << 6) & (ALL_SQUARES ^ A_FILE ^ B_FILE)  # North-west-west move
+	moves |= (pieces << 10) & (ALL_SQUARES ^ H_FILE ^ G_FILE)  # North-east-east move
+
+	moves |= (pieces >> 17) & (ALL_SQUARES ^ A_FILE)  # South-south-west move
+	moves |= (pieces >> 15) & (ALL_SQUARES ^ H_FILE)  # South-south-east move
+	moves |= (pieces >> 10) & (ALL_SQUARES ^ A_FILE ^ B_FILE)  # South-west-west move
+	moves |= (pieces >> 6) & (ALL_SQUARES ^ G_FILE ^ H_FILE)  # South-east-east move
+
+	moves &= ALL_SQUARES ^ blockers
+
+	return moves
 
 
 def fillBishopMoves(pieces, blockers, captures):
@@ -90,6 +100,15 @@ def fillBishopMoves(pieces, blockers, captures):
 		fillNorthEastIterative(pieces, blockers, captures) |
 		fillSouthWestIterative(pieces, blockers, captures) |
 		fillSouthEastIterative(pieces, blockers, captures)
+	)
+
+
+def fillRookMoves(pieces, blockers, captures):
+	return (
+		fillNorthIterative(pieces, blockers, captures) |
+		fillSouthIterative(pieces, blockers, captures) |
+		fillWestIterative(pieces, blockers, captures) |
+		fillEastIterative(pieces, blockers, captures)
 	)
 
 
